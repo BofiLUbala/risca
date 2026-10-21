@@ -1,6 +1,11 @@
 # Blueprint Render — API RISAC.
-# Render > New > Blueprint > selectionner ce depot. Les variables marquees
-# sync: false sont a saisir dans le tableau de bord (jamais dans le depot).
+#
+# Render > New > Blueprint > selectionner ce depot. Render cree alors le
+# service web ET la base Postgres declaree en fin de fichier, et relie les
+# deux tout seul.
+#
+# Les variables marquees `sync: false` restent a saisir dans le tableau de
+# bord : ce sont des secrets, ils n'ont rien a faire dans le depot.
 services:
   - type: web
     name: risac-api
@@ -17,9 +22,14 @@ services:
       - key: PORT
         value: 10000
 
-      # ─── Base de donnees (Neon : chaine avec ?sslmode=require) ───
+      # ─── Base de donnees ───
+      # Render cable lui-meme la chaine de connexion de la base declaree plus
+      # bas : rien a saisir dans le tableau de bord, et aucun identifiant ne
+      # transite par le depot.
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: risac-db
+          property: connectionString
 
       # ─── Secrets JWT : generes par Render, jamais committes ───
       - key: JWT_SECRET
@@ -66,3 +76,14 @@ services:
         sync: false
       - key: FIREBASE_PRIVATE_KEY
         sync: false
+
+# ─── Base de donnees managee ───
+# Le plan gratuit de Render expire apres 30 jours : passer la base en plan
+# payant avant l'echeance, ou exporter les donnees. Sans quoi l'API perd sa
+# base et ne redemarre plus.
+databases:
+  - name: risac-db
+    plan: free
+    region: frankfurt
+    databaseName: risac
+    user: risac
