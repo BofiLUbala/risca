@@ -18,3 +18,9 @@ GoogleService-Info.plist
 
 # Sauvegardes de base : jamais dans le depot
 backups/
+
+# Variables d'environnement : seuls les fichiers *.example sont suivis.
+# Couvre aussi les copies de travail (.env.bak, .env.local.bak...).
+.env.*
+!.env.example
+!.env.northflank.example
