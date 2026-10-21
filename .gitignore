@@ -24,3 +24,7 @@ backups/
 .env.*
 !.env.example
 !.env.northflank.example
+
+# Cle du compte de service Google Play : injectee par le workflow depuis un
+# secret GitHub, jamais dans le depot.
+google-play-service-account.json

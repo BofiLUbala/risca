@@ -1,0 +1,85 @@
+# Construit l'Android App Bundle et le publie sur le canal alpha du Play Store.
+#
+# Declenche a chaque push sur `main` touchant `mobile/`, et manuellement depuis
+# l'onglet Actions. EAS incremente le `versionCode` tout seul
+# (`autoIncrement` + `appVersionSource: remote` dans eas.json) : aucun numero
+# de version a gerer a la main.
+#
+# Pre-requis, decrits dans docs/CI-CD.md :
+#   - secret EXPO_TOKEN                      (jeton de compte Expo)
+#   - secret GOOGLE_PLAY_SERVICE_ACCOUNT     (JSON du compte de service, en clair)
+#   - une premiere version deja publiee manuellement dans le Play Console
+name: Mobile — publication alpha
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'mobile/**'
+      - '.github/workflows/mobile-alpha.yml'
+  workflow_dispatch:
+
+# Deux publications simultanees se marcheraient sur les pieds cote Play Store.
+concurrency:
+  group: mobile-alpha
+  cancel-in-progress: false
+
+jobs:
+  alpha:
+    name: Build Android et envoi sur le canal alpha
+    # Tant que les deux secrets n'existent pas, le job est volontairement
+    # ignore plutot que mis en echec : inutile de polluer l'historique des
+    # executions avec des runs rouges previsibles. Il s'activera tout seul
+    # des que les secrets seront crees.
+    if: ${{ secrets.EXPO_TOKEN != '' && secrets.GOOGLE_PLAY_SERVICE_ACCOUNT != '' }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Installer EAS CLI
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - run: npm ci
+
+      - name: Verification des types
+        run: npm run typecheck
+
+      # Le JSON du compte de service ne doit jamais etre dans le depot : il est
+      # ecrit depuis le secret, le temps du job, a l'endroit ou eas.json
+      # l'attend (serviceAccountKeyPath).
+      - name: Deposer la cle du compte de service Google Play
+        env:
+          KEY: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::error::Le secret GOOGLE_PLAY_SERVICE_ACCOUNT est vide." && exit 1
+          fi
+          printf '%s' "$KEY" > google-play-service-account.json
+          node -e "JSON.parse(require('fs').readFileSync('google-play-service-account.json','utf8'))" \
+            || { echo "::error::Le secret n'est pas un JSON valide."; exit 1; }
+
+      # --wait : le job ne rend la main qu'une fois le bundle construit, pour
+      # que l'etape d'envoi trouve bien un artefact.
+      - name: Construire l'App Bundle
+        run: eas build --platform android --profile production --non-interactive --wait
+
+      - name: Publier sur le canal alpha
+        run: eas submit --platform android --profile production --non-interactive --latest
+
+      # Le fichier disparait avec la machine virtuelle, mais on ne compte pas
+      # sur ce detail : il est efface explicitement, meme si une etape a echoue.
+      - name: Effacer la cle
+        if: always()
+        run: rm -f google-play-service-account.json
