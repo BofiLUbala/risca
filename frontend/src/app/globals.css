@@ -1,0 +1,207 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: 'IBM Plex Sans', 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-ink-50 text-ink-900 antialiased;
+    font-family: var(--font-sans);
+  }
+
+  /* Titres équilibrés, textes courts sans veuves : lecture plus nette. */
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  p,
+  li,
+  dd {
+    text-wrap: pretty;
+  }
+
+  /* Chiffres de même largeur : les montants et compteurs ne « dansent » pas. */
+  table,
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  ::selection {
+    @apply bg-risac-200 text-risac-950;
+  }
+
+  /*
+   * Une grille sans colonnes explicites (cas du mobile, quand seules les variantes sm:/lg:
+   * en définissent) prend la largeur de son plus large contenu insécable, par exemple un
+   * titre tronqué, et fait déborder toute la page. minmax(0, 1fr) la tient dans son conteneur ;
+   * les classes grid-cols-* et leurs variantes, chargées après, gardent la main.
+   */
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Indicateur de focus clair sur tous les contrôles, clavier uniquement. */
+  :focus-visible {
+    outline: 2px solid theme('colors.risac.600');
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* ---------- Hiérarchie de contenu ---------- */
+  .page-title {
+    @apply text-page-title text-ink-950;
+  }
+  .page-subtitle {
+    @apply mt-1 text-sm text-ink-500;
+  }
+  .section-title {
+    @apply text-section-title text-ink-900;
+  }
+  .card-title {
+    @apply text-sm font-semibold text-ink-900;
+  }
+  .table-head {
+    @apply text-table-head text-ink-500;
+  }
+  .meta {
+    @apply text-meta text-ink-500;
+  }
+
+  /* ---------- Surfaces ---------- */
+  .card {
+    @apply rounded-2xl border border-ink-200 bg-white shadow-soft;
+  }
+
+  .card-pad {
+    @apply p-5 sm:p-6;
+  }
+
+  /* Bandeau de marque : réservé aux zones d'accueil, jamais aux écrans de travail. */
+  .brand-band {
+    @apply bg-brand-band text-white;
+  }
+
+  /* ---------- Boutons ---------- */
+  .btn {
+    @apply inline-flex min-h-[44px] select-none items-center justify-center gap-2 rounded-xl px-4 py-2
+           text-sm font-semibold transition-[background-color,border-color,color,box-shadow,transform]
+           duration-base ease-standard active:scale-[0.98]
+           disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100
+           aria-busy:pointer-events-none aria-busy:opacity-80
+           motion-reduce:transition-none motion-reduce:active:scale-100 sm:min-h-[40px];
+  }
+
+  .btn-primary {
+    @apply btn bg-risac-700 text-white shadow-soft hover:bg-risac-800 active:bg-risac-900;
+  }
+
+  .btn-soft {
+    @apply btn bg-risac-50 text-risac-800 hover:bg-risac-100;
+  }
+
+  .btn-ghost {
+    @apply btn text-ink-600 hover:bg-ink-100 hover:text-ink-900;
+  }
+
+  .btn-outline {
+    @apply btn border border-ink-300 bg-white text-ink-800 hover:border-risac-400 hover:bg-risac-50;
+  }
+
+  .btn-danger {
+    @apply btn bg-danger-600 text-white shadow-soft hover:bg-danger-700 active:bg-danger-800;
+  }
+
+  /* Bouton réduit à une icône : toujours lui donner un aria-label. */
+  .btn-icon {
+    @apply btn-ghost h-11 w-11 p-0 sm:h-10 sm:w-10;
+  }
+
+  /* ---------- Formulaires ---------- */
+  .input {
+    @apply min-h-[44px] w-full rounded-xl border border-ink-300 bg-white px-3.5 py-2 text-sm text-ink-900
+           placeholder:text-ink-400 transition-[border-color,box-shadow] duration-base ease-standard
+           focus:border-risac-600 focus:outline-none focus:ring-4 focus:ring-risac-100
+           disabled:cursor-not-allowed disabled:bg-ink-100 disabled:text-ink-500
+           aria-[invalid=true]:border-danger-500 aria-[invalid=true]:focus:ring-danger-100
+           motion-reduce:transition-none sm:min-h-[40px];
+  }
+
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-ink-700;
+  }
+
+  /* ---------- Pastilles d'état : toujours accompagnées d'un texte ---------- */
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium;
+  }
+
+  /* ---------- Navigation ---------- */
+  .nav-item {
+    @apply flex min-h-[44px] items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-ink-600
+           transition-[background-color,color] duration-base ease-standard hover:bg-ink-100 hover:text-ink-900
+           motion-reduce:transition-none;
+  }
+
+  .nav-item-active {
+    @apply bg-risac-700 text-white shadow-soft hover:bg-risac-700 hover:text-white;
+  }
+
+  /* ---------- Tableaux ---------- */
+  .table-wrap {
+    @apply -mx-5 overflow-x-auto px-5 sm:-mx-6 sm:px-6;
+  }
+
+  /* ---------- Chargement ---------- */
+  .skeleton {
+    @apply relative overflow-hidden rounded-xl bg-ink-100;
+  }
+
+  .skeleton::after {
+    content: '';
+    @apply absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/70 to-transparent;
+    animation: shimmer 1.6s infinite;
+  }
+}
+
+/* Barre de défilement discrète */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-ink-300;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-ink-400;
+}
+
+/* Respect du réglage « réduire les animations » du système. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .skeleton::after {
+    animation: none;
+  }
+}

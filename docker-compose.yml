@@ -1,0 +1,30 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: risac_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: risac
+      POSTGRES_PASSWORD: risac_dev_pwd
+      POSTGRES_DB: risac
+    ports: ["5444:5432"]
+    volumes: ["risac_pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U risac -d risac"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    container_name: risac_redis
+    restart: unless-stopped
+    ports: ["6399:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  risac_pgdata:

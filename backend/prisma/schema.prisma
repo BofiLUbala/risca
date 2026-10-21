@@ -1,0 +1,1343 @@
+// RISAC — Réseau International des Structures d'Accueil du Congo
+// Modèle de données complet (Plan fonctionnel v1.0)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────── ÉNUMÉRATIONS ───────────────────────────
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN_FINANCE
+  MODERATOR
+  ETHICS_AUDITOR
+  NATIONAL_MANAGER
+  REGIONAL_MANAGER
+  AMBASSADOR
+  FIELD_AGENT
+  ORPHANAGE_DIRECTOR
+  ORPHANAGE_STAFF
+  DONOR
+  PARTNER
+}
+
+enum StaffFunction {
+  PSYCHOLOGIST
+  EDUCATOR
+  NURSE
+  SOCIAL_WORKER
+}
+
+enum UserStatus {
+  INVITED
+  ACTIVE
+  SUSPENDED
+  BLOCKED
+  FROZEN
+}
+
+enum OrphanageStatus {
+  PROPOSED
+  REGIONAL_REVIEW
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum LabelStatus {
+  NONE
+  APPLIED
+  AUDIT_SCHEDULED
+  COMPLIANT
+  COMPLIANT_WITH_CONDITIONS
+  NON_COMPLIANT
+  EXPIRED
+}
+
+enum ChildStatus {
+  DRAFT
+  IN_VALIDATION
+  NEEDS_CORRECTION
+  ACTIVE
+  TRANSFERRED
+  REUNIFIED
+  ADOPTED
+  ADULT
+  AFTERCARE
+  DECEASED
+  MISSING
+}
+
+enum Visibility {
+  PUBLIC
+  CONFIDENTIAL
+  HIGHLY_CONFIDENTIAL
+  INTERNAL
+}
+
+enum FieldType {
+  TEXT
+  LONGTEXT
+  NUMBER
+  DATE
+  BOOLEAN
+  SELECT
+  MULTISELECT
+  FILE
+  PHOTO
+}
+
+enum TimelineType {
+  ADMISSION
+  HEALTH
+  PSYCHOTRAUMA
+  SCHOOLING
+  FONAREV
+  FUNDING
+  PROJECT
+  VISIT
+  TRANSFER
+  REUNIFICATION
+  ADULTHOOD
+  EXIT
+  INCIDENT
+  DOSSIER_UPDATE
+  STATUS_CHANGE
+}
+
+enum ProjectStatus {
+  DRAFT
+  IN_VALIDATION
+  NEEDS_CORRECTION
+  REJECTED
+  PUBLISHED
+  FULLY_FUNDED
+  IN_EXECUTION
+  COMPLETED
+  CLOSED
+  CANCELLED
+  FROZEN
+}
+
+enum ProjectKind {
+  CHILD_PROJECT
+  ORPHANAGE_PROJECT
+  URGENT_NEED
+}
+
+enum ApprovalKind {
+  CHILD_DOSSIER
+  CHILD_UPDATE
+  PROJECT
+  ORPHANAGE_CREATION
+  ORPHANAGE_UPDATE
+  DISBURSEMENT
+  LABEL_APPLICATION
+}
+
+enum ApprovalStepStatus {
+  PENDING
+  APPROVED
+  CHANGES_REQUESTED
+  REJECTED
+  SKIPPED
+  ESCALATED
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  CHANGES_REQUESTED
+  REJECTED
+}
+
+enum PostType {
+  NEWS
+  URGENT_NEED
+  VIDEO_PROGRESS
+  THANKS
+  SPONSORSHIP_CALL
+  ORPHANAGE_NEWS
+}
+
+enum PostStatus {
+  PUBLISHED
+  HIDDEN
+  REMOVED
+}
+
+enum ChannelType {
+  GENERAL
+  AMBASSADOR_REGIONAL
+  AMBASSADOR_NATIONAL
+  AMBASSADOR_ORPHANAGE
+  DONOR_AMBASSADOR
+  REGIONAL
+  PARTNERS
+}
+
+enum DonationKind {
+  ONE_OFF
+  SPONSORSHIP
+  PROJECT_CONTRIBUTION
+  GENERAL_FUND
+}
+
+enum PaymentProvider {
+  FLUTTERWAVE
+  CINETPAY
+  PAWAPAY
+  MAXICASH
+  STRIPE
+  PAYPAL
+  BANK_TRANSFER
+  MANUAL
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+enum SponsorshipStatus {
+  ACTIVE
+  PAUSED
+  CANCELLED
+  COMPLETED
+}
+
+enum SponsorshipScope {
+  EDUCATION
+  HEALTH
+  LIVING
+  FULL
+}
+
+enum LedgerAccountKind {
+  CENTRAL
+  CHILD
+  PROJECT
+  ORPHANAGE
+  GENERAL_FUND
+  FEES
+}
+
+enum LedgerEntryKind {
+  DONATION_IN
+  FEE
+  ALLOCATION
+  DISBURSEMENT_OUT
+  REFUND
+  REALLOCATION
+  ADJUSTMENT
+}
+
+enum DisbursementStatus {
+  REQUESTED
+  AMBASSADOR_CONFIRMED
+  APPROVED
+  PAID
+  REJECTED
+  AWAITING_RECEIPTS
+  SETTLED
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketCategory {
+  ACTIVATION
+  PASSWORD
+  PAYMENT
+  BUG
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  REVIEWING
+  ACTIONED
+  DISMISSED
+}
+
+enum ReportTargetType {
+  POST
+  COMMENT
+  MESSAGE
+  USER
+  CHILD
+  PROJECT
+  ORPHANAGE
+}
+
+enum NotificationKind {
+  INFO
+  VALIDATION_REQUEST
+  VALIDATION_RESULT
+  PAYMENT
+  REMINDER
+  SECURITY
+  MODERATION
+  BROADCAST
+}
+
+// ─────────────────────────── GÉOGRAPHIE (ISO 3166) ───────────────────────────
+
+model Country {
+  id              String           @id @default(cuid())
+  iso2            String           @unique
+  iso3            String           @unique
+  nameFr          String
+  nameEn          String
+  currency        String           @default("USD")
+  phoneCode       String?
+  active          Boolean          @default(true)
+  provinces       Province[]
+  users           User[]
+  orphanages      Orphanage[]
+  dossierTemplate DossierTemplate?
+  createdAt       DateTime         @default(now())
+}
+
+model Province {
+  id         String      @id @default(cuid())
+  code       String
+  nameFr     String
+  nameEn     String
+  countryId  String
+  country    Country     @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  riskZone   Boolean     @default(false)
+  users      User[]
+  orphanages Orphanage[]
+
+  @@unique([countryId, code])
+  @@index([countryId])
+}
+
+// ─────────────────────────── UTILISATEURS ───────────────────────────
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  phone         String?
+  passwordHash  String?
+  firstName     String
+  lastName      String
+  role          Role
+  status        UserStatus     @default(INVITED)
+  avatarUrl     String?
+  locale        String         @default("fr")
+  countryId     String?
+  country       Country?       @relation(fields: [countryId], references: [id])
+  provinceId    String?
+  province      Province?      @relation(fields: [provinceId], references: [id])
+  orphanageId   String?
+  orphanage     Orphanage?     @relation("OrphanageMembers", fields: [orphanageId], references: [id])
+  staffFunction StaffFunction?
+
+  managerId String?
+  manager   User?   @relation("Hierarchy", fields: [managerId], references: [id])
+  reports   User[]  @relation("Hierarchy")
+
+  twoFactorSecret  String?
+  twoFactorEnabled Boolean   @default(false)
+
+  /// Dispense d'activer les notifications push pour acceder a la plateforme.
+  /// Porte de sortie quand le navigateur ou le reseau ne le permet pas.
+  pushExempt       Boolean   @default(false)
+  failedLoginCount Int       @default(0)
+  lockedUntil      DateTime?
+  lastLoginAt      DateTime?
+  tokenVersion     Int       @default(0)
+
+  invitationToken     String?   @unique
+  invitationExpiresAt DateTime?
+  invitedById         String?
+
+  // Code à usage unique envoyé par e-mail pour activer le compte (jamais stocké en clair).
+  activationOtpHash      String?
+  activationOtpExpiresAt DateTime?
+  activationOtpAttempts  Int       @default(0)
+  activationOtpSentAt    DateTime?
+
+  // Clé administrateur choisie par l'unique Super Admin à la création de son compte (hachée, jamais en clair).
+  adminKeyHash String?
+
+  organizationName String?
+  organizationBio  String?
+  organizationLogo String?
+  website          String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  directedOrphanages   Orphanage[]           @relation("OrphanageDirector")
+  assignments          ChildAssignment[]
+  childrenCreated      Child[]               @relation("ChildCreatedBy")
+  timelineEvents       TimelineEvent[]
+  posts                Post[]
+  comments             Comment[]
+  reactions            Reaction[]
+  donations            Donation[]
+  sponsorships         Sponsorship[]
+  channelMemberships   ChannelMember[]
+  messages             Message[]
+  notifications        Notification[]
+  auditLogs            AuditLog[]
+  approvalSteps        ApprovalStep[]
+  disbursementRequests DisbursementRequest[] @relation("DisbursementRequester")
+  ticketsOpened        Ticket[]              @relation("TicketOpener")
+  ticketsAssigned      Ticket[]              @relation("TicketAssignee")
+  reportsFiled         Report[]              @relation("ReportReporter")
+  reportsHandled       Report[]              @relation("ReportHandler")
+  visitReports         VisitReport[]
+  projectsCreated      Project[]             @relation("ProjectCreatedBy")
+  subscriptions        Subscription[]
+  favorites            Favorite[]
+  refreshTokens        RefreshToken[]
+  consentsWitnessed    Consent[]             @relation("ConsentWitness")
+  devices              Device[]
+
+  @@index([role])
+  @@index([countryId])
+  @@index([provinceId])
+  @@index([orphanageId])
+  @@index([managerId])
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  userAgent String?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+// ─────────────────────────── ORPHELINATS ───────────────────────────
+
+model Orphanage {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  logoUrl     String?
+  videoUrl    String?
+  photos      String[]
+  description String?
+
+  foundedAt     DateTime?
+  legalStatus   String?
+  licenseNumber String?
+  legalDocs     String[]
+
+  countryId         String
+  country           Country  @relation(fields: [countryId], references: [id])
+  provinceId        String
+  province          Province @relation(fields: [provinceId], references: [id])
+  city              String?
+  commune           String?
+  address           String?
+  latitude          Float?
+  longitude         Float?
+  hideExactLocation Boolean  @default(false)
+
+  directorId String?
+  director   User?   @relation("OrphanageDirector", fields: [directorId], references: [id])
+  members    User[]  @relation("OrphanageMembers")
+
+  totalPlaces    Int @default(0)
+  occupiedPlaces Int @default(0)
+
+  hasDormitory     Boolean @default(false)
+  hasDrinkingWater Boolean @default(false)
+  hasElectricity   Boolean @default(false)
+  hasSchool        Boolean @default(false)
+  hasInfirmary     Boolean @default(false)
+
+  bankAccountName     String?
+  bankAccountNumber   String?
+  mobileMoneyNumber   String?
+  mobileMoneyProvider String?
+  accountVerified     Boolean @default(false)
+
+  status         OrphanageStatus @default(PROPOSED)
+  labelStatus    LabelStatus     @default(NONE)
+  labelGrantedAt DateTime?
+  labelExpiresAt DateTime?
+  urgentNeeds    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  children        Child[]
+  ambassadorLinks OrphanageAmbassador[]
+  projects        Project[]
+  labelAudits     LabelAudit[]
+  disbursements   DisbursementRequest[]
+  posts           Post[]
+  channels        Channel[]
+  ledgerAccounts  LedgerAccount[]
+  historyEntries  OrphanageHistory[]
+
+  @@index([countryId])
+  @@index([provinceId])
+  @@index([status])
+}
+
+model OrphanageAmbassador {
+  id           String    @id @default(cuid())
+  orphanageId  String
+  orphanage    Orphanage @relation(fields: [orphanageId], references: [id], onDelete: Cascade)
+  ambassadorId String
+  isPrimary    Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+
+  @@unique([orphanageId, ambassadorId])
+  @@index([ambassadorId])
+}
+
+model OrphanageHistory {
+  id          String    @id @default(cuid())
+  orphanageId String
+  orphanage   Orphanage @relation(fields: [orphanageId], references: [id], onDelete: Cascade)
+  kind        String
+  title       String
+  description String?
+  authorId    String?
+  attachments String[]
+  occurredAt  DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+
+  @@index([orphanageId])
+}
+
+model LabelAudit {
+  id          String      @id @default(cuid())
+  orphanageId String
+  orphanage   Orphanage   @relation(fields: [orphanageId], references: [id], onDelete: Cascade)
+  auditorId   String?
+  scheduledAt DateTime?
+  performedAt DateTime?
+  result      LabelStatus @default(APPLIED)
+  conditions  String?
+  score       Int?
+  notes       String?
+  documents   String[]
+  expiresAt   DateTime?
+  createdAt   DateTime    @default(now())
+
+  @@index([orphanageId])
+}
+
+// ─────────────────── MODÈLE DE DOSSIER PAR PAYS ───────────────────
+
+model DossierTemplate {
+  id        String           @id @default(cuid())
+  countryId String           @unique
+  country   Country          @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  name      String
+  version   Int              @default(1)
+  active    Boolean          @default(true)
+  sections  DossierSection[]
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}
+
+model DossierSection {
+  id         String          @id @default(cuid())
+  templateId String
+  template   DossierTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  key        String
+  labelFr    String
+  labelEn    String
+  order      Int             @default(0)
+  visibility Visibility      @default(CONFIDENTIAL)
+  fields     DossierField[]
+
+  @@unique([templateId, key])
+}
+
+model DossierField {
+  id         String         @id @default(cuid())
+  sectionId  String
+  section    DossierSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  key        String
+  labelFr    String
+  labelEn    String
+  type       FieldType      @default(TEXT)
+  required   Boolean        @default(false)
+  visibility Visibility     @default(CONFIDENTIAL)
+  options    String[]
+  helpText   String?
+  order      Int            @default(0)
+
+  @@unique([sectionId, key])
+}
+
+// ─────────────────────────── ENFANTS ───────────────────────────
+
+model Child {
+  id       String @id @default(cuid())
+  publicId String @unique
+
+  firstName      String
+  lastName       String
+  sex            String
+  birthDate      DateTime?
+  estimatedAge   Int?
+  photoUrl       String?
+  publicPhotoUrl String?
+  languages      String[]
+
+  orphanageId String
+  orphanage   Orphanage @relation(fields: [orphanageId], references: [id])
+
+  status ChildStatus @default(DRAFT)
+
+  publicStory String?
+  publicNeeds String?
+  lifeProject String?
+  talents     String?
+  desiredJob  String?
+
+  warOrphan        Boolean @default(false)
+  displaced        Boolean @default(false)
+  abandoned        Boolean @default(false)
+  streetChild      Boolean @default(false)
+  formerArmedGroup Boolean @default(false)
+
+  fonarevStatus     String?
+  fonarevFileNumber String?
+  fonarevNotes      String?
+
+  admittedAt      DateTime?
+  admissionReason String?
+  referredBy      String?
+
+  postMajorityPrepared Boolean @default(false)
+  tremplinScholarship  Boolean @default(false)
+  mentorName           String?
+  aftercareNotes       String?
+
+  dossierData Json @default("{}")
+
+  createdById String?
+  createdBy   User?   @relation("ChildCreatedBy", fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  assignments    ChildAssignment[]
+  timeline       TimelineEvent[]
+  versions       ChildVersion[]
+  healthRecords  HealthRecord[]
+  psychoSessions PsychoSession[]
+  schoolRecords  SchoolRecord[]
+  placements     Placement[]
+  consents       Consent[]
+  projects       Project[]
+  posts          Post[]
+  sponsorships   Sponsorship[]
+  donations      Donation[]
+  ledgerAccounts LedgerAccount[]
+  documents      ChildDocument[]
+  subscriptions  Subscription[]
+  favorites      Favorite[]
+  visitReports   VisitReport[]
+  transfers      Transfer[]
+
+  @@index([orphanageId])
+  @@index([status])
+}
+
+model ChildAssignment {
+  id           String    @id @default(cuid())
+  childId      String
+  child        Child     @relation(fields: [childId], references: [id], onDelete: Cascade)
+  ambassadorId String
+  ambassador   User      @relation(fields: [ambassadorId], references: [id], onDelete: Cascade)
+  active       Boolean   @default(true)
+  assignedAt   DateTime  @default(now())
+  unassignedAt DateTime?
+  assignedById String?
+
+  @@index([childId])
+  @@index([ambassadorId])
+}
+
+model ChildVersion {
+  id          String   @id @default(cuid())
+  childId     String
+  child       Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+  version     Int
+  snapshot    Json
+  changedById String?
+  changeNote  String?
+  createdAt   DateTime @default(now())
+
+  @@unique([childId, version])
+  @@index([childId])
+}
+
+model ChildDocument {
+  id           String     @id @default(cuid())
+  childId      String
+  child        Child      @relation(fields: [childId], references: [id], onDelete: Cascade)
+  fieldKey     String?
+  name         String
+  url          String
+  mimeType     String?
+  size         Int?
+  visibility   Visibility @default(CONFIDENTIAL)
+  uploadedById String?
+  createdAt    DateTime   @default(now())
+
+  @@index([childId])
+}
+
+model TimelineEvent {
+  id          String       @id @default(cuid())
+  childId     String
+  child       Child        @relation(fields: [childId], references: [id], onDelete: Cascade)
+  type        TimelineType
+  title       String
+  description String?
+  attachments String[]
+  visibility  Visibility   @default(CONFIDENTIAL)
+  isPublic    Boolean      @default(false)
+  authorId    String?
+  author      User?        @relation(fields: [authorId], references: [id])
+  occurredAt  DateTime     @default(now())
+  createdAt   DateTime     @default(now())
+  correctsId  String?
+
+  @@index([childId])
+  @@index([type])
+}
+
+model HealthRecord {
+  id           String   @id @default(cuid())
+  childId      String
+  child        Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+  bloodType    String?
+  vaccines     String?
+  illnesses    String?
+  disability   String?
+  treatments   String?
+  consultation String?
+  recordedById String?
+  recordedAt   DateTime @default(now())
+
+  @@index([childId])
+}
+
+model PsychoSession {
+  id                  String   @id @default(cuid())
+  childId             String
+  child               Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+  isInitialAssessment Boolean  @default(false)
+  evaluation          String?
+  notes               String?
+  evolution           String?
+  psychologistId      String?
+  sessionAt           DateTime @default(now())
+  createdAt           DateTime @default(now())
+
+  @@index([childId])
+}
+
+model SchoolRecord {
+  id            String   @id @default(cuid())
+  childId       String
+  child         Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+  school        String?
+  grade         String?
+  term          String?
+  year          String?
+  results       String?
+  average       Float?
+  fees          Float?
+  reportUrl     String?
+  publicSummary String?
+  recordedById  String?
+  createdAt     DateTime @default(now())
+
+  @@index([childId])
+}
+
+model Placement {
+  id           String    @id @default(cuid())
+  childId      String
+  child        Child     @relation(fields: [childId], references: [id], onDelete: Cascade)
+  kind         String
+  familyName   String?
+  details      String?
+  startedAt    DateTime?
+  endedAt      DateTime?
+  recordedById String?
+  createdAt    DateTime  @default(now())
+
+  @@index([childId])
+}
+
+model Transfer {
+  id              String    @id @default(cuid())
+  childId         String
+  child           Child     @relation(fields: [childId], references: [id], onDelete: Cascade)
+  fromOrphanageId String
+  toOrphanageId   String
+  reason          String?
+  status          String    @default("PENDING")
+  requestedById   String?
+  approvedById    String?
+  createdAt       DateTime  @default(now())
+  completedAt     DateTime?
+
+  @@index([childId])
+}
+
+model Consent {
+  id               String    @id @default(cuid())
+  childId          String
+  child            Child     @relation(fields: [childId], references: [id], onDelete: Cascade)
+  kind             String    @default("PHOTO_VIDEO")
+  guardianName     String?
+  guardianSignedAt DateTime?
+  childSignedAt    DateTime?
+  documentUrl      String?
+  witnessId        String?
+  witness          User?     @relation("ConsentWitness", fields: [witnessId], references: [id])
+  revokedAt        DateTime?
+  createdAt        DateTime  @default(now())
+
+  @@index([childId])
+}
+
+model VisitReport {
+  id           String   @id @default(cuid())
+  childId      String?
+  child        Child?   @relation(fields: [childId], references: [id])
+  orphanageId  String?
+  ambassadorId String
+  ambassador   User     @relation(fields: [ambassadorId], references: [id])
+  note         String
+  rating       Int?
+  photos       String[]
+  latitude     Float?
+  longitude    Float?
+  visitedAt    DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  @@index([childId])
+  @@index([ambassadorId])
+}
+
+// ─────────────────── CIRCUITS DE VALIDATION ───────────────────
+
+model ApprovalRequest {
+  id               String         @id @default(cuid())
+  kind             ApprovalKind
+  entityId         String
+  entityLabel      String?
+  status           ApprovalStatus @default(PENDING)
+  payload          Json?
+  requestedById    String
+  currentStepOrder Int            @default(1)
+  escalated        Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  resolvedAt       DateTime?
+
+  steps ApprovalStep[]
+
+  @@index([kind, entityId])
+  @@index([status])
+}
+
+model ApprovalStep {
+  id         String             @id @default(cuid())
+  requestId  String
+  request    ApprovalRequest    @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  order      Int
+  role       Role
+  approverId String?
+  approver   User?              @relation(fields: [approverId], references: [id])
+  status     ApprovalStepStatus @default(PENDING)
+  comment    String?
+  decidedAt  DateTime?
+  dueAt      DateTime?
+  createdAt  DateTime           @default(now())
+
+  @@index([requestId])
+  @@index([approverId, status])
+}
+
+// ─────────────────────────── PROJETS ───────────────────────────
+
+model Project {
+  id          String        @id @default(cuid())
+  title       String
+  description String
+  kind        ProjectKind   @default(CHILD_PROJECT)
+  status      ProjectStatus @default(DRAFT)
+  category    String?
+
+  childId     String?
+  child       Child?     @relation(fields: [childId], references: [id])
+  orphanageId String?
+  orphanage   Orphanage? @relation(fields: [orphanageId], references: [id])
+
+  targetAmount    Float
+  collectedAmount Float     @default(0)
+  currency        String    @default("USD")
+  startDate       DateTime?
+  endDate         DateTime?
+  photos          String[]
+  videos          String[]
+  rejectionReason String?
+  frozenReason    String?
+
+  createdById String
+  createdBy   User      @relation("ProjectCreatedBy", fields: [createdById], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+
+  donations      Donation[]
+  posts          Post[]
+  ledgerAccounts LedgerAccount[]
+  milestones     ProjectMilestone[]
+  disbursements  DisbursementRequest[]
+
+  @@index([status])
+  @@index([childId])
+  @@index([orphanageId])
+}
+
+model ProjectMilestone {
+  id          String    @id @default(cuid())
+  projectId   String
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  photos      String[]
+  videos      String[]
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([projectId])
+}
+
+// ─────────────────── ESPACE DE COMMUNICATION ───────────────────
+
+model Post {
+  id      String     @id @default(cuid())
+  type    PostType   @default(NEWS)
+  status  PostStatus @default(PUBLISHED)
+  content String
+  photos  String[]
+  videos  String[]
+
+  authorId    String
+  author      User       @relation(fields: [authorId], references: [id])
+  childId     String?
+  child       Child?     @relation(fields: [childId], references: [id])
+  orphanageId String?
+  orphanage   Orphanage? @relation(fields: [orphanageId], references: [id])
+  projectId   String?
+  project     Project?   @relation(fields: [projectId], references: [id])
+
+  viewCount     Int   @default(0)
+  reactionCount Int   @default(0)
+  commentCount  Int   @default(0)
+  fundedAmount  Float @default(0)
+
+  hiddenReason String?
+  hiddenById   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  comments  Comment[]
+  reactions Reaction[]
+
+  @@index([status, createdAt])
+  @@index([childId])
+  @@index([authorId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  content   String
+  hidden    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([postId])
+}
+
+model Reaction {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind      String   @default("HEART")
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+}
+
+model Subscription {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  childId     String?
+  child       Child?   @relation(fields: [childId], references: [id], onDelete: Cascade)
+  orphanageId String?
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, childId])
+  @@index([userId])
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  childId   String?
+  child     Child?   @relation(fields: [childId], references: [id], onDelete: Cascade)
+  projectId String?
+  createdAt DateTime @default(now())
+
+  @@unique([userId, childId, projectId])
+  @@index([userId])
+}
+
+// ─────────────────────────── MESSAGERIE ───────────────────────────
+
+model Channel {
+  id                 String      @id @default(cuid())
+  type               ChannelType
+  name               String
+  description        String?
+  countryId          String?
+  provinceId         String?
+  orphanageId        String?
+  orphanage          Orphanage?  @relation(fields: [orphanageId], references: [id])
+  childId            String?
+  readOnlyForMembers Boolean     @default(false)
+  moderated          Boolean     @default(false)
+  createdAt          DateTime    @default(now())
+
+  members  ChannelMember[]
+  messages Message[]
+
+  @@index([type])
+}
+
+model ChannelMember {
+  id         String    @id @default(cuid())
+  channelId  String
+  channel    Channel   @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  canWrite   Boolean   @default(true)
+  lastReadAt DateTime?
+  joinedAt   DateTime  @default(now())
+
+  @@unique([channelId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id           String   @id @default(cuid())
+  channelId    String
+  channel      Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  authorId     String
+  author       User     @relation(fields: [authorId], references: [id])
+  content      String
+  attachments  String[]
+  pinned       Boolean  @default(false)
+  hidden       Boolean  @default(false)
+  hiddenReason String?
+  readBy       String[]
+  createdAt    DateTime @default(now())
+
+  @@index([channelId, createdAt])
+}
+
+// ─────────────────────────── ARGENT ───────────────────────────
+
+model LedgerAccount {
+  id          String            @id @default(cuid())
+  kind        LedgerAccountKind
+  label       String
+  currency    String            @default("USD")
+  balance     Float             @default(0)
+  childId     String?
+  child       Child?            @relation(fields: [childId], references: [id])
+  projectId   String?
+  project     Project?          @relation(fields: [projectId], references: [id])
+  orphanageId String?
+  orphanage   Orphanage?        @relation(fields: [orphanageId], references: [id])
+  createdAt   DateTime          @default(now())
+
+  entries LedgerEntry[]
+
+  @@index([kind])
+  @@index([childId])
+  @@index([projectId])
+}
+
+model LedgerEntry {
+  id             String          @id @default(cuid())
+  accountId      String
+  account        LedgerAccount   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  kind           LedgerEntryKind
+  amount         Float
+  currency       String          @default("USD")
+  balanceAfter   Float
+  reference      String?
+  donationId     String?
+  disbursementId String?
+  description    String?
+  createdById    String?
+  createdAt      DateTime        @default(now())
+
+  @@index([accountId, createdAt])
+}
+
+model Donation {
+  id           String       @id @default(cuid())
+  reference    String       @unique
+  donorId      String
+  donor        User         @relation(fields: [donorId], references: [id])
+  kind         DonationKind
+  amount       Float
+  currency     String       @default("USD")
+  exchangeRate Float        @default(1)
+  amountUsd    Float
+  feeAmount    Float        @default(0)
+  netAmount    Float        @default(0)
+  anonymous    Boolean      @default(true)
+  message      String?
+
+  childId       String?
+  child         Child?       @relation(fields: [childId], references: [id])
+  projectId     String?
+  project       Project?     @relation(fields: [projectId], references: [id])
+  sponsorshipId String?
+  sponsorship   Sponsorship? @relation(fields: [sponsorshipId], references: [id])
+
+  provider       PaymentProvider
+  providerRef    String?
+  status         PaymentStatus   @default(PENDING)
+  checkoutUrl    String?
+  idempotencyKey String?         @unique
+  receiptUrl     String?
+  paidAt         DateTime?
+  refundedAt     DateTime?
+  withdrawnAt    DateTime?
+  createdAt      DateTime        @default(now())
+
+  @@index([donorId])
+  @@index([status])
+  @@index([projectId])
+}
+
+model Sponsorship {
+  id             String            @id @default(cuid())
+  donorId        String
+  donor          User              @relation(fields: [donorId], references: [id])
+  childId        String
+  scope          SponsorshipScope  @default(FULL)
+  monthlyAmount  Float
+  currency       String            @default("USD")
+  status         SponsorshipStatus @default(ACTIVE)
+  startDate      DateTime          @default(now())
+  endDate        DateTime?
+  endRule        String            @default("FIXED_MONTHS")
+  nextChargeAt   DateTime?
+  failedAttempts Int               @default(0)
+  pausedAt       DateTime?
+  cancelledAt    DateTime?
+  provider       PaymentProvider?
+  createdAt      DateTime          @default(now())
+
+  child     Child      @relation(fields: [childId], references: [id])
+  donations Donation[]
+
+  @@index([donorId])
+  @@index([childId])
+  @@index([status])
+}
+
+model DisbursementRequest {
+  id          String             @id @default(cuid())
+  reference   String             @unique
+  orphanageId String
+  orphanage   Orphanage          @relation(fields: [orphanageId], references: [id])
+  projectId   String?
+  project     Project?           @relation(fields: [projectId], references: [id])
+  childId     String?
+  amount      Float
+  currency    String             @default("USD")
+  reason      String
+  status      DisbursementStatus @default(REQUESTED)
+
+  requestedById           String
+  requestedBy             User      @relation("DisbursementRequester", fields: [requestedById], references: [id])
+  confirmedByAmbassadorId String?
+  confirmedAt             DateTime?
+  approvedById            String?
+  approvedAt              DateTime?
+  paidAt                  DateTime?
+  rejectionReason         String?
+  payoutMethod            String?
+  payoutRef               String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  receipts Receipt[]
+
+  @@index([orphanageId])
+  @@index([status])
+}
+
+model Receipt {
+  id             String              @id @default(cuid())
+  disbursementId String
+  disbursement   DisbursementRequest @relation(fields: [disbursementId], references: [id], onDelete: Cascade)
+  name           String
+  url            String
+  amount         Float?
+  kind           String              @default("INVOICE")
+  uploadedById   String?
+  createdAt      DateTime            @default(now())
+
+  @@index([disbursementId])
+}
+
+// ─────────────────── MODÉRATION, SUPPORT, AUDIT ───────────────────
+
+model Report {
+  id         String           @id @default(cuid())
+  targetType ReportTargetType
+  targetId   String
+  reason     String
+  details    String?
+  severity   String           @default("NORMAL")
+  status     ReportStatus     @default(OPEN)
+  reporterId String
+  reporter   User             @relation("ReportReporter", fields: [reporterId], references: [id])
+  handlerId  String?
+  handler    User?            @relation("ReportHandler", fields: [handlerId], references: [id])
+  resolution String?
+  createdAt  DateTime         @default(now())
+  resolvedAt DateTime?
+
+  @@index([status])
+  @@index([targetType, targetId])
+}
+
+model Ticket {
+  id         String         @id @default(cuid())
+  reference  String         @unique
+  category   TicketCategory @default(OTHER)
+  subject    String
+  body       String
+  status     TicketStatus   @default(OPEN)
+  openerId   String
+  opener     User           @relation("TicketOpener", fields: [openerId], references: [id])
+  assigneeId String?
+  assignee   User?          @relation("TicketAssignee", fields: [assigneeId], references: [id])
+  responses  Json           @default("[]")
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  @@index([status])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id])
+  actorRole  Role?
+  action     String
+  entityType String
+  entityId   String?
+  metadata   Json?
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([actorId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind      NotificationKind @default(INFO)
+  title     String
+  body      String?
+  link      String?
+  read      Boolean          @default(false)
+  metadata  Json?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, read])
+}
+
+enum DevicePlatform {
+  ANDROID
+  IOS
+  WEB
+}
+
+/// Appareil enregistre pour les notifications push (FCM / APNs via Firebase).
+/// Un meme utilisateur peut avoir plusieurs appareils ; un meme appareil change
+/// de proprietaire si quelqu un d autre s y connecte, d ou le jeton unique.
+model Device {
+  id         String         @id @default(cuid())
+  userId     String
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token      String         @unique
+  platform   DevicePlatform
+  label      String?
+  enabled    Boolean        @default(true)
+  lastSeenAt DateTime       @default(now())
+  createdAt  DateTime       @default(now())
+
+  @@index([userId, enabled])
+}
+
+model SystemSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}

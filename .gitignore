@@ -1,0 +1,20 @@
+node_modules/
+dist/
+.next/
+.expo/
+*.log
+.env
+.env.local
+uploads/
+graphify-out/
+coverage/
+
+# Identifiants Firebase : jamais dans le depot
+firebase-service-account.json
+**/firebase-service-account*.json
+google-services.json
+GoogleService-Info.plist
+.next-clean/
+
+# Sauvegardes de base : jamais dans le depot
+backups/

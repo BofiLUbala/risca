@@ -1,0 +1,71 @@
+{
+  "expo": {
+    "name": "RISAC",
+    "slug": "risac",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "risac",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "backgroundColor": "#ffffff",
+      "resizeMode": "contain"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "org.risac.app",
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
+      }
+    },
+    "android": {
+      "package": "org.risac.app",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "RISAC utilise vos photos pour illustrer les publications et les justificatifs."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "RISAC enregistre le lieu de vos rapports de visite."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/risac-emblem.png",
+          "color": "#174A70"
+        }
+      ]
+    ],
+    "extra": {
+      "apiUrl": "http://localhost:4000/api",
+      "apiOrigin": "http://localhost:4000"
+    },
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}

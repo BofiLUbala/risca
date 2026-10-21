@@ -1,0 +1,77 @@
+export const COUNTRIES = [
+  { iso2: 'CD', iso3: 'COD', nameFr: 'République démocratique du Congo', nameEn: 'DR Congo', currency: 'CDF', phoneCode: '+243' },
+  { iso2: 'CG', iso3: 'COG', nameFr: 'Congo-Brazzaville', nameEn: 'Congo', currency: 'XAF', phoneCode: '+242' },
+  { iso2: 'BE', iso3: 'BEL', nameFr: 'Belgique', nameEn: 'Belgium', currency: 'EUR', phoneCode: '+32' },
+  { iso2: 'FR', iso3: 'FRA', nameFr: 'France', nameEn: 'France', currency: 'EUR', phoneCode: '+33' },
+  { iso2: 'US', iso3: 'USA', nameFr: 'États-Unis', nameEn: 'United States', currency: 'USD', phoneCode: '+1' },
+  { iso2: 'CA', iso3: 'CAN', nameFr: 'Canada', nameEn: 'Canada', currency: 'CAD', phoneCode: '+1' },
+  { iso2: 'RW', iso3: 'RWA', nameFr: 'Rwanda', nameEn: 'Rwanda', currency: 'RWF', phoneCode: '+250' },
+  { iso2: 'UG', iso3: 'UGA', nameFr: 'Ouganda', nameEn: 'Uganda', currency: 'UGX', phoneCode: '+256' },
+  { iso2: 'KE', iso3: 'KEN', nameFr: 'Kenya', nameEn: 'Kenya', currency: 'KES', phoneCode: '+254' },
+  { iso2: 'ZA', iso3: 'ZAF', nameFr: 'Afrique du Sud', nameEn: 'South Africa', currency: 'ZAR', phoneCode: '+27' },
+  { iso2: 'GB', iso3: 'GBR', nameFr: 'Royaume-Uni', nameEn: 'United Kingdom', currency: 'GBP', phoneCode: '+44' },
+  { iso2: 'DE', iso3: 'DEU', nameFr: 'Allemagne', nameEn: 'Germany', currency: 'EUR', phoneCode: '+49' },
+];
+
+/** ISO 3166-2:CD — les 26 provinces de la RDC. */
+export const CD_PROVINCES = [
+  { code: 'CD-KN', nameFr: 'Kinshasa', nameEn: 'Kinshasa', riskZone: false },
+  { code: 'CD-NK', nameFr: 'Nord-Kivu', nameEn: 'North Kivu', riskZone: true },
+  { code: 'CD-SK', nameFr: 'Sud-Kivu', nameEn: 'South Kivu', riskZone: true },
+  { code: 'CD-IT', nameFr: 'Ituri', nameEn: 'Ituri', riskZone: true },
+  { code: 'CD-HU', nameFr: 'Haut-Uele', nameEn: 'Upper Uele', riskZone: false },
+  { code: 'CD-BU', nameFr: 'Bas-Uele', nameEn: 'Lower Uele', riskZone: false },
+  { code: 'CD-TO', nameFr: 'Tshopo', nameEn: 'Tshopo', riskZone: false },
+  { code: 'CD-MO', nameFr: 'Mongala', nameEn: 'Mongala', riskZone: false },
+  { code: 'CD-NU', nameFr: 'Nord-Ubangi', nameEn: 'North Ubangi', riskZone: false },
+  { code: 'CD-SU', nameFr: 'Sud-Ubangi', nameEn: 'South Ubangi', riskZone: false },
+  { code: 'CD-EQ', nameFr: 'Équateur', nameEn: 'Equateur', riskZone: false },
+  { code: 'CD-TU', nameFr: 'Tshuapa', nameEn: 'Tshuapa', riskZone: false },
+  { code: 'CD-MN', nameFr: 'Mai-Ndombe', nameEn: 'Mai-Ndombe', riskZone: false },
+  { code: 'CD-KG', nameFr: 'Kwango', nameEn: 'Kwango', riskZone: false },
+  { code: 'CD-KL', nameFr: 'Kwilu', nameEn: 'Kwilu', riskZone: false },
+  { code: 'CD-KS', nameFr: 'Kasaï',nameEn: 'Kasai', riskZone: false },
+  { code: 'CD-KC', nameFr: 'Kasaï-Central', nameEn: 'Kasai-Central', riskZone: false },
+  { code: 'CD-KE', nameFr: 'Kasaï-Oriental', nameEn: 'Kasai-Oriental', riskZone: false },
+  { code: 'CD-LO', nameFr: 'Lomami', nameEn: 'Lomami', riskZone: false },
+  { code: 'CD-SA', nameFr: 'Sankuru', nameEn: 'Sankuru', riskZone: false },
+  { code: 'CD-MA', nameFr: 'Maniema', nameEn: 'Maniema', riskZone: true },
+  { code: 'CD-TA', nameFr: 'Tanganyika', nameEn: 'Tanganyika', riskZone: false },
+  { code: 'CD-HL', nameFr: 'Haut-Lomami', nameEn: 'Upper Lomami', riskZone: false },
+  { code: 'CD-LU', nameFr: 'Lualaba', nameEn: 'Lualaba', riskZone: false },
+  { code: 'CD-HK', nameFr: 'Haut-Katanga', nameEn: 'Upper Katanga', riskZone: false },
+  { code: 'CD-BC', nameFr: 'Kongo-Central', nameEn: 'Kongo-Central', riskZone: false },
+];
+
+export const SIMPLE_PROVINCES: Record<string, Array<{ code: string; nameFr: string; nameEn: string }>> = {
+  BE: [
+    { code: 'BE-BRU', nameFr: 'Bruxelles-Capitale', nameEn: 'Brussels-Capital' },
+    { code: 'BE-VAN', nameFr: 'Anvers', nameEn: 'Antwerp' },
+    { code: 'BE-WHT', nameFr: 'Hainaut', nameEn: 'Hainaut' },
+    { code: 'BE-VLG', nameFr: 'Flandre', nameEn: 'Flanders' },
+  ],
+  FR: [
+    { code: 'FR-IDF', nameFr: 'Ile-de-France', nameEn: 'Ile-de-France' },
+    { code: 'FR-ARA', nameFr: 'Auvergne-Rhone-Alpes', nameEn: 'Auvergne-Rhone-Alpes' },
+    { code: 'FR-PAC', nameFr: 'Provence-Alpes-Cote d Azur', nameEn: 'Provence-Alpes-Cote d Azur' },
+  ],
+  CG: [
+    { code: 'CG-BZV', nameFr: 'Brazzaville', nameEn: 'Brazzaville' },
+    { code: 'CG-16', nameFr: 'Pointe-Noire', nameEn: 'Pointe-Noire' },
+  ],
+  US: [
+    { code: 'US-NY', nameFr: 'New York', nameEn: 'New York' },
+    { code: 'US-CA', nameFr: 'Californie', nameEn: 'California' },
+    { code: 'US-TX', nameFr: 'Texas', nameEn: 'Texas' },
+  ],
+  CA: [
+    { code: 'CA-QC', nameFr: 'Quebec', nameEn: 'Quebec' },
+    { code: 'CA-ON', nameFr: 'Ontario', nameEn: 'Ontario' },
+  ],
+  RW: [{ code: 'RW-01', nameFr: 'Kigali', nameEn: 'Kigali' }],
+  UG: [{ code: 'UG-C', nameFr: 'Centre', nameEn: 'Central' }],
+  KE: [{ code: 'KE-30', nameFr: 'Nairobi', nameEn: 'Nairobi' }],
+  ZA: [{ code: 'ZA-GP', nameFr: 'Gauteng', nameEn: 'Gauteng' }],
+  GB: [{ code: 'GB-ENG', nameFr: 'Angleterre', nameEn: 'England' }],
+  DE: [{ code: 'DE-BE', nameFr: 'Berlin', nameEn: 'Berlin' }],
+};
