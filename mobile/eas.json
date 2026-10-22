@@ -14,7 +14,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://REMPLACER--risca.code.run/api"
+        "EXPO_PUBLIC_API_URL": "https://risac-api.onrender.com/api"
       }
     },
     "production": {
@@ -23,7 +23,7 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://REMPLACER--risca.code.run/api"
+        "EXPO_PUBLIC_API_URL": "https://risac-api.onrender.com/api"
       }
     }
   },
