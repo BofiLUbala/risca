@@ -40,10 +40,18 @@ services:
         value: 30d
 
       # ─── URL du front (liens dans les e-mails et les notifications) ───
+      # Service risac-web declare plus bas. Ce ne sont pas des secrets.
       - key: APP_WEB_URL
-        sync: false
+        value: https://risac-web.onrender.com
       - key: CORS_ORIGINS
-        sync: false
+        value: https://risac-web.onrender.com
+
+      # ─── Creation du compte Super Admin sur /admin ───
+      # Valeur aleatoire generee par Render (onglet Environment du service) :
+      # elle est demandee une seule fois, a la creation de l'unique Super Admin,
+      # et empeche un inconnu de creer ce compte avant vous.
+      - key: ADMIN_SETUP_KEY
+        generateValue: true
 
       # ─── Regles metier ───
       - key: UPLOAD_DIR
@@ -75,6 +83,41 @@ services:
       - key: FIREBASE_CLIENT_EMAIL
         sync: false
       - key: FIREBASE_PRIVATE_KEY
+        sync: false
+
+  # ─── Application web (Next.js) ───
+  # Les variables NEXT_PUBLIC_* sont figees au moment du build : apres les avoir
+  # modifiees, relancer un deploiement (Manual Deploy > Clear build cache & deploy).
+  - type: web
+    name: risac-web
+    runtime: node
+    plan: free
+    region: frankfurt
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    startCommand: npx next start -p $PORT
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: NEXT_PUBLIC_API_URL
+        value: https://risac-api.onrender.com/api
+      - key: NEXT_PUBLIC_API_ORIGIN
+        value: https://risac-api.onrender.com
+      - key: NEXT_PUBLIC_WS_URL
+        value: https://risac-api.onrender.com
+      # Configuration web Firebase (notifications). Sans elle, l'ecran
+      # d'activation des notifications laisse passer tout le monde.
+      - key: NEXT_PUBLIC_FIREBASE_API_KEY
+        sync: false
+      - key: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+        sync: false
+      - key: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+        sync: false
+      - key: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+        sync: false
+      - key: NEXT_PUBLIC_FIREBASE_APP_ID
+        sync: false
+      - key: NEXT_PUBLIC_FIREBASE_VAPID_KEY
         sync: false
 
 # ─── Base de donnees managee ───
