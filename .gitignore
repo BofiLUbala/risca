@@ -5,7 +5,10 @@ dist/
 *.log
 .env
 .env.local
-uploads/
+# Fichiers televerses a l'execution. Motif ancre a la racine : un simple
+# `uploads/` vaut pour tout dossier de ce nom a n'importe quelle profondeur et
+# excluait backend/src/modules/uploads/, du code source.
+/backend/uploads/
 graphify-out/
 coverage/
 
