@@ -1,4 +1,5 @@
 'use client';
+import { promptDialog, confirmDialog } from '@/lib/dialog';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -42,7 +43,7 @@ export default function MySponsorshipsPage() {
   }
 
   async function changeAmount(id: string, current: number) {
-    const value = window.prompt('Nouveau montant mensuel (USD) ?', String(current));
+    const value = await promptDialog('Nouveau montant mensuel (USD) ?', String(current));
     if (!value) return;
     setBusy(id);
     try {
@@ -147,8 +148,8 @@ export default function MySponsorshipsPage() {
 
                 {s.status !== 'CANCELLED' && (
                   <button
-                    onClick={() => {
-                      if (window.confirm('Annuler definitivement ce parrainage ?')) act(s.id, 'cancel');
+                    onClick={async () => {
+                      if (await confirmDialog('Annuler definitivement ce parrainage ?')) act(s.id, 'cancel');
                     }}
                     disabled={busy === s.id}
                     className="btn-ghost text-accent-coral"

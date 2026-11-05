@@ -39,10 +39,13 @@ export class ScopeService {
   async childWhere(user: AuthUser): Promise<Prisma.ChildWhereInput> {
     switch (user.role) {
       case Role.SUPER_ADMIN:
-      case Role.ADMIN_FINANCE:
-      case Role.MODERATOR:
       case Role.ETHICS_AUDITOR:
         return {};
+      // Plan §3 : l'Admin Finance voit les flux financiers, le Modérateur les canaux,
+      // signalements et tickets. Aucun des deux n'a accès aux dossiers des enfants.
+      case Role.ADMIN_FINANCE:
+      case Role.MODERATOR:
+        return { id: NONE };
       case Role.NATIONAL_MANAGER:
         return { orphanage: { countryId: user.countryId ?? NONE } };
       case Role.REGIONAL_MANAGER:

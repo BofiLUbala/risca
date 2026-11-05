@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { canAccessPath } from '@/lib/nav';
 import clsx from 'clsx';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
@@ -18,11 +19,18 @@ import { PageLoading } from '@/components/ui/Loading';
 export function AppShell({ title, children }: { title?: string; children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const denied = !!user && !canAccessPath(user.role, pathname);
 
   useEffect(() => {
     if (!loading && !user) router.replace('/connexion');
   }, [loading, user, router]);
+
+  // Un rôle qui ouvre une page hors de son périmètre revient à son tableau de bord.
+  useEffect(() => {
+    if (denied) router.replace('/tableau-de-bord');
+  }, [denied, router]);
 
   // Présence : le socket est ouvert dès l’entrée dans l’espace connecté, et non
   // seulement sur la messagerie, sinon « Connectés maintenant » ne compte que les
@@ -42,7 +50,7 @@ export function AppShell({ title, children }: { title?: string; children: React.
     };
   }, [open]);
 
-  if (loading) return <PageLoading />;
+  if (loading || denied) return <PageLoading />;
   if (!user) return null;
 
   return (

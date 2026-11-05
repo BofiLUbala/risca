@@ -1,4 +1,5 @@
 'use client';
+import { promptDialog } from '@/lib/dialog';
 
 import { useEffect, useRef, useState } from 'react';
 import useSWR from 'swr';
@@ -123,7 +124,7 @@ export default function MessagesPage() {
 
   /** Masquage d un message par le modérateur. */
   async function hideMessage(m: any) {
-    const reason = window.prompt('Motif du masquage ?');
+    const reason = await promptDialog('Motif du masquage ?');
     if (!reason) return;
     try {
       await api.post(`/channels/messages/${m.id}/hide`, { reason });

@@ -1,4 +1,5 @@
 'use client';
+import { confirmDialog } from '@/lib/dialog';
 
 import { useState } from 'react';
 import useSWR from 'swr';
@@ -36,7 +37,7 @@ export function ChannelMembers({ channelId, onClose }: { channelId: string; onCl
   }
 
   async function remove(userId: string, name: string) {
-    if (!window.confirm(`Retirer ${name} de ce canal ?`)) return;
+    if (!await confirmDialog(`Retirer ${name} de ce canal ?`)) return;
     setError(null);
     try {
       await api.del(`/channels/${channelId}/members/${userId}`);

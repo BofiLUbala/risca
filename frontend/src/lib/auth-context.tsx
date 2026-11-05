@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { api, clearTokens, getToken, setTokens } from './api';
+import { api, ApiError, clearTokens, getToken, setTokens } from './api';
 import type { Role } from './roles';
 import { unregisterWebPush } from './push';
 
@@ -57,15 +57,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       return;
     }
-    try {
-      const me = await api.get<Me>('/auth/me');
-      setUser(me);
-    } catch {
-      clearTokens();
-      setUser(null);
-    } finally {
-      setLoading(false);
+    // Seul un refus d'authentification (401/403) met fin à la session. Une coupure
+    // réseau ou un redémarrage de l'API ne doit pas déconnecter : on réessaie.
+    for (let attempt = 0; attempt < 4; attempt++) {
+      try {
+        const me = await api.get<Me>('/auth/me');
+        setUser(me);
+        setLoading(false);
+        return;
+      } catch (err) {
+        if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+          clearTokens();
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+        await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+      }
     }
+    setUser(null);
+    setLoading(false);
   }
 
   useEffect(() => {

@@ -1,4 +1,5 @@
 'use client';
+import { confirmDialog } from '@/lib/dialog';
 
 import { useState } from 'react';
 import { KeyRound, ShieldCheck } from 'lucide-react';
@@ -26,7 +27,7 @@ export function SecuritySection({
   const mandatory = ['SUPER_ADMIN', 'ADMIN_FINANCE', 'MODERATOR', 'ETHICS_AUDITOR'].includes(role ?? '');
 
   async function disable2fa() {
-    if (!window.confirm('Désactiver la double authentification sur votre compte ?')) return;
+    if (!await confirmDialog('Désactiver la double authentification sur votre compte ?')) return;
     setDisabling(true);
     setTwoFaMsg(null);
     try {

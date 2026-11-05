@@ -1,4 +1,5 @@
 'use client';
+import { promptDialog } from '@/lib/dialog';
 
 import { useState } from 'react';
 import useSWR from 'swr';
@@ -44,7 +45,7 @@ export default function UsersPage() {
   }
 
   async function setStatus(id: string, status: string) {
-    const reason = window.prompt('Motif ?') ?? undefined;
+    const reason = await promptDialog('Motif ?') ?? undefined;
     await api.patch(`/users/${id}/status`, { status, reason });
     mutate();
   }

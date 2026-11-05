@@ -1,4 +1,5 @@
 'use client';
+import { confirmDialog } from '@/lib/dialog';
 
 import { useState } from 'react';
 import { ShieldCheck, ShieldOff } from 'lucide-react';
@@ -49,7 +50,7 @@ export function ConsentManager({ child, onChange }: { child: any; onChange: () =
   }
 
   async function revoke(id: string) {
-    if (!window.confirm('Révoquer ce consentement ? Les publications avec photo seront bloquées.')) return;
+    if (!await confirmDialog('Révoquer ce consentement ? Les publications avec photo seront bloquées.')) return;
     setBusy(true);
     setError(null);
     try {

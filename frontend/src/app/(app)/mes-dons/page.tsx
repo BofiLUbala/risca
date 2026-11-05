@@ -1,4 +1,5 @@
 'use client';
+import { confirmDialog } from '@/lib/dialog';
 
 import { useState } from 'react';
 import useSWR from 'swr';
@@ -38,7 +39,7 @@ export default function MyDonationsPage() {
    */
   async function withdraw(d: any) {
     const label = d.project?.title ?? 'ce projet';
-    if (!window.confirm(`Retirer votre don de ${label} ?`)) return;
+    if (!await confirmDialog(`Retirer votre don de ${label} ?`)) return;
     setWithdrawing(d.id);
     setNotice(null);
     try {

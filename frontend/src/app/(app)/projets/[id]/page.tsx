@@ -1,4 +1,5 @@
 'use client';
+import { promptDialog } from '@/lib/dialog';
 
 import { use, useState } from 'react';
 import Link from 'next/link';
@@ -38,7 +39,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
    */
   async function setStatus(status: string) {
     const needsReason = status === 'CANCELLED';
-    const reason = needsReason ? window.prompt('Motif de l’annulation ?') : undefined;
+    const reason = needsReason ? await promptDialog('Motif de l’annulation ?') : undefined;
     if (needsReason && !reason) return;
     setBusy(true);
     setMsg(null);
@@ -116,8 +117,8 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             ) : null}
             {canFreeze && project.status !== 'FROZEN' ? (
               <button
-                onClick={() => {
-                  const reason = window.prompt('Motif du gel ?');
+                onClick={async () => {
+                  const reason = await promptDialog('Motif du gel ?');
                   if (reason) act('freeze', { reason });
                 }}
                 className="btn-ghost text-accent-coral"

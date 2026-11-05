@@ -1,4 +1,5 @@
 'use client';
+import { promptDialog } from '@/lib/dialog';
 
 import { useState } from 'react';
 import useSWR from 'swr';
@@ -16,7 +17,7 @@ export default function ModerationPage() {
   const [busy, setBusy] = useState<string | null>(null);
 
   async function resolve(id: string, decision: 'ACTIONED' | 'DISMISSED') {
-    const resolution = window.prompt(
+    const resolution = await promptDialog(
       decision === 'ACTIONED' ? 'Mesure prise ?' : 'Motif du classement sans suite ?',
     );
     if (!resolution) return;

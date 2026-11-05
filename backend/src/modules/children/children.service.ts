@@ -155,7 +155,27 @@ export class ChildrenService implements OnModuleInit {
       this.prisma.child.count({ where }),
     ]);
 
+    // Bailleurs et partenaires : jamais de nom de famille ni de contenu du dossier (même règle que get()).
+    if (this.isConfidentialRole(user)) {
+      for (const item of items as any[]) {
+        delete item.lastName;
+        delete item.dossierData;
+      }
+    }
+
     return { items, total };
+  }
+
+  /** Date valide ou null : une date mal formée ne doit pas provoquer d'erreur serveur. */
+  private parseDate(value: unknown): Date | null {
+    if (typeof value !== 'string' && !(value instanceof Date)) return null;
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+
+  /** Bailleurs et partenaires n'ont accès qu'au profil public d'un enfant. */
+  private isConfidentialRole(user: AuthUser): boolean {
+    return user.role === Role.DONOR || user.role === Role.PARTNER;
   }
 
   /** Profil public (section 5.4) : jamais de nom de famille ni de localisation precise. */
@@ -429,9 +449,11 @@ export class ChildrenService implements OnModuleInit {
         abandoned: dto.abandoned ?? false,
         streetChild: dto.streetChild ?? false,
         formerArmedGroup: dto.formerArmedGroup ?? false,
-        admittedAt: dto.admittedAt ? new Date(dto.admittedAt) : new Date(),
-        admissionReason: dto.admissionReason ?? null,
-        referredBy: dto.referredBy ?? null,
+        // Le formulaire piloté par le modèle de pays range ces trois informations dans dossierData :
+        // on les recopie dans les colonnes du dossier, sinon la fiche affiche la date du jour et aucun motif.
+        admittedAt: this.parseDate(dto.admittedAt ?? (dto.dossierData as any)?.date_admission) ?? new Date(),
+        admissionReason: dto.admissionReason ?? (dto.dossierData as any)?.motif ?? null,
+        referredBy: dto.referredBy ?? (dto.dossierData as any)?.refere_par ?? null,
         publicStory: dto.publicStory ?? null,
         publicNeeds: dto.publicNeeds ?? null,
         lifeProject: dto.lifeProject ?? null,
@@ -730,6 +752,10 @@ export class ChildrenService implements OnModuleInit {
   }
 
   async versions(id: string, user: AuthUser) {
+    // Les versions sont des instantanés complets du dossier : jamais pour bailleurs/partenaires.
+    if (this.isConfidentialRole(user)) {
+      throw new ForbiddenException('Les versions du dossier ne sont pas accessibles à votre rôle');
+    }
     const scopeWhere = await this.scope.childWhere(user);
     const child = await this.prisma.child.findFirst({ where: { AND: [{ id }, scopeWhere] } });
     if (!child) throw new NotFoundException('Enfant introuvable ou hors de votre périmètre');
@@ -742,6 +768,12 @@ export class ChildrenService implements OnModuleInit {
 
   /** Comparaison entre deux versions du dossier (section 6.1). */
   async diff(id: string, fromVersion: number, toVersion: number, user: AuthUser) {
+    if (!Number.isInteger(fromVersion) || !Number.isInteger(toVersion)) {
+      throw new BadRequestException('Les paramètres « from » et « to » doivent être des numéros de version');
+    }
+    // Même périmètre que versions() : sans ce contrôle, n'importe quel rôle lisait le dossier d'un enfant.
+    await this.versions(id, user);
+
     const versions = await this.prisma.childVersion.findMany({
       where: { childId: id, version: { in: [Number(fromVersion), Number(toVersion)] } },
     });

@@ -1,4 +1,5 @@
 'use client';
+import { promptDialog, confirmDialog } from '@/lib/dialog';
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -93,7 +94,7 @@ export function PostCard({ post, onChange }: { post: any; onChange?: () => void 
 
   /** Masquage d’un commentaire par le modérateur. */
   async function hideComment(id: string) {
-    if (!window.confirm('Masquer ce commentaire ?')) return;
+    if (!await confirmDialog('Masquer ce commentaire ?')) return;
     try {
       await api.post(`/posts/comments/${id}/hide`, {});
       setComments((list: any[]) => list.filter((c) => c.id !== id));
@@ -103,7 +104,7 @@ export function PostCard({ post, onChange }: { post: any; onChange?: () => void 
   }
 
   async function report() {
-    const reason = window.prompt('Motif du signalement ?');
+    const reason = await promptDialog('Motif du signalement ?');
     if (!reason) return;
     await api.post('/moderation/reports', { targetType: 'POST', targetId: post.id, reason });
     onChange?.();

@@ -1,4 +1,5 @@
 'use client';
+import { promptDialog } from '@/lib/dialog';
 
 import { Upload } from 'lucide-react';
 import { SafeImage } from '@/components/ui/SafeImage';
@@ -13,10 +14,10 @@ export function ProjectBody({
   project: any;
   onAct: (path: string, body?: any) => void;
 }) {
-  function addMilestone() {
-    const title = window.prompt('Titre de l’étape ?');
+  async function addMilestone() {
+    const title = await promptDialog('Titre de l’étape ?');
     if (!title) return;
-    const description = window.prompt('Description (facultatif)') ?? undefined;
+    const description = await promptDialog('Description (facultatif)') ?? undefined;
     onAct('milestones', { title, description, completed: true });
   }
 

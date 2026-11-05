@@ -1,4 +1,5 @@
 'use client';
+import { promptDialog, confirmDialog } from '@/lib/dialog';
 
 import { useState } from 'react';
 import { BellOff, BellRing, LogOut, ShieldAlert, Snowflake, UserX } from 'lucide-react';
@@ -51,7 +52,7 @@ export function UserActions({ target, onDone }: { target: Target; onDone: () => 
   async function togglePushExempt() {
     const next = !target.pushExempt;
     if (
-      !window.confirm(
+      !await confirmDialog(
         next
           ? `Dispenser ${name} des notifications ? Cette personne pourra accéder à RISAC sans les activer.`
           : `Retirer la dispense de ${name} ? L’activation des notifications redeviendra obligatoire.`,
@@ -75,7 +76,7 @@ export function UserActions({ target, onDone }: { target: Target; onDone: () => 
 
   /** Gel du compte par la gouvernance : acces coupe sur-le-champ, motif obligatoire et journalise. */
   async function freezeAccount() {
-    const reason = window.prompt(`Motif du gel du compte de ${name} ?`);
+    const reason = await promptDialog(`Motif du gel du compte de ${name} ?`);
     if (!reason?.trim()) return;
     setBusy('freeze');
     setNotice(null);
@@ -94,7 +95,7 @@ export function UserActions({ target, onDone }: { target: Target; onDone: () => 
    * Irreversible, d'ou la saisie d'un mot de confirmation plutot qu'un simple « OK ».
    */
   async function anonymiseAccount() {
-    const answer = window.prompt(
+    const answer = await promptDialog(
       `Anonymiser ${name} efface son identité et ses coordonnées de façon définitive.\nTapez ANONYMISER pour confirmer.`,
     );
     if (answer?.trim() !== 'ANONYMISER') return;
@@ -111,7 +112,7 @@ export function UserActions({ target, onDone }: { target: Target; onDone: () => 
   }
 
   async function forceLogout() {
-    if (!window.confirm(`Déconnecter ${name} de toutes ses sessions ?`)) return;
+    if (!await confirmDialog(`Déconnecter ${name} de toutes ses sessions ?`)) return;
     setBusy('logout');
     setNotice(null);
     try {

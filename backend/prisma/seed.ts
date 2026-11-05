@@ -213,6 +213,16 @@ async function seedUsers() {
         : null;
     const orphanage = u.orphanageSlug ? await prisma.orphanage.findUnique({ where: { slug: u.orphanageSlug } }) : null;
 
+    // Un seul Super Admin est permis (index « one_super_admin_only ») : si un compte réel
+    // existe déjà sous une autre adresse, on le réutilise au lieu d'en insérer un second.
+    if (u.role === Role.SUPER_ADMIN) {
+      const existingAdmin = await prisma.user.findFirst({ where: { role: Role.SUPER_ADMIN } });
+      if (existingAdmin && existingAdmin.email !== u.email) {
+        created[u.key] = existingAdmin.id;
+        continue;
+      }
+    }
+
     const user = await prisma.user.upsert({
       where: { email: u.email },
       update: {},

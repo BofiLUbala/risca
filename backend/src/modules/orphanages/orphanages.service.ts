@@ -167,6 +167,7 @@ export class OrphanagesService implements OnModuleInit {
     if (!province || province.countryId !== dto.countryId) {
       throw new BadRequestException('La province ne correspond pas au pays choisi');
     }
+    this.assertPlaces(dto.totalPlaces ?? 0, dto.occupiedPlaces ?? 0);
 
     let slug = slugify(dto.name);
     if (await this.prisma.orphanage.findUnique({ where: { slug } })) {
@@ -280,6 +281,15 @@ export class OrphanagesService implements OnModuleInit {
   }
 
   /** Modification de la fiche : Chef d orphelinat -> Chef regional (section 7.2). */
+  /** Une structure ne peut pas accueillir plus d'enfants qu'elle n'a de places. */
+  private assertPlaces(total: number, occupied: number) {
+    if (occupied > total) {
+      throw new BadRequestException(
+        `Les places occupées (${occupied}) ne peuvent pas dépasser les places totales (${total})`,
+      );
+    }
+  }
+
   async update(id: string, dto: UpdateOrphanageDto, user: AuthUser) {
     this.scope.assertCanWrite(user);
 
@@ -287,6 +297,8 @@ export class OrphanagesService implements OnModuleInit {
       where: { AND: [{ id }, this.scope.orphanageWhere(user)] },
     });
     if (!orphanage) throw new NotFoundException('Orphelinat introuvable ou hors de votre périmètre');
+
+    this.assertPlaces(dto.totalPlaces ?? orphanage.totalPlaces, dto.occupiedPlaces ?? orphanage.occupiedPlaces);
 
     const directApply: Role[] = [Role.SUPER_ADMIN, Role.NATIONAL_MANAGER, Role.REGIONAL_MANAGER];
 

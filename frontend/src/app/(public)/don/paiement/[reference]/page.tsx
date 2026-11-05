@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { CheckCircle2, Lock, XCircle } from 'lucide-react';
@@ -19,16 +19,27 @@ export default function CheckoutPage({ params }: { params: Promise<{ reference: 
   const currency = search.get('currency') ?? 'USD';
   const provider = search.get('provider') ?? 'FLUTTERWAVE';
 
-  const [state, setState] = useState<'idle' | 'busy' | 'done' | 'failed'>('idle');
+  const [state, setState] = useState<'idle' | 'busy' | 'done' | 'failed' | 'error'>('idle');
+
+  // Le résultat apparaît en haut de la carte : on y ramène la vue, sinon elle reste sur le pied de page.
+  useEffect(() => {
+    if (state === 'done' || state === 'failed' || state === 'error') window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [state]);
 
   async function confirm(status: 'SUCCESS' | 'FAILED') {
     setState('busy');
-    await fetch(`${API_URL}/payments/webhook`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reference, status, providerRef: `${provider}-${Date.now()}` }),
-    });
-    setState(status === 'SUCCESS' ? 'done' : 'failed');
+    try {
+      const res = await fetch(`${API_URL}/payments/webhook`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reference, status, providerRef: `${provider}-${Date.now()}` }),
+      });
+      // Sans ce contrôle, un rejet du serveur affichait quand même « Paiement confirmé ».
+      if (!res.ok) throw new Error(`webhook ${res.status}`);
+      setState(status === 'SUCCESS' ? 'done' : 'failed');
+    } catch {
+      setState('error');
+    }
   }
 
   return (
@@ -63,6 +74,17 @@ export default function CheckoutPage({ params }: { params: Promise<{ reference: 
             <Link href="/mes-dons" className="btn-outline mt-6 w-full py-3">
               Retour à mes dons
             </Link>
+          </div>
+        ) : state === 'error' ? (
+          <div className="mt-8 text-center" role="alert">
+            <XCircle className="mx-auto h-12 w-12 text-amber-500" />
+            <h1 className="mt-4 text-lg font-semibold text-ink-950">Confirmation impossible</h1>
+            <p className="mt-2 text-sm text-ink-500">
+              Le serveur n a pas pu enregistrer ce paiement. Rien n a ete confirme : reessayez dans un instant.
+            </p>
+            <button onClick={() => setState('idle')} className="btn-outline mt-6 w-full py-3">
+              Reessayer
+            </button>
           </div>
         ) : (
           <CheckoutForm

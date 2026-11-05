@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import useSWR from 'swr';
 import { ExternalLink } from 'lucide-react';
 import { api, fetcher } from '@/lib/api';
@@ -47,6 +47,14 @@ export function DonatePanel({
   const [error, setError] = useState<string | null>(null);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
 
+  const readyRef = useRef<HTMLDivElement>(null);
+
+  // Le formulaire est plus haut que la confirmation : sans ce défilement, la page
+  // retombe sur le pied de page et le message « paiement prêt » passe inaperçu.
+  useEffect(() => {
+    if (checkoutUrl) readyRef.current?.scrollIntoView({ block: 'center', behavior: 'instant' });
+  }, [checkoutUrl]);
+
   const { data: methods } = useSWR<any[]>('/payments/methods', fetcher);
 
   useEffect(() => {
@@ -88,7 +96,7 @@ export function DonatePanel({
 
   if (checkoutUrl) {
     return (
-      <div className="mt-5 space-y-3 rounded-xl bg-emerald-50 p-4">
+      <div ref={readyRef} role="status" className="mt-5 space-y-3 rounded-xl bg-emerald-50 p-4">
         <p className="text-sm font-medium text-emerald-800">Votre paiement est pret.</p>
         <p className="text-xs text-emerald-700">
           Il s’ouvre sur une page web sécurisée du fournisseur de paiement.

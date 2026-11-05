@@ -1,4 +1,5 @@
 'use client';
+import { promptDialog, confirmDialog } from '@/lib/dialog';
 
 import { use, useState } from 'react';
 import Link from 'next/link';
@@ -34,7 +35,7 @@ export default function ReportDetailPage({ params }: { params: Promise<{ id: str
   }
 
   async function resolve(status: 'ACTIONED' | 'DISMISSED') {
-    const resolution = window.prompt(
+    const resolution = await promptDialog(
       status === 'ACTIONED' ? 'Mesure prise ?' : 'Motif du classement sans suite ?',
     );
     if (!resolution) return;
@@ -50,10 +51,10 @@ export default function ReportDetailPage({ params }: { params: Promise<{ id: str
   async function moderatePost(action: 'hide' | 'restore') {
     let body: { reason?: string } = {};
     if (action === 'hide') {
-      const reason = window.prompt('Motif du masquage (transmis à l’auteur) ?');
+      const reason = await promptDialog('Motif du masquage (transmis à l’auteur) ?');
       if (!reason?.trim()) return;
       body = { reason: reason.trim() };
-    } else if (!window.confirm('Rétablir cette publication dans le fil ?')) {
+    } else if (!await confirmDialog('Rétablir cette publication dans le fil ?')) {
       return;
     }
     setBusy(true);

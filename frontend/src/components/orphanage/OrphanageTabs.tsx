@@ -1,4 +1,5 @@
 'use client';
+import { promptDialog } from '@/lib/dialog';
 
 import { Field } from '@/components/child/Tabs';
 import { Badge } from '@/components/ui/Badge';
@@ -186,15 +187,15 @@ function LabelTab({
   canDecide: boolean;
   onAct: (path: string, body?: any) => void;
 }) {
-  function schedule() {
-    const d = window.prompt('Date de l’audit sur place (AAAA-MM-JJ) ?');
+  async function schedule() {
+    const d = await promptDialog('Date de l’audit sur place (AAAA-MM-JJ) ?');
     if (d) onAct('label/schedule', { scheduledAt: d });
   }
 
-  function decide(result: string) {
+  async function decide(result: string) {
     const conditions =
-      result === 'COMPLIANT_WITH_CONDITIONS' ? window.prompt('Conditions a respecter ?') : null;
-    const notes = window.prompt('Notes de l’audit (facultatif)') ?? undefined;
+      result === 'COMPLIANT_WITH_CONDITIONS' ? await promptDialog('Conditions a respecter ?') : null;
+    const notes = await promptDialog('Notes de l’audit (facultatif)') ?? undefined;
     onAct('label/decide', { result, conditions: conditions ?? undefined, notes });
   }
 

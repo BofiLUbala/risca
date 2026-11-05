@@ -1,4 +1,5 @@
 'use client';
+import { promptDialog } from '@/lib/dialog';
 
 import { useState } from 'react';
 import useSWR from 'swr';
@@ -50,9 +51,9 @@ export default function DisbursementsPage() {
   }
 
   async function addReceipt(id: string) {
-    const name = window.prompt('Nom du justificatif ?');
+    const name = await promptDialog('Nom du justificatif ?');
     if (!name) return;
-    const amount = window.prompt('Montant justifie ?');
+    const amount = await promptDialog('Montant justifie ?');
     await act(id, 'receipts', {
       name,
       url: `/uploads/${name.replace(/\s+/g, '-').toLowerCase()}.pdf`,
@@ -173,8 +174,8 @@ export default function DisbursementsPage() {
                       Confirmer le besoin
                     </button>
                     <button
-                      onClick={() => {
-                        const reason = window.prompt('Motif du refus ?');
+                      onClick={async () => {
+                        const reason = await promptDialog('Motif du refus ?');
                         if (reason) act(d.id, 'reject', { reason });
                       }}
                       className="btn-ghost"
@@ -196,8 +197,8 @@ export default function DisbursementsPage() {
                       Approuver et payer
                     </button>
                     <button
-                      onClick={() => {
-                        const reason = window.prompt('Motif du refus ?');
+                      onClick={async () => {
+                        const reason = await promptDialog('Motif du refus ?');
                         if (reason) act(d.id, 'reject', { reason });
                       }}
                       className="btn-ghost"

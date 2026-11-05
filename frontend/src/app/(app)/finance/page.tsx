@@ -1,4 +1,5 @@
 'use client';
+import { confirmDialog } from '@/lib/dialog';
 
 import { useState } from 'react';
 import useSWR from 'swr';
@@ -31,7 +32,7 @@ export default function FinancePage() {
 
   /** Prélèvement des parrainages mensuels échus (POST /payments/sponsorships/run-charges). */
   async function runCharges() {
-    if (!window.confirm('Lancer les prélèvements des parrainages échus ?')) return;
+    if (!await confirmDialog('Lancer les prélèvements des parrainages échus ?')) return;
     setCharging(true);
     setChargeNotice(null);
     try {

@@ -39,6 +39,16 @@ export const NAV: NavItem[] = [
 
 export const GROUP_ORDER = ['Pilotage', 'Suivi', 'Réseau', 'Argent', 'Gouvernance', 'Administration'];
 
+/**
+ * Garde de route côté interface : une page rattachée à une entrée de navigation
+ * n'est accessible qu'aux rôles de cette entrée (le backend reste l'autorité).
+ * Les pages sans entrée (notifications, profil...) restent ouvertes à tout rôle connecté.
+ */
+export function canAccessPath(role: Role, pathname: string): boolean {
+  const entry = NAV.find((n) => pathname === n.href || pathname.startsWith(n.href + '/'));
+  return !entry || entry.roles.includes(role);
+}
+
 export function navForRole(role: Role): Record<string, NavItem[]> {
   const items = NAV.filter((n) => n.roles.includes(role));
   const grouped: Record<string, NavItem[]> = {};

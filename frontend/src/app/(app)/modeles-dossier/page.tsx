@@ -1,4 +1,5 @@
 'use client';
+import { promptDialog, confirmDialog } from '@/lib/dialog';
 
 import { useState } from 'react';
 import useSWR from 'swr';
@@ -18,10 +19,10 @@ export default function TemplatesPage() {
   const [error, setError] = useState<string | null>(null);
 
   async function addField(sectionId: string) {
-    const labelFr = window.prompt('Libelle du champ (francais) ?');
+    const labelFr = await promptDialog('Libelle du champ (francais) ?');
     if (!labelFr) return;
-    const type = window.prompt(`Type ? (${TYPES.join(', ')})`, 'TEXT');
-    const required = window.confirm('Ce champ est-il obligatoire ?');
+    const type = await promptDialog(`Type ? (${TYPES.join(', ')})`, 'TEXT');
+    const required = await confirmDialog('Ce champ est-il obligatoire ?');
     const key = labelFr
       .normalize('NFD')
       .replace(/[̀-ͯ]/g, '')
@@ -45,7 +46,7 @@ export default function TemplatesPage() {
   }
 
   async function removeField(fieldId: string) {
-    if (!window.confirm('Supprimer ce champ du modele ?')) return;
+    if (!await confirmDialog('Supprimer ce champ du modele ?')) return;
     await api.del(`/templates/fields/${fieldId}`);
     mutate();
   }

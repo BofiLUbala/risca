@@ -87,6 +87,8 @@ export class ContentSafetyService {
    */
   check(content: string, lastName?: string | null): SafetyResult {
     const violations: SafetyViolation[] = [];
+    // Un contenu absent ou non textuel ne doit pas faire planter la vérification (erreur 500).
+    if (typeof content !== 'string') content = '';
     const normalized = this.normalize(content);
 
     if (lastName && lastName.trim().length >= 3) {

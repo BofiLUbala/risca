@@ -85,6 +85,10 @@ export class PostsService {
       throw new ForbiddenException('Vous ne pouvez publier que pour votre structure');
     }
 
+    if (typeof dto.content !== 'string' || !dto.content.trim()) {
+      throw new BadRequestException('Le contenu de la publication est obligatoire');
+    }
+
     // Verification automatique du contenu (section 8.2)
     const check = this.safety.check(dto.content, child?.lastName);
     if (!check.safe) {

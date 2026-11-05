@@ -1,4 +1,5 @@
 'use client';
+import { confirmDialog } from '@/lib/dialog';
 
 import { useState } from 'react';
 import useSWR from 'swr';
@@ -52,7 +53,7 @@ export function AmbassadorLinks({
   }
 
   async function unlink(id: string, name: string) {
-    if (!window.confirm(`Retirer ${name} de cette structure ?`)) return;
+    if (!await confirmDialog(`Retirer ${name} de cette structure ?`)) return;
     setError(null);
     try {
       await api.del(`/orphanages/${orphanageId}/ambassadors/${id}`);
