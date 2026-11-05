@@ -18,6 +18,9 @@ firebase-service-account.json
 google-services.json
 GoogleService-Info.plist
 .next-clean/
+# Sortie du build Cloudflare (OpenNext) et cache local de Wrangler
+.open-next/
+.wrangler/
 
 # Sauvegardes de base : jamais dans le depot
 backups/
@@ -27,6 +30,7 @@ backups/
 .env.*
 !.env.example
 !.env.northflank.example
+!.env.production.example
 
 # Cle du compte de service Google Play : injectee par le workflow depuis un
 # secret GitHub, jamais dans le depot.

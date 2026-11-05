@@ -1,0 +1,4 @@
+# Les scripts shell s'executent sous Linux : toujours des fins de ligne LF,
+# meme apres un checkout sous Windows.
+*.sh text eol=lf
+Caddyfile text eol=lf

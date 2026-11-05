@@ -1,0 +1,11 @@
+# Reverse proxy de l'API RISAC.
+#
+# API_DOMAIN vaut un nom de domaine (api.exemple.org) : Caddy obtient et
+# renouvelle seul le certificat Let's Encrypt. Tant qu'aucun domaine n'est
+# configure, la valeur par defaut ":80" sert l'API en HTTP simple sur l'IP du
+# droplet, utile pour un premier test uniquement (les builds Android de
+# production refusent le HTTP).
+{$API_DOMAIN::80} {
+	encode zstd gzip
+	reverse_proxy api:4000
+}

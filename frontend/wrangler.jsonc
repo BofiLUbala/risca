@@ -1,0 +1,15 @@
+{
+  // Application web RISAC sur Cloudflare Workers, via l'adaptateur OpenNext.
+  // Build + deploiement : `npm run cf:deploy` (voir docs/DEPLOIEMENT-DO.md).
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "risac-web",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-10-01",
+  // Requis par OpenNext : API Node.js et fetch limite aux adresses publiques.
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": { "enabled": true }
+}
