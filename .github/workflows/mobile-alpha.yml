@@ -25,13 +25,35 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # GitHub interdit le contexte `secrets` dans la condition `if` d'un job : le
+  # fichier etait rejete en entier et echouait a chaque push. On lit donc les
+  # secrets dans une etape, puis le job `alpha` teste la sortie de ce job.
+  verifier:
+    name: Verifier les secrets
+    runs-on: ubuntu-latest
+    outputs:
+      pret: ${{ steps.secrets.outputs.pret }}
+    steps:
+      - id: secrets
+        env:
+          EXPO: ${{ secrets.EXPO_TOKEN }}
+          PLAY: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}
+        run: |
+          if [ -n "$EXPO" ] && [ -n "$PLAY" ]; then
+            echo "pret=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "pret=false" >> "$GITHUB_OUTPUT"
+            echo "Secrets EXPO_TOKEN et/ou GOOGLE_PLAY_SERVICE_ACCOUNT absents : publication mobile ignoree."
+          fi
+
   alpha:
     name: Build Android et envoi sur le canal alpha
     # Tant que les deux secrets n'existent pas, le job est volontairement
     # ignore plutot que mis en echec : inutile de polluer l'historique des
     # executions avec des runs rouges previsibles. Il s'activera tout seul
     # des que les secrets seront crees.
-    if: ${{ secrets.EXPO_TOKEN != '' && secrets.GOOGLE_PLAY_SERVICE_ACCOUNT != '' }}
+    needs: verifier
+    if: ${{ needs.verifier.outputs.pret == 'true' }}
     runs-on: ubuntu-latest
     defaults:
       run:
