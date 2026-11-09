@@ -53,8 +53,12 @@ jobs:
 
       - run: npm run build
 
+      # Le projet n'a pas encore de tests unitaires (seuls des tests e2e existent
+      # dans backend/test, et ils exigent une base). `--passWithNoTests` evite
+      # que jest echoue faute de test ; il reprendra du service des qu'un
+      # fichier *.spec.ts sera ajoute.
       - name: Tests unitaires
-        run: npm test --if-present
+        run: npm test --if-present -- --passWithNoTests
 
   image-docker:
     name: Construction de l'image
