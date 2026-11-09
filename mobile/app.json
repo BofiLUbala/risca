@@ -62,7 +62,10 @@
     ],
     "extra": {
       "apiUrl": "http://localhost:4000/api",
-      "apiOrigin": "http://localhost:4000"
+      "apiOrigin": "http://localhost:4000",
+      "eas": {
+        "projectId": "a1b6612e-1b63-44d9-9b2f-3f1f40b611eb"
+      }
     },
     "experiments": {
       "typedRoutes": false

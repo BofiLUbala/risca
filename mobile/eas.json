@@ -23,7 +23,7 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://risac-api.onrender.com/api"
+        "EXPO_PUBLIC_API_URL": "https://lens-song-introducing-imported.trycloudflare.com/api"
       }
     }
   },
