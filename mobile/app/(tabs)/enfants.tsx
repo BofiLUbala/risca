@@ -35,7 +35,7 @@ function PublicChildren() {
         contentContainerStyle={s.grid}
         ListEmptyComponent={isLoading ? <Loading /> : <Empty title="Aucun profil public" />}
         refreshControl={
-          <RefreshControl refreshing={isValidating && !isLoading} onRefresh={() => mutate()} />
+          <RefreshControl refreshing={isValidating && !isLoading} onRefresh={() => { void mutate(); }} />
         }
         renderItem={({ item }) => {
           const photo = mediaUrl(item.publicPhotoUrl);
@@ -97,7 +97,7 @@ function ScopedChildren() {
         contentContainerStyle={s.list}
         ListEmptyComponent={isLoading ? <Loading /> : <Empty title="Aucun dossier" />}
         refreshControl={
-          <RefreshControl refreshing={isValidating && !isLoading} onRefresh={() => mutate()} />
+          <RefreshControl refreshing={isValidating && !isLoading} onRefresh={() => { void mutate(); }} />
         }
         renderItem={({ item }) => (
           <Pressable
