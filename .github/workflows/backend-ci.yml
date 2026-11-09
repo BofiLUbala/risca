@@ -30,6 +30,10 @@ jobs:
   compilation:
     name: Compilation et tests
     runs-on: ubuntu-latest
+    # Valeur factice : `prisma validate` et le build lisent le schema sans jamais
+    # se connecter a une base, mais ils exigent que la variable existe.
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci?schema=public
     steps:
       - uses: actions/checkout@v4
 
