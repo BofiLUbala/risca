@@ -6,9 +6,11 @@
 # de version a gerer a la main.
 #
 # Pre-requis, decrits dans docs/CI-CD.md :
-#   - secret EXPO_TOKEN                      (jeton de compte Expo)
-#   - secret GOOGLE_PLAY_SERVICE_ACCOUNT     (JSON du compte de service, en clair)
-#   - une premiere version deja publiee manuellement dans le Play Console
+#   - secret EXPO_TOKEN                      (jeton de compte Expo) : active le build
+#   - secret GOOGLE_PLAY_SERVICE_ACCOUNT     (JSON du compte de service, en clair) :
+#     active en plus l'envoi sur le Play Store
+#   - une premiere compilation faite a la main (`eas build`) pour creer la cle de
+#     signature, puis une premiere version publiee a la main dans le Play Console
 name: Mobile — publication alpha
 
 on:
@@ -32,28 +34,31 @@ jobs:
     name: Verifier les secrets
     runs-on: ubuntu-latest
     outputs:
-      pret: ${{ steps.secrets.outputs.pret }}
+      build: ${{ steps.secrets.outputs.build }}
+      submit: ${{ steps.secrets.outputs.submit }}
     steps:
       - id: secrets
         env:
           EXPO: ${{ secrets.EXPO_TOKEN }}
           PLAY: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}
         run: |
-          if [ -n "$EXPO" ] && [ -n "$PLAY" ]; then
-            echo "pret=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "pret=false" >> "$GITHUB_OUTPUT"
-            echo "Secrets EXPO_TOKEN et/ou GOOGLE_PLAY_SERVICE_ACCOUNT absents : publication mobile ignoree."
-          fi
+          build=false
+          submit=false
+          [ -n "$EXPO" ] && build=true
+          [ -n "$EXPO" ] && [ -n "$PLAY" ] && submit=true
+          echo "build=$build" >> "$GITHUB_OUTPUT"
+          echo "submit=$submit" >> "$GITHUB_OUTPUT"
+          [ "$build" = true ] || echo "Secret EXPO_TOKEN absent : build mobile ignore."
+          [ "$submit" = true ] || echo "Secret GOOGLE_PLAY_SERVICE_ACCOUNT absent : pas d'envoi sur le Play Store."
 
   alpha:
     name: Build Android et envoi sur le canal alpha
-    # Tant que les deux secrets n'existent pas, le job est volontairement
+    # Le build ne demande que EXPO_TOKEN ; l'envoi sur le Play Store demande en
+    # plus GOOGLE_PLAY_SERVICE_ACCOUNT. Sans EXPO_TOKEN, le job est volontairement
     # ignore plutot que mis en echec : inutile de polluer l'historique des
-    # executions avec des runs rouges previsibles. Il s'activera tout seul
-    # des que les secrets seront crees.
+    # executions avec des runs rouges previsibles.
     needs: verifier
-    if: ${{ needs.verifier.outputs.pret == 'true' }}
+    if: ${{ needs.verifier.outputs.build == 'true' }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -82,6 +87,7 @@ jobs:
       # ecrit depuis le secret, le temps du job, a l'endroit ou eas.json
       # l'attend (serviceAccountKeyPath).
       - name: Deposer la cle du compte de service Google Play
+        if: ${{ needs.verifier.outputs.submit == 'true' }}
         env:
           KEY: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}
         run: |
@@ -98,10 +104,11 @@ jobs:
         run: eas build --platform android --profile production --non-interactive --wait
 
       - name: Publier sur le canal alpha
+        if: ${{ needs.verifier.outputs.submit == 'true' }}
         run: eas submit --platform android --profile production --non-interactive --latest
 
       # Le fichier disparait avec la machine virtuelle, mais on ne compte pas
       # sur ce detail : il est efface explicitement, meme si une etape a echoue.
       - name: Effacer la cle
-        if: always()
+        if: ${{ always() && needs.verifier.outputs.submit == 'true' }}
         run: rm -f google-play-service-account.json
