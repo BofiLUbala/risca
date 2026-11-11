@@ -6,43 +6,47 @@ import clsx from 'clsx';
 import * as Icons from 'lucide-react';
 import { Logo } from '@/components/ui/Logo';
 import { GROUP_ORDER, navForRole } from '@/lib/nav';
-import { ROLE_LABEL } from '@/lib/roles';
-import { Avatar } from '@/components/ui/Avatar';
 import { useAuth } from '@/lib/auth-context';
-
-const GROUP_LABEL: Record<string, string> = {
-  Pilotage: 'Pilotage',
-  Suivi: 'Suivi',
-  Réseau: 'Réseau',
-  Argent: 'Argent',
-  Gouvernance: 'Gouvernance',
-  Administration: 'Administration',
-};
+import { useLayoutPrefs } from '@/lib/layout-prefs';
 
 function Icon({ name, className }: { name: string; className?: string }) {
   const C = (Icons as any)[name] ?? Icons.Circle;
   return <C className={className} strokeWidth={1.75} />;
 }
 
+/**
+ * Menu latéral. La couleur suit le choix de la personne (Profil > Apparence).
+ * Le logo officiel a un fond blanc : sur une couleur foncée il est posé sur une plaque blanche.
+ * Le profil vit dans l'en-tête ; « Se déconnecter » ferme le menu, tout en bas.
+ */
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { color } = useLayoutPrefs();
   if (!user) return null;
 
   const groups = navForRole(user.role);
+  const light = color === 'light';
 
   return (
-    <div className="flex h-full flex-col bg-white">
-      <div className="flex h-16 shrink-0 items-center border-b border-ink-100 px-5">
-        <Link href="/tableau-de-bord" onClick={onNavigate} aria-label="RISAC, tableau de bord">
-          <Logo className="h-12" />
+    <div className={clsx('sb flex h-full flex-col', `sb-${color}`)}>
+      <div className="flex h-16 shrink-0 items-center border-b px-4" style={{ borderColor: 'var(--sb-border)' }}>
+        <Link
+          href="/tableau-de-bord"
+          onClick={onNavigate}
+          aria-label="RISAC, tableau de bord"
+          className={clsx(!light && 'rounded-xl bg-white px-2 py-1')}
+        >
+          <Logo className={light ? 'h-12' : 'h-10'} />
         </Link>
       </div>
 
-      <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
+      <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5" aria-label="Navigation principale">
         {GROUP_ORDER.filter((g) => groups[g]?.length).map((group) => (
           <div key={group}>
-            <p className="mb-1.5 px-3 text-xs font-semibold text-ink-500">{GROUP_LABEL[group]}</p>
+            <p className="mb-1.5 px-3 text-xs font-semibold" style={{ color: 'var(--sb-group)' }}>
+              {group}
+            </p>
             <div className="space-y-0.5">
               {groups[group].map((item) => {
                 const active = pathname === item.href || pathname.startsWith(item.href + '/');
@@ -51,7 +55,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
                     key={item.href}
                     href={item.href}
                     onClick={onNavigate}
-                    className={clsx('nav-item', active && 'nav-item-active')}
+                    className={clsx('sb-item', active && 'sb-item-active')}
                     aria-current={active ? 'page' : undefined}
                   >
                     <Icon name={item.icon} className="h-[18px] w-[18px] shrink-0" />
@@ -64,26 +68,8 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         ))}
       </nav>
 
-      <div className="shrink-0 border-t border-ink-100 p-3">
-        <Link
-          href="/profil"
-          onClick={onNavigate}
-          className="flex items-center gap-3 rounded-xl px-2 py-2 transition-colors hover:bg-ink-50"
-        >
-          <Avatar
-            src={user.avatarUrl}
-            firstName={user.firstName}
-            lastName={user.lastName}
-            size="sm"
-          />
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-sm font-medium text-ink-800">
-              {user.firstName} {user.lastName}
-            </span>
-            <span className="block truncate text-xs text-ink-500">{ROLE_LABEL[user.role]}</span>
-          </span>
-        </Link>
-        <button onClick={logout} className="nav-item mt-1 w-full text-ink-500">
+      <div className="shrink-0 border-t p-3" style={{ borderColor: 'var(--sb-border)' }}>
+        <button onClick={logout} className="sb-item">
           <Icons.LogOut className="h-[18px] w-[18px]" strokeWidth={1.75} />
           Se déconnecter
         </button>

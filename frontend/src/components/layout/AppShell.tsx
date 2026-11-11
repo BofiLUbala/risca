@@ -10,14 +10,25 @@ import { useAuth } from '@/lib/auth-context';
 import { closeSocket, getSocket } from '@/lib/socket';
 import { PushGate } from './PushGate';
 import { PageLoading } from '@/components/ui/Loading';
+import { LayoutPrefsProvider, useLayoutPrefs } from '@/lib/layout-prefs';
 
 /**
  * Coquille du tableau de bord : navigation des fonctionnalites a gauche,
  * detail de la fonctionnalite selectionnee a droite.
  * Sur petit ecran, la navigation devient un tiroir.
  */
-export function AppShell({ title, children }: { title?: string; children: React.ReactNode }) {
+export function AppShell(props: { title?: string; children: React.ReactNode }) {
+  return (
+    <LayoutPrefsProvider>
+      <AppShellInner {...props} />
+    </LayoutPrefsProvider>
+  );
+}
+
+function AppShellInner({ title, children }: { title?: string; children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  const { side } = useLayoutPrefs();
+  const right = side === 'right';
   const router = useRouter();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -55,8 +66,13 @@ export function AppShell({ title, children }: { title?: string; children: React.
 
   return (
     <PushGate exempt={user.pushExempt}>
-    <div className="flex min-h-screen bg-ink-50">
-      <aside className="hidden w-[264px] shrink-0 border-r border-ink-100 lg:block">
+    <div className={clsx('flex min-h-screen bg-ink-50', right && 'flex-row-reverse')}>
+      <aside
+        className={clsx(
+          'hidden w-[264px] shrink-0 lg:block',
+          right ? 'border-l border-ink-100' : 'border-r border-ink-100',
+        )}
+      >
         <div className="sticky top-0 h-screen">
           <Sidebar />
         </div>
@@ -78,8 +94,9 @@ export function AppShell({ title, children }: { title?: string; children: React.
         />
         <div
           className={clsx(
-            'absolute inset-y-0 left-0 w-[280px] max-w-[85vw] shadow-lift transition-transform duration-200 ease-out',
-            open ? 'translate-x-0' : '-translate-x-full',
+            'absolute inset-y-0 w-[280px] max-w-[85vw] shadow-lift transition-transform duration-200 ease-out',
+            right ? 'right-0' : 'left-0',
+            open ? 'translate-x-0' : right ? 'translate-x-full' : '-translate-x-full',
           )}
           role="dialog"
           aria-label="Navigation"

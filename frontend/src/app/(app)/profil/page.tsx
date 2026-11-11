@@ -9,6 +9,7 @@ import { PageLoading, Spinner } from '@/components/ui/Loading';
 import { ROLE_LABEL } from '@/lib/roles';
 import { SecuritySection } from '@/components/users/SecuritySection';
 import { PushSection } from '@/components/users/PushSection';
+import { AppearanceSection } from '@/components/users/AppearanceSection';
 
 export default function ProfilePage() {
   const { user, refresh } = useAuth();
@@ -129,6 +130,8 @@ export default function ProfilePage() {
           {saved && <span className="text-sm text-emerald-600">Profil enregistré.</span>}
         </div>
       </section>
+
+      <AppearanceSection />
 
       <PushSection />
 
