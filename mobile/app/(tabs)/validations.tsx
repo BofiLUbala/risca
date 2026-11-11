@@ -61,7 +61,7 @@ export default function ValidationsScreen() {
           )
         }
         refreshControl={
-          <RefreshControl refreshing={isValidating && !isLoading} onRefresh={() => mutate()} />
+          <RefreshControl refreshing={isValidating && !isLoading} onRefresh={() => { void mutate(); }} />
         }
         renderItem={({ item }) => (
           <Card>

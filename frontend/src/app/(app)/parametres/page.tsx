@@ -5,6 +5,7 @@ import useSWR from 'swr';
 import { Save } from 'lucide-react';
 import { api, fetcher } from '@/lib/api';
 import { PageLoading, Spinner } from '@/components/ui/Loading';
+import { AppearanceSection } from '@/components/users/AppearanceSection';
 
 export default function SettingsPage() {
   const { data, isLoading, mutate } = useSWR<any>('/dashboard/settings', fetcher);
@@ -48,6 +49,8 @@ export default function SettingsPage() {
           Seuils de validation, frais, devises et decisions de gouvernance.
         </p>
       </div>
+
+      <AppearanceSection />
 
       <section className="card card-pad space-y-4">
         <h2 className="card-title">Argent</h2>

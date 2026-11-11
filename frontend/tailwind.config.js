@@ -65,6 +65,8 @@ const steel = {
 
 module.exports = {
   content: ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
+  // Classes de thème du menu construites dynamiquement (`sb-${color}`) : à conserver.
+  safelist: ['sb-light', 'sb-navy', 'sb-green', 'sb-steel', 'sb-dark'],
   theme: {
     extend: {
       colors: {

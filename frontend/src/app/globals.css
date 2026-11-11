@@ -105,11 +105,11 @@
   }
 
   .btn-primary {
-    @apply btn bg-risac-700 text-white shadow-soft hover:bg-risac-800 active:bg-risac-900;
+    @apply btn bg-warning-400 text-ink-950 shadow-soft hover:bg-warning-500 active:bg-warning-600;
   }
 
   .btn-soft {
-    @apply btn bg-risac-50 text-risac-800 hover:bg-risac-100;
+    @apply btn bg-warning-100 text-ink-950 hover:bg-warning-200;
   }
 
   .btn-ghost {
@@ -117,7 +117,7 @@
   }
 
   .btn-outline {
-    @apply btn border border-ink-300 bg-white text-ink-800 hover:border-risac-400 hover:bg-risac-50;
+    @apply btn border border-warning-400 bg-white text-ink-900 hover:border-warning-500 hover:bg-warning-50;
   }
 
   .btn-danger {
@@ -157,6 +157,93 @@
 
   .nav-item-active {
     @apply bg-risac-700 text-white shadow-soft hover:bg-risac-700 hover:text-white;
+  }
+
+  /* ---------- Menu latéral : thèmes tirés des couleurs du logo ---------- */
+  .sb {
+    --sb-bg: #ffffff;
+    --sb-fg: #41536a;
+    --sb-group: #5f7185;
+    --sb-hover: #e8edf2;
+    --sb-hover-fg: #263746;
+    --sb-active-bg: #174a70;
+    --sb-active-fg: #ffffff;
+    --sb-border: #e8edf2;
+    --sb-bar: transparent;
+    background: var(--sb-bg);
+    color: var(--sb-fg);
+    border-color: var(--sb-border);
+  }
+  .sb-navy {
+    --sb-bg: #123f62;
+    --sb-fg: #dce8f1;
+    --sb-group: #9fc0da;
+    --sb-hover: rgba(255, 255, 255, 0.09);
+    --sb-hover-fg: #ffffff;
+    --sb-active-bg: rgba(255, 255, 255, 0.16);
+    --sb-active-fg: #ffffff;
+    --sb-border: rgba(255, 255, 255, 0.14);
+    --sb-bar: #e7b92c;
+  }
+  .sb-green {
+    --sb-bg: #2d6a40;
+    --sb-fg: #e3f3ea;
+    --sb-group: #bfe0cc;
+    --sb-hover: rgba(255, 255, 255, 0.1);
+    --sb-hover-fg: #ffffff;
+    --sb-active-bg: rgba(255, 255, 255, 0.18);
+    --sb-active-fg: #ffffff;
+    --sb-border: rgba(255, 255, 255, 0.16);
+    --sb-bar: #e7b92c;
+  }
+  .sb-steel {
+    --sb-bg: #35697e;
+    --sb-fg: #e4f0f5;
+    --sb-group: #c3dbe6;
+    --sb-hover: rgba(255, 255, 255, 0.1);
+    --sb-hover-fg: #ffffff;
+    --sb-active-bg: rgba(255, 255, 255, 0.18);
+    --sb-active-fg: #ffffff;
+    --sb-border: rgba(255, 255, 255, 0.16);
+    --sb-bar: #e7b92c;
+  }
+  .sb-dark {
+    --sb-bg: #172430;
+    --sb-fg: #cfd9e2;
+    --sb-group: #93a5b6;
+    --sb-hover: rgba(255, 255, 255, 0.08);
+    --sb-hover-fg: #ffffff;
+    --sb-active-bg: rgba(255, 255, 255, 0.14);
+    --sb-active-fg: #ffffff;
+    --sb-border: rgba(255, 255, 255, 0.12);
+    --sb-bar: #e7b92c;
+  }
+  .sb-item {
+    @apply relative flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium
+           transition-[background-color,color] duration-base ease-standard motion-reduce:transition-none;
+    color: var(--sb-fg);
+  }
+  .sb-item:hover {
+    background: var(--sb-hover);
+    color: var(--sb-hover-fg);
+  }
+  .sb-item:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px #e7b92c;
+  }
+  .sb-item-active,
+  .sb-item-active:hover {
+    background: var(--sb-active-bg);
+    color: var(--sb-active-fg);
+  }
+  .sb-item-active::before {
+    content: '';
+    position: absolute;
+    inset-block: 10px;
+    inset-inline-start: 0;
+    width: 3px;
+    border-radius: 3px;
+    background: var(--sb-bar);
   }
 
   /* ---------- Tableaux ---------- */
