@@ -66,7 +66,7 @@ function AppShellInner({ title, children }: { title?: string; children: React.Re
 
   return (
     <PushGate exempt={user.pushExempt}>
-    <div className={clsx('flex min-h-screen bg-ink-50', right && 'flex-row-reverse')}>
+    <div className={clsx('flex min-h-screen bg-white', right && 'flex-row-reverse')}>
       <aside
         className={clsx(
           'hidden w-[264px] shrink-0 lg:block',

@@ -105,11 +105,11 @@
   }
 
   .btn-primary {
-    @apply btn bg-risac-700 text-white shadow-soft hover:bg-risac-800 active:bg-risac-900;
+    @apply btn bg-warning-400 text-ink-950 shadow-soft hover:bg-warning-500 active:bg-warning-600;
   }
 
   .btn-soft {
-    @apply btn bg-risac-50 text-risac-800 hover:bg-risac-100;
+    @apply btn bg-warning-100 text-ink-950 hover:bg-warning-200;
   }
 
   .btn-ghost {
@@ -117,7 +117,7 @@
   }
 
   .btn-outline {
-    @apply btn border border-ink-300 bg-white text-ink-800 hover:border-risac-400 hover:bg-risac-50;
+    @apply btn border border-warning-400 bg-white text-ink-900 hover:border-warning-500 hover:bg-warning-50;
   }
 
   .btn-danger {

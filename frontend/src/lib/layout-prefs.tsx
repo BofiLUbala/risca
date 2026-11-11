@@ -24,7 +24,7 @@ interface Prefs {
 }
 
 const KEY = 'risac.layout.v1';
-const DEFAULTS: Prefs = { color: 'light', side: 'left' };
+const DEFAULTS: Prefs = { color: 'navy', side: 'left' };
 
 interface Ctx extends Prefs {
   setColor: (c: SidebarColor) => void;
