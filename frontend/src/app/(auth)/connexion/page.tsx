@@ -124,21 +124,19 @@ export default function LoginPage() {
         </button>
       </form>
 
-      <p className="mt-8 text-sm text-ink-500">
-        Vous souhaitez soutenir un enfant ?{' '}
-        <Link href="/inscription" className="font-medium text-risac-600 hover:text-risac-700">
+      <div className="mt-8 border-t border-ink-100 pt-5">
+        <p className="text-sm text-ink-600">Vous souhaitez soutenir un enfant ?</p>
+        <Link href="/inscription" className="link-action">
           Cr&eacute;er un compte bailleur
         </Link>
-      </p>
-      <p className="mt-2 text-sm text-ink-500">
-        Les autres r&ocirc;les re&ccedil;oivent une invitation par e-mail.
-      </p>
-      <p className="mt-2 text-sm text-ink-500">
-        Administrateur de la plateforme ?{' '}
-        <Link href="/admin" className="font-medium text-risac-700 hover:text-risac-800">
+        <p className="mt-3 text-xs text-ink-500">
+          Les autres r&ocirc;les re&ccedil;oivent une invitation par e-mail.
+        </p>
+        <p className="mt-4 text-sm text-ink-600">Administrateur de la plateforme ?</p>
+        <Link href="/admin" className="link-action">
           Espace administrateur
         </Link>
-      </p>
+      </div>
     </div>
   );
 }
