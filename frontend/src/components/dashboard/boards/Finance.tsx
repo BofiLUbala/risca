@@ -86,7 +86,7 @@ export function FinanceBoard({ data }: { data: any }) {
         <section className="card card-pad">
           <SectionTitle
             action={
-              <Link href="/finance" className="text-sm font-medium text-risac-600 hover:text-risac-700">
+              <Link href="/finance" className="link-action">
                 Tout voir
               </Link>
             }

@@ -82,11 +82,11 @@ export function NationalBoard({ data }: { data: any }) {
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {data.fonarev.map((f: any) => (
-              <div key={f.status} className="rounded-xl bg-risac-50 px-4 py-3">
-                <p className="text-sm font-medium text-risac-800">
+              <div key={f.status} className="rounded-xl border-l-4 border-sun-400 bg-sun-50 px-4 py-3">
+                <p className="text-sm font-medium text-ink-800">
                   {FONAREV_LABEL[f.status] ?? f.status}
                 </p>
-                <p className="mt-1 text-2xl font-semibold text-risac-900">{num(f.count)}</p>
+                <p className="mt-1 text-2xl font-semibold text-ink-950">{num(f.count)}</p>
               </div>
             ))}
           </div>

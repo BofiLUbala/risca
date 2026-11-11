@@ -17,15 +17,15 @@ export function RoleActions({ role }: { role: Role }) {
 
   return (
     <section>
-      <h2 className="mb-4 section-title">Mes fonctionnalités</h2>
+      <h2 className="mb-4 section-title brand-tick">Mes fonctionnalités</h2>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {actions.map((a) => (
           <Link
             key={a.label}
             href={a.href}
-            className="card flex items-start gap-3 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-risac-200 hover:shadow-lift"
+            className="card flex items-start gap-3 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-sun-300 hover:shadow-lift"
           >
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-risac-50 text-risac-600">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-sun-400 text-ink-950">
               <Icon name={a.icon} />
             </span>
             <span className="min-w-0">

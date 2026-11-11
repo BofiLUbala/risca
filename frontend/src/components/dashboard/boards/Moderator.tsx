@@ -21,7 +21,7 @@ export function ModeratorBoard({ data }: { data: any }) {
         <section className="card card-pad lg:col-span-2">
           <SectionTitle
             action={
-              <Link href="/moderation" className="text-sm font-medium text-risac-600 hover:text-risac-700">
+              <Link href="/moderation" className="link-action">
                 File complete
               </Link>
             }
@@ -36,7 +36,7 @@ export function ModeratorBoard({ data }: { data: any }) {
               <Link
                 key={r.id}
                 href={`/moderation/${r.id}`}
-                className="flex items-start gap-3 rounded-xl border border-ink-100 px-4 py-3 transition-colors hover:border-risac-200 hover:bg-risac-50/40"
+                className="flex items-start gap-3 rounded-xl border border-ink-100 px-4 py-3 transition-colors hover:border-sun-300 hover:bg-sun-50"
               >
                 <Badge tone={r.severity === 'SERIOUS' ? 'bg-rose-50 text-rose-700' : undefined} status={r.status}>
                   {r.severity === 'SERIOUS' ? 'Grave' : 'Normal'}

@@ -38,7 +38,7 @@ export function AmbassadorBoard({ data }: { data: any }) {
         <section className="card card-pad">
           <SectionTitle
             action={
-              <Link href="/validations" className="text-sm font-medium text-risac-600 hover:text-risac-700">
+              <Link href="/validations" className="link-action">
                 File complete
               </Link>
             }
@@ -58,7 +58,7 @@ export function AmbassadorBoard({ data }: { data: any }) {
         <section className="card card-pad">
           <SectionTitle
             action={
-              <Link href="/enfants" className="text-sm font-medium text-risac-600 hover:text-risac-700">
+              <Link href="/enfants" className="link-action">
                 Mes enfants
               </Link>
             }
@@ -86,7 +86,7 @@ export function AmbassadorBoard({ data }: { data: any }) {
         <section className="card card-pad">
           <SectionTitle
             action={
-              <Link href="/communication" className="text-sm font-medium text-risac-600 hover:text-risac-700">
+              <Link href="/communication" className="link-action">
                 Publier
               </Link>
             }
@@ -123,7 +123,7 @@ export function AmbassadorBoard({ data }: { data: any }) {
                 <Link
                   key={f.id}
                   href={`/enfants/${f.id}`}
-                  className="flex items-center justify-between gap-3 rounded-xl bg-ink-50 px-4 py-3 hover:bg-risac-50"
+                  className="flex items-center justify-between gap-3 rounded-xl bg-ink-50 px-4 py-3 hover:bg-sun-50"
                 >
                   <span className="text-sm font-medium text-ink-800">
                     {f.firstName} ({f.publicId})

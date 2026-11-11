@@ -33,7 +33,7 @@ export function PartnerBoard({ data }: { data: any }) {
       <section>
         <SectionTitle
           action={
-            <Link href="/projets" className="text-sm font-medium text-risac-600 hover:text-risac-700">
+            <Link href="/projets" className="link-action">
               Tous les projets
             </Link>
           }

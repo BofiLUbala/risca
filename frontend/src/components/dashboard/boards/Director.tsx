@@ -54,7 +54,7 @@ export function DirectorBoard({ data }: { data: any }) {
         <section className="card card-pad">
           <SectionTitle
             action={
-              <Link href="/enfants/nouveau" className="text-sm font-medium text-risac-600 hover:text-risac-700">
+              <Link href="/enfants/nouveau" className="link-action">
                 Nouvel enfant
               </Link>
             }
@@ -71,7 +71,7 @@ export function DirectorBoard({ data }: { data: any }) {
         <section className="card card-pad lg:col-span-2">
           <SectionTitle
             action={
-              <Link href="/decaissements" className="text-sm font-medium text-risac-600 hover:text-risac-700">
+              <Link href="/decaissements" className="link-action">
                 Tout voir
               </Link>
             }
@@ -86,7 +86,7 @@ export function DirectorBoard({ data }: { data: any }) {
               <Link
                 key={d.id}
                 href={`/decaissements/${d.id}`}
-                className="flex items-start gap-3 rounded-xl border border-ink-100 px-4 py-3 transition-colors hover:border-risac-200 hover:bg-risac-50/40"
+                className="flex items-start gap-3 rounded-xl border border-ink-100 px-4 py-3 transition-colors hover:border-sun-300 hover:bg-sun-50"
               >
                 <Badge status={d.status} />
                 <span className="min-w-0 flex-1">
