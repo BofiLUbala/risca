@@ -4,7 +4,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { APP_GUARD } from '@nestjs/core';
 import { MaintenanceGuard } from './common/guards/maintenance.guard';
-import { join } from 'path';
+import { resolve } from 'path';
 import { PrismaModule } from './prisma/prisma.module';
 import { CommonModule } from './common/common.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
@@ -32,7 +32,10 @@ import { HealthController } from './health.controller';
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
     ServeStaticModule.forRoot({
-      rootPath: join(process.cwd(), process.env.UPLOAD_DIR || 'uploads'),
+      // `resolve` accepte un dossier absolu (UPLOAD_DIR=/app/uploads) comme relatif.
+      // Avec `join(cwd, UPLOAD_DIR)`, un chemin absolu devenait /app/app/uploads :
+      // les fichiers étaient écrits dans /app/uploads mais cherchés ailleurs (404).
+      rootPath: resolve(process.cwd(), process.env.UPLOAD_DIR || 'uploads'),
       serveRoot: '/uploads',
     }),
     PrismaModule,
