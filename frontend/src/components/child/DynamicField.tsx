@@ -64,7 +64,7 @@ export function DynamicField({
                 onClick={() => onChange(on ? list.filter((x) => x !== o) : [...list, o])}
                 className={
                   on
-                    ? 'rounded-full bg-risac-600 px-3 py-1.5 text-xs font-medium text-white'
+                    ? 'rounded-full bg-brand-600 px-3 py-1.5 text-xs font-medium text-white'
                     : 'rounded-full bg-ink-100 px-3 py-1.5 text-xs font-medium text-ink-600'
                 }
               >

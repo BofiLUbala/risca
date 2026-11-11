@@ -65,7 +65,7 @@ export default function TransparencyPage() {
         <ol className="mt-6 space-y-3">
           {CIRCUIT.map((step, i) => (
             <li key={i} className="flex gap-4 rounded-xl bg-ink-50 px-4 py-3">
-              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-risac-600 text-xs font-semibold text-white">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-brand-600 text-xs font-semibold text-white">
                 {i + 1}
               </span>
               <span className="text-sm leading-relaxed text-ink-700">{step}</span>

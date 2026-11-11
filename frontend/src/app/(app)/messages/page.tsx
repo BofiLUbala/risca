@@ -157,7 +157,7 @@ export default function MessagesPage() {
                   }}
                   className={clsx(
                     'min-h-[36px] flex-1 rounded-lg px-2 py-1 text-xs font-medium transition-colors duration-fast',
-                    allChannels === o.value ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-500 hover:text-ink-700',
+                    allChannels === o.value ? 'bg-surface text-ink-900 shadow-sm' : 'text-ink-500 hover:text-ink-700',
                   )}
                 >
                   {o.label}
@@ -344,7 +344,7 @@ export default function MessagesPage() {
                         <div
                           className={clsx(
                             'mt-1 inline-block rounded-2xl px-3.5 py-2 text-sm',
-                            mine ? 'bg-risac-600 text-white' : 'bg-ink-100 text-ink-800',
+                            mine ? 'bg-brand-600 text-white' : 'bg-ink-100 text-ink-800',
                             m.hidden && 'line-through opacity-50',
                           )}
                         >

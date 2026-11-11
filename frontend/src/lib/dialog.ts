@@ -19,13 +19,13 @@ function open(message: string, kind: 'prompt' | 'confirm', opts: Options): Promi
 
     const previous = document.activeElement as HTMLElement | null;
     const overlay = document.createElement('div');
-    overlay.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-ink-950/40 p-4';
+    overlay.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4';
 
     const box = document.createElement('div');
     box.setAttribute('role', 'dialog');
     box.setAttribute('aria-modal', 'true');
     box.setAttribute('aria-label', message);
-    box.className = 'w-full max-w-md rounded-2xl bg-white p-5 shadow-lift';
+    box.className = 'w-full max-w-md rounded-2xl bg-surface p-5 shadow-lift';
 
     const text = document.createElement('p');
     text.className = 'text-sm font-medium text-ink-900 whitespace-pre-line';

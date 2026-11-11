@@ -1,10 +1,39 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import clsx from 'clsx';
+import { ChevronDown } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { money, num, percent, relative } from '@/lib/format';
 
+const COLLAPSE_KEY = 'risac.dash.collapsed.v1';
+export const COLLAPSE_EVENT = 'risac:dash-collapse';
+
+function readCollapsed(): string[] {
+  try {
+    return JSON.parse(window.localStorage.getItem(COLLAPSE_KEY) || '[]');
+  } catch {
+    return [];
+  }
+}
+
+function writeCollapsed(id: string, collapsed: boolean) {
+  try {
+    const set = new Set(readCollapsed());
+    if (collapsed) set.add(id);
+    else set.delete(id);
+    window.localStorage.setItem(COLLAPSE_KEY, JSON.stringify([...set]));
+  } catch {
+    /* stockage indisponible : l'état reste valable pour la page */
+  }
+}
+
+/**
+ * Titre de carte repliable. Le titre est le premier enfant de la carte ; replier
+ * masque tout le reste de la carte (règle CSS `section[data-collapsed]`).
+ * L'état est mémorisé par titre, sur cet appareil.
+ */
 export function SectionTitle({
   children,
   action,
@@ -12,9 +41,49 @@ export function SectionTitle({
   children: React.ReactNode;
   action?: React.ReactNode;
 }) {
+  const id = typeof children === 'string' ? children : String(children);
+  const ref = useRef<HTMLDivElement>(null);
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    setCollapsed(readCollapsed().includes(id));
+    const onAll = (e: Event) => {
+      const next = !!(e as CustomEvent<boolean>).detail;
+      setCollapsed(next);
+      writeCollapsed(id, next);
+    };
+    window.addEventListener(COLLAPSE_EVENT, onAll);
+    return () => window.removeEventListener(COLLAPSE_EVENT, onAll);
+  }, [id]);
+
+  useEffect(() => {
+    ref.current?.closest('section')?.setAttribute('data-collapsed', String(collapsed));
+  }, [collapsed]);
+
+  function toggle() {
+    setCollapsed((c) => {
+      writeCollapsed(id, !c);
+      return !c;
+    });
+  }
+
   return (
-    <div className="mb-4 flex items-center justify-between gap-3">
-      <h2 className="section-title brand-tick">{children}</h2>
+    <div ref={ref} className="mb-4 flex items-center justify-between gap-3">
+      <h2 className="section-title brand-tick min-w-0">
+        <button
+          type="button"
+          onClick={toggle}
+          aria-expanded={!collapsed}
+          className="-my-2 inline-flex min-h-[44px] max-w-full items-center gap-1.5 rounded-lg py-2 pr-2 text-left hover:text-risac-700"
+        >
+          <span className="truncate">{children}</span>
+          <ChevronDown
+            className={clsx('h-4 w-4 shrink-0 text-ink-500 transition-transform duration-base motion-reduce:transition-none', collapsed && '-rotate-90')}
+            aria-hidden="true"
+          />
+          <span className="sr-only">{collapsed ? 'Développer la section' : 'Réduire la section'}</span>
+        </button>
+      </h2>
       {action}
     </div>
   );
@@ -124,7 +193,7 @@ export function QueueItem({ request }: { request: any }) {
   return (
     <Link
       href={`/validations/${request.id}`}
-      className="flex items-start gap-3 rounded-xl border border-ink-100 bg-white px-4 py-3 transition-colors hover:border-sun-300 hover:bg-sun-50"
+      className="flex items-start gap-3 rounded-xl border border-ink-100 bg-surface px-4 py-3 transition-colors hover:border-sun-300 hover:bg-sun-50"
     >
       <span className="mt-0.5">
         <Badge status={request.status} />

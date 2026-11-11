@@ -112,7 +112,7 @@ export default function ChildUpdatePage({ params }: { params: Promise<{ id: stri
                 }}
                 className={
                   kind === k.key
-                    ? 'inline-flex min-h-[40px] items-center rounded-full bg-risac-700 px-3.5 py-1.5 text-xs font-medium text-white'
+                    ? 'inline-flex min-h-[40px] items-center rounded-full bg-brand-700 px-3.5 py-1.5 text-xs font-medium text-white'
                     : 'inline-flex min-h-[40px] items-center rounded-full bg-ink-100 px-3.5 py-1.5 text-xs font-medium text-ink-600'
                 }
               >

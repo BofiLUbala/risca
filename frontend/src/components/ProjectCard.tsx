@@ -35,7 +35,7 @@ export function ProjectCard({
   return (
     <Link
       href={`/projets-ouverts/${project.id}`}
-      className="group card flex flex-col overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift"
+      className="group card flex flex-col overflow-hidden transition-[transform,box-shadow,border-color] duration-200 motion-reduce:transition-none hover:-translate-y-0.5 hover:shadow-lift"
     >
       <div className="relative aspect-[16/9] overflow-hidden bg-gradient-to-br from-risac-100 to-risac-300">
         {photo && (

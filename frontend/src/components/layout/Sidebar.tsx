@@ -35,7 +35,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           href="/tableau-de-bord"
           onClick={onNavigate}
           aria-label="RISAC, tableau de bord"
-          className={clsx(!light && 'rounded-xl bg-white px-2 py-1')}
+          className={clsx(!light && 'rounded-xl bg-[#ffffff] px-2 py-1')}
         >
           <Logo className={light ? 'h-12' : 'h-10'} />
         </Link>

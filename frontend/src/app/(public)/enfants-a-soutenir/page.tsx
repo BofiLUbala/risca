@@ -40,7 +40,7 @@ export default function PublicChildrenPage() {
         </p>
       </header>
 
-      <div className="mt-6 flex flex-wrap gap-3 rounded-2xl border border-ink-200/70 bg-white p-4">
+      <div className="mt-6 flex flex-wrap gap-3 rounded-2xl border border-ink-200/70 bg-surface p-4">
         <select
           value={countryId}
           onChange={(e) => setCountryId(e.target.value)}

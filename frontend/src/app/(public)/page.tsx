@@ -40,13 +40,13 @@ export default function HomePage() {
         />
         <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1.15fr_1fr] lg:px-8 lg:py-24">
           <div>
-            <span className="chip bg-sun-400 text-ink-950">ONG Congo Meilleur ASBL &middot; RISAC</span>
+            <span className="chip bg-sun-400 text-navy">ONG Congo Meilleur ASBL &middot; RISAC</span>
             <h1 className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">
               B&acirc;tir un &eacute;cosyst&egrave;me d&apos;excellence, de r&eacute;silience, de
               r&eacute;paration et d&apos;inclusion pour{' '}
               <span className="text-sun-400">l&apos;enfance vuln&eacute;rable</span>
             </h1>
-            <p className="mt-5 max-w-2xl text-base leading-relaxed text-risac-100 sm:text-lg">
+            <p className="mt-5 max-w-2xl text-base leading-relaxed text-onband sm:text-lg">
               RISAC relie les orphelinats, les ambassadeurs, les responsables r&eacute;gionaux et
               nationaux, les bailleurs et les partenaires. Chaque enfant est suivi individuellement,
               chaque franc est trac&eacute; jusqu&apos;&agrave; sa preuve de d&eacute;pense.
@@ -63,7 +63,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="rounded-3xl bg-white p-6 shadow-lift sm:p-8">
+          <div className="rounded-3xl bg-surface p-6 shadow-lift sm:p-8">
             <p className="flex items-center gap-2 text-sm font-semibold text-ink-900">
               <ShieldCheck className="h-5 w-5 text-risac-700" strokeWidth={1.75} />
               Nos engagements
@@ -176,7 +176,7 @@ export default function HomePage() {
         <div className="mt-8 grid gap-5 sm:grid-cols-2">
           {AXES.map((axe) => (
             <div key={axe.title} className="card card-pad flex gap-4 border-t-4 border-t-sun-400">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-sun-400 text-ink-950">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-sun-400 text-navy">
                 <axe.icon className="h-5 w-5" strokeWidth={1.75} />
               </span>
               <div>
@@ -192,7 +192,7 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <p className="brand-tick text-sm font-semibold text-sun-300">Transparence</p>
           <h2 className="mt-2 text-2xl font-semibold tracking-tight">Le circuit de votre don</h2>
-          <p className="mt-2 max-w-2xl text-risac-100">
+          <p className="mt-2 max-w-2xl text-onband">
             Aucune personne ne saisit, ne re&ccedil;oit et ne d&eacute;pense seule.
             L&apos;ambassadeur ne touche jamais l&apos;argent.
           </p>
@@ -200,11 +200,11 @@ export default function HomePage() {
           <ol className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {CIRCUIT.map((s) => (
               <li key={s.n} className="rounded-2xl border border-white/10 bg-white/[0.07] p-5">
-                <span className="grid h-9 w-9 place-items-center rounded-xl bg-sun-400 text-sm font-semibold text-ink-950">
+                <span className="grid h-9 w-9 place-items-center rounded-xl bg-sun-400 text-sm font-semibold text-navy">
                   {s.n}
                 </span>
                 <p className="mt-4 font-semibold">{s.t}</p>
-                <p className="mt-1.5 text-sm leading-relaxed text-risac-100">{s.d}</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-onband">{s.d}</p>
               </li>
             ))}
           </ol>

@@ -34,7 +34,7 @@ export function Tabs({
               </span>
             )}
             {active === t.key && (
-              <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-risac-600" />
+              <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-brand-600" />
             )}
           </button>
         ))}

@@ -7,6 +7,7 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { ROLE_LABEL } from '@/lib/roles';
 import { Avatar } from '@/components/ui/Avatar';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 /** Drapeau du pays : image (les émojis de drapeau ne s'affichent pas sous Windows). */
 function Flag({ iso2, name }: { iso2: string; name: string }) {
@@ -72,7 +73,7 @@ export function Topbar({ title, onMenu }: { title?: string; onMenu: () => void }
   const country = user?.country;
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-2 border-b border-ink-100 bg-white/90 px-3 backdrop-blur-md sm:gap-3 sm:px-6">
+    <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-2 border-b border-ink-100 bg-surface/90 px-3 backdrop-blur-md sm:gap-3 sm:px-6">
       <button
         onClick={onMenu}
         className="btn-ghost -ml-1 h-11 w-11 shrink-0 p-0 lg:hidden"
@@ -100,6 +101,8 @@ export function Topbar({ title, onMenu }: { title?: string; onMenu: () => void }
           </time>
         </div>
       </div>
+
+      <ThemeToggle />
 
       <Link href="/communication" className="btn-ghost h-11 w-11 shrink-0 p-0" aria-label="Rechercher">
         <Search className="h-5 w-5" />

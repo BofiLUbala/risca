@@ -82,7 +82,7 @@
 
   /* ---------- Surfaces ---------- */
   .card {
-    @apply rounded-2xl border border-ink-200 bg-white shadow-soft;
+    @apply rounded-2xl border border-ink-200 bg-surface shadow-soft;
   }
 
   .card-pad {
@@ -105,7 +105,7 @@
   }
 
   .btn-primary {
-    @apply btn bg-sun-400 text-ink-950 shadow-soft hover:bg-sun-300 active:bg-sun-500;
+    @apply btn bg-sun-400 text-navy shadow-soft hover:bg-sun-300 active:bg-sun-500;
   }
 
   .btn-soft {
@@ -122,6 +122,17 @@
     @apply inline-flex min-h-[44px] items-center gap-1 rounded text-sm font-semibold text-risac-700 underline decoration-transparent
            decoration-2 underline-offset-4 transition-[text-decoration-color,color] duration-base hover:text-risac-900
            hover:decoration-sun-400;
+  }
+
+  /* Carte de tableau de bord repliée : seul le titre reste. */
+  section[data-collapsed='true'] > :not(:first-child) {
+    display: none;
+  }
+  section[data-collapsed='true'] > :first-child {
+    margin-bottom: 0;
+  }
+  section[data-collapsed='true'] {
+    align-self: start;
   }
 
   /* Petite pastille jaune devant les sous-titres : repère de marque. */
@@ -148,11 +159,11 @@
   }
 
   .btn-outline {
-    @apply btn border border-sun-400 bg-white text-ink-900 hover:border-sun-500 hover:bg-sun-50;
+    @apply btn border border-sun-400 bg-surface text-ink-900 hover:border-sun-500 hover:bg-sun-50;
   }
 
   .btn-danger {
-    @apply btn bg-danger-600 text-white shadow-soft hover:bg-danger-700 active:bg-danger-800;
+    @apply btn bg-alert-600 text-white shadow-soft hover:bg-alert-700 active:bg-alert-800;
   }
 
   /* Bouton réduit à une icône : toujours lui donner un aria-label. */
@@ -162,7 +173,7 @@
 
   /* ---------- Formulaires ---------- */
   .input {
-    @apply min-h-[44px] w-full rounded-xl border border-ink-300 bg-white px-3.5 py-2 text-sm text-ink-900
+    @apply min-h-[44px] w-full rounded-xl border border-ink-300 bg-surface px-3.5 py-2 text-sm text-ink-900
            placeholder:text-ink-400 transition-[border-color,box-shadow] duration-base ease-standard
            focus:border-risac-600 focus:outline-none focus:ring-4 focus:ring-sun-200
            disabled:cursor-not-allowed disabled:bg-ink-100 disabled:text-ink-500
@@ -187,7 +198,7 @@
   }
 
   .nav-item-active {
-    @apply bg-risac-700 text-white shadow-soft hover:bg-risac-700 hover:text-white;
+    @apply bg-brand-700 text-white shadow-soft hover:bg-brand-700 hover:text-white;
   }
 
   /* ---------- Menu latéral : thèmes tirés des couleurs du logo ---------- */
@@ -249,6 +260,26 @@
     --sb-border: rgba(255, 255, 255, 0.12);
     --sb-bar: #e7b92c;
   }
+
+  /* Mode sombre : le menu « Clair » devient sombre, et le logo (fond blanc) garde sa plaque. */
+  .dark .sb-light {
+    --sb-bg: #172430;
+    --sb-fg: #cfd9e2;
+    --sb-group: #93a5b6;
+    --sb-hover: rgba(255, 255, 255, 0.08);
+    --sb-hover-fg: #ffffff;
+    --sb-active-bg: rgba(255, 255, 255, 0.14);
+    --sb-active-fg: #ffffff;
+    --sb-border: rgba(255, 255, 255, 0.12);
+    --sb-bar: #e7b92c;
+  }
+  .dark img[src*='risac-logo'],
+  .dark img[src*='risac-emblem'] {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 2px 8px;
+  }
+
   .sb-item {
     @apply relative flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium
            transition-[background-color,color] duration-base ease-standard motion-reduce:transition-none;

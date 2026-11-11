@@ -28,7 +28,7 @@ export function ChildCard({ child, headingLevel = 'h3' }: { child: PublicChild; 
   return (
     <Link
       href={`/enfants-a-soutenir/${child.id}`}
-      className="group card overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift"
+      className="group card overflow-hidden transition-[transform,box-shadow,border-color] duration-200 motion-reduce:transition-none hover:-translate-y-0.5 hover:shadow-lift"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-risac-100 to-risac-200">
         {photo ? (
@@ -50,10 +50,10 @@ export function ChildCard({ child, headingLevel = 'h3' }: { child: PublicChild; 
 
         <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
           {child.warOrphan && (
-            <span className="chip bg-white/90 text-risac-700 backdrop-blur">Orphelin de guerre</span>
+            <span className="chip bg-surface/90 text-risac-700 backdrop-blur">Orphelin de guerre</span>
           )}
           {child.displaced && (
-            <span className="chip bg-white/90 text-ink-700 backdrop-blur">Déplacé</span>
+            <span className="chip bg-surface/90 text-ink-700 backdrop-blur">Déplacé</span>
           )}
         </div>
 

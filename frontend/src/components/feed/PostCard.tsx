@@ -163,7 +163,7 @@ export function PostCard({ post, onChange }: { post: any; onChange?: () => void 
             className="mt-4 block rounded-xl border border-risac-200 bg-risac-50/60 p-4 transition-colors hover:bg-risac-50"
           >
             <p className="text-sm font-semibold text-risac-800">{post.project.title}</p>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-white">
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-risac-400 to-risac-600"
                 style={{ width: `${percent(post.project.collectedAmount, post.project.targetAmount)}%` }}

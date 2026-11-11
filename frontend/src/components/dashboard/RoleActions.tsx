@@ -4,6 +4,7 @@ import Link from 'next/link';
 import * as Icons from 'lucide-react';
 import type { Role } from '@/lib/roles';
 import { ROLE_ACTIONS } from './role-actions-map';
+import { SectionTitle } from './widgets';
 
 function Icon({ name }: { name: string }) {
   const C = (Icons as any)[name] ?? Icons.Circle;
@@ -17,15 +18,15 @@ export function RoleActions({ role }: { role: Role }) {
 
   return (
     <section>
-      <h2 className="mb-4 section-title brand-tick">Mes fonctionnalités</h2>
+      <SectionTitle>Mes fonctionnalités</SectionTitle>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {actions.map((a) => (
           <Link
             key={a.label}
             href={a.href}
-            className="card flex items-start gap-3 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-sun-300 hover:shadow-lift"
+            className="card flex items-start gap-3 p-4 transition-[transform,box-shadow,border-color] duration-200 motion-reduce:transition-none hover:-translate-y-0.5 hover:border-sun-300 hover:shadow-lift"
           >
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-sun-400 text-ink-950">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-sun-400 text-navy">
               <Icon name={a.icon} />
             </span>
             <span className="min-w-0">

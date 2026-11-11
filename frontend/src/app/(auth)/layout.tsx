@@ -30,22 +30,22 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               r&eacute;paration et d&apos;inclusion pour l&apos;enfance vuln&eacute;rable en
               R&eacute;publique D&eacute;mocratique du Congo.
             </p>
-            <footer className="mt-5 text-sm text-risac-100">
+            <footer className="mt-5 text-sm text-onband">
               Ma&icirc;tre Ndondo Bonkendju Albert, Coordonnateur du RISAC
             </footer>
           </blockquote>
 
           <dl className="mt-12 grid grid-cols-3 gap-6 border-t border-white/20 pt-8">
             <div>
-              <dt className="text-xs font-medium text-risac-200">Structures visées</dt>
+              <dt className="text-xs font-medium text-onband">Structures visées</dt>
               <dd className="mt-1 text-xl font-semibold">150</dd>
             </div>
             <div>
-              <dt className="text-xs font-medium text-risac-200">Provinces</dt>
+              <dt className="text-xs font-medium text-onband">Provinces</dt>
               <dd className="mt-1 text-xl font-semibold">26</dd>
             </div>
             <div>
-              <dt className="text-xs font-medium text-risac-200">R&ocirc;les</dt>
+              <dt className="text-xs font-medium text-onband">R&ocirc;les</dt>
               <dd className="mt-1 text-xl font-semibold">12</dd>
             </div>
           </dl>

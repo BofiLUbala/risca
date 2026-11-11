@@ -7,6 +7,7 @@ import clsx from 'clsx';
 import { Menu, X } from 'lucide-react';
 import { Logo } from '@/components/ui/Logo';
 import { useAuth } from '@/lib/auth-context';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 const LINKS = [
   { href: '/', label: 'Accueil' },
@@ -23,7 +24,7 @@ export function PublicHeader() {
   const active = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
 
   return (
-    <header className="sticky top-0 z-40 border-b border-ink-100 bg-white/85 backdrop-blur-md">
+    <header className="sticky top-0 z-40 border-b border-ink-100 bg-surface/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
         <Link href="/" aria-label="RISAC, accueil">
           <Logo className="h-12" />
@@ -47,6 +48,7 @@ export function PublicHeader() {
         </nav>
 
         <div className="ml-auto hidden items-center gap-2 md:flex">
+          <ThemeToggle />
           {user ? (
             <Link href="/tableau-de-bord" className="btn-primary">
               Mon espace
@@ -63,9 +65,10 @@ export function PublicHeader() {
           )}
         </div>
 
+        <ThemeToggle className="ml-auto md:hidden" />
         <button
           onClick={() => setOpen(!open)}
-          className="btn-ghost ml-auto h-10 w-10 p-0 md:hidden"
+          className="btn-ghost h-10 w-10 p-0 md:hidden"
           aria-label="Menu"
           aria-expanded={open}
         >
@@ -75,7 +78,7 @@ export function PublicHeader() {
 
       <div
         className={clsx(
-          'overflow-hidden border-t border-ink-100 bg-white transition-all duration-200 md:hidden',
+          'overflow-hidden border-t border-ink-100 bg-surface transition-[transform,box-shadow,border-color] duration-200 motion-reduce:transition-none md:hidden',
           open ? 'max-h-96' : 'max-h-0',
         )}
       >

@@ -194,7 +194,7 @@ export default function AdminPage() {
 
   const tabClass = (active: boolean) =>
     `flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition-colors duration-base motion-reduce:transition-none ${
-      active ? 'bg-white text-risac-800 shadow-soft' : 'text-ink-500 hover:text-ink-800'
+      active ? 'bg-surface text-risac-800 shadow-soft' : 'text-ink-500 hover:text-ink-800'
     }`;
 
   return (

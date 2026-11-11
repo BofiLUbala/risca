@@ -1,6 +1,8 @@
 'use client';
 
 import useSWR from 'swr';
+import { ChevronsDownUp, ChevronsUpDown } from 'lucide-react';
+import { COLLAPSE_EVENT } from '@/components/dashboard/widgets';
 import { fetcher } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { ROLE_LABEL } from '@/lib/roles';
@@ -44,16 +46,36 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-7">
-      <header>
-        <h1 className="text-xl font-semibold tracking-tight text-ink-950 sm:text-2xl">
-          Bonjour <span className="mark-sun">{user.firstName}</span>
-        </h1>
-        <p className="mt-1 text-sm text-ink-500">
-          {ROLE_LABEL[user.role]}
-          {user.orphanage ? ` · ${user.orphanage.name}` : ''}
-          {user.province ? ` · ${user.province.nameFr}` : ''}
-          {user.country && !user.province ? ` · ${user.country.nameFr}` : ''}
-        </p>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight text-ink-950 sm:text-2xl">
+            Bonjour <span className="mark-sun">{user.firstName}</span>
+          </h1>
+          <p className="mt-1 text-sm text-ink-500">
+            {ROLE_LABEL[user.role]}
+            {user.orphanage ? ` · ${user.orphanage.name}` : ''}
+            {user.province ? ` · ${user.province.nameFr}` : ''}
+            {user.country && !user.province ? ` · ${user.country.nameFr}` : ''}
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            className="btn-outline"
+            onClick={() => window.dispatchEvent(new CustomEvent(COLLAPSE_EVENT, { detail: true }))}
+          >
+            <ChevronsDownUp className="h-4 w-4" />
+            Tout réduire
+          </button>
+          <button
+            type="button"
+            className="btn-outline"
+            onClick={() => window.dispatchEvent(new CustomEvent(COLLAPSE_EVENT, { detail: false }))}
+          >
+            <ChevronsUpDown className="h-4 w-4" />
+            Tout développer
+          </button>
+        </div>
       </header>
 
       {Board ? <Board data={data} /> : null}

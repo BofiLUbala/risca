@@ -31,7 +31,7 @@ export default function OrphanagesPage() {
             <Link
               key={o.id}
               href={`/orphelinats/${o.id}`}
-              className="card card-pad transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lift"
+              className="card card-pad transition-[transform,box-shadow,border-color] duration-200 motion-reduce:transition-none hover:-translate-y-0.5 hover:shadow-lift"
             >
               <div className="flex items-start justify-between gap-3">
                 <h2 className="section-title">{o.name}</h2>

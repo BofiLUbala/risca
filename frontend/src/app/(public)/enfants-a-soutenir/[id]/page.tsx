@@ -100,7 +100,7 @@ export default function PublicChildPage({ params }: { params: Promise<{ id: stri
                     className="block rounded-xl bg-ink-50 p-4 hover:bg-risac-50"
                   >
                     <p className="text-sm font-medium text-ink-900">{p.title}</p>
-                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-white">
+                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface">
                       <div
                         className="h-full rounded-full bg-gradient-to-r from-risac-400 to-risac-600"
                         style={{ width: `${percent(p.collectedAmount, p.targetAmount)}%` }}

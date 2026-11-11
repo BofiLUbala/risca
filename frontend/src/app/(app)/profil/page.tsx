@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Save } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
-import { Avatar } from '@/components/ui/Avatar';
+import { AvatarUpload } from '@/components/users/AvatarUpload';
 import { PageLoading, Spinner } from '@/components/ui/Loading';
 import { ROLE_LABEL } from '@/lib/roles';
 import { SecuritySection } from '@/components/users/SecuritySection';
@@ -44,17 +44,10 @@ export default function ProfilePage() {
       <h1 className="page-title">Mon profil</h1>
 
       <section className="card card-pad">
-        <div className="flex items-center gap-4">
-          <Avatar src={user.avatarUrl} firstName={user.firstName} lastName={user.lastName} size="lg" />
-          <div>
-            <p className="text-base font-semibold text-ink-900">
-              {user.firstName} {user.lastName}
-            </p>
-            <p className="text-sm text-ink-500">
-              {user.email} &middot; {ROLE_LABEL[user.role]}
-            </p>
-          </div>
-        </div>
+        <AvatarUpload />
+        <p className="mt-4 text-sm text-ink-500">
+          {user.email} &middot; {ROLE_LABEL[user.role]}
+        </p>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           <div>

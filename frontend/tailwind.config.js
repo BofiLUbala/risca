@@ -72,27 +72,87 @@ const steel = {
   500: '#2d8c8c', 600: '#237272', 700: '#1d5c5c', 800: '#184a4a', 900: '#143d3d',
 };
 
+
+// ---------- Thèmes clair et sombre ----------
+// Chaque échelle est exposée en variables CSS (`--c-<nom>-<teinte>`), définies par
+// le plugin plus bas : `:root` pour le clair, `.dark` pour le sombre. Les classes
+// Tailwind (`bg-ink-50`, `text-risac-700`...) suivent donc le thème sans changer.
+const reverseScale = (s) => {
+  const keys = Object.keys(s);
+  const vals = Object.values(s);
+  return Object.fromEntries(keys.map((k, i) => [k, vals[keys.length - 1 - i]]));
+};
+const hexToRgb = (h) =>
+  [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)).join(' ');
+
+// Sombre : neutres relevés à la main pour garder un texte secondaire lisible (> 4,5:1).
+const inkDark = {
+  50: '#0e1822', 100: '#1a2a38', 200: '#263a4c', 300: '#3a5064', 400: '#9fb1c3',
+  500: '#aebfce', 600: '#c1cfdb', 700: '#d2dde7', 800: '#e1e9f0', 900: '#edf2f7', 950: '#f7fafc',
+};
+const risacDark = {
+  50: '#11263a', 100: '#163450', 200: '#1d4766', 300: '#2a6190', 400: '#5d8fb5',
+  500: '#7fb0d6', 600: '#9cc4e4', 700: '#b8d6ee', 800: '#cfe3f4', 900: '#e2eef8', 950: '#f0f7fc',
+};
+const sunDark = {
+  50: '#2a2310', 100: '#3a2f12', 200: '#55431a', 300: sun[300], 400: sun[400],
+  500: sun[500], 600: '#f0cd4e', 700: '#f6df85', 800: '#fbefc0', 900: '#fdf8e6',
+};
+
+const PALETTES = {
+  ink: [ink, inkDark],
+  risac: [risac, risacDark],
+  sun: [sun, sunDark],
+  success: [success, reverseScale(success)],
+  danger: [danger, reverseScale(danger)],
+  warning: [warning, reverseScale(warning)],
+  confidential: [confidential, reverseScale(confidential)],
+  steel: [steel, reverseScale(steel)],
+};
+const themed = (name) =>
+  Object.fromEntries(
+    Object.keys(PALETTES[name][0]).map((k) => [k, `rgb(var(--c-${name}-${k}) / <alpha-value>)`]),
+  );
+const cssVars = (mode) => {
+  const out = {};
+  for (const [name, pair] of Object.entries(PALETTES)) {
+    for (const [k, v] of Object.entries(pair[mode])) out[`--c-${name}-${k}`] = hexToRgb(v);
+  }
+  out['--surface'] = mode === 0 ? '255 255 255' : '21 33 44';
+  return out;
+};
+
+const plugin = require('tailwindcss/plugin');
+
 module.exports = {
+  darkMode: 'class',
   content: ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
   // Classes de thème du menu construites dynamiquement (`sb-${color}`) : à conserver.
   safelist: ['sb-light', 'sb-navy', 'sb-green', 'sb-steel', 'sb-dark'],
   theme: {
     extend: {
       colors: {
-        risac,
-        sun,
-        ink,
-        success,
-        danger,
-        warning,
-        confidential,
-        steel,
+        risac: themed('risac'),
+        sun: themed('sun'),
+        ink: themed('ink'),
+        success: themed('success'),
+        danger: themed('danger'),
+        warning: themed('warning'),
+        confidential: themed('confidential'),
+        steel: themed('steel'),
+        // Fonds de carte : blanc en clair, bleu nuit en sombre.
+        surface: 'rgb(var(--surface) / <alpha-value>)',
+        // Couleurs qui ne s'inversent jamais : texte sur le jaune, aplats de marque, alertes pleines.
+        navy: '#172430',
+        onband: '#dce8f1',
+        brand: { 600: '#1d5c8b', 700: '#174a70' },
+        alert: { 600: '#c2453d', 700: '#a03831', 800: '#822f2a' },
         // Alias historiques conservés : le code existant les utilise.
-        emerald: success,
-        rose: danger,
-        amber: warning,
-        violet: confidential,
-        teal: steel,
+        emerald: themed('success'),
+        rose: themed('danger'),
+        amber: themed('warning'),
+        violet: themed('confidential'),
+        teal: themed('steel'),
         accent: {
           mint: success[500],
           amber: warning[500],
@@ -163,5 +223,9 @@ module.exports = {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    plugin(({ addBase }) => {
+      addBase({ ':root': cssVars(0), '.dark': { ...cssVars(1), colorScheme: 'dark' } });
+    }),
+  ],
 };

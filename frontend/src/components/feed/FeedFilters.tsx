@@ -51,7 +51,7 @@ export function FeedFilters({
               onClick={() => onChange({ ...value, scope: s.value })}
               className={clsx(
                 'min-h-[40px] flex-1 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors duration-fast',
-                value.scope === s.value ? 'bg-white text-ink-900 shadow-sm' : 'text-ink-500 hover:text-ink-700',
+                value.scope === s.value ? 'bg-surface text-ink-900 shadow-sm' : 'text-ink-500 hover:text-ink-700',
               )}
             >
               {s.label}
@@ -69,7 +69,7 @@ export function FeedFilters({
             className={clsx(
               'inline-flex min-h-[40px] shrink-0 items-center rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors',
               value.type === t.value
-                ? 'bg-risac-600 text-white'
+                ? 'bg-brand-600 text-white'
                 : 'bg-ink-100 text-ink-600 hover:bg-ink-200',
             )}
           >
@@ -81,7 +81,7 @@ export function FeedFilters({
           value={value.countryId}
           onChange={(e) => onChange({ ...value, countryId: e.target.value })}
           aria-label="Filtrer par pays"
-          className="ml-auto shrink-0 rounded-full border border-ink-200 bg-white px-3 py-1.5 text-xs text-ink-600"
+          className="ml-auto shrink-0 rounded-full border border-ink-200 bg-surface px-3 py-1.5 text-xs text-ink-600"
         >
           <option value="">Tous les pays</option>
           {countries?.map((c) => (
