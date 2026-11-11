@@ -95,8 +95,8 @@ export function Topbar({ title, onMenu }: { title?: string; onMenu: () => void }
           </span>
           <span className="hidden h-4 w-px bg-ink-200 sm:block" aria-hidden="true" />
           <time className="truncate text-ink-600" suppressHydrationWarning>
-            <span className="hidden md:inline">{today?.long}</span>
-            <span className="md:hidden">{today?.short}</span>
+            <span className="hidden xl:inline">{today?.long}</span>
+            <span className="xl:hidden">{today?.short}</span>
           </time>
         </div>
       </div>
