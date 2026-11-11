@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
 import { Menu, X } from 'lucide-react';
 import { Logo } from '@/components/ui/Logo';
@@ -18,6 +19,8 @@ const LINKS = [
 export function PublicHeader() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const active = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
 
   return (
     <header className="sticky top-0 z-40 border-b border-ink-100 bg-white/85 backdrop-blur-md">
@@ -31,7 +34,12 @@ export function PublicHeader() {
             <Link
               key={l.href}
               href={l.href}
-              className="rounded-lg px-3 py-2 text-sm font-medium text-ink-600 transition-colors hover:bg-risac-50 hover:text-risac-700"
+              aria-current={active(l.href) ? 'page' : undefined}
+              className={clsx(
+                'relative rounded-lg px-3 py-2 text-sm font-medium transition-colors hover:bg-sun-50 hover:text-ink-950',
+                "after:absolute after:inset-x-3 after:-bottom-[13px] after:h-[3px] after:rounded-full after:content-['']",
+                active(l.href) ? 'text-ink-950 after:bg-sun-400' : 'text-ink-600 after:bg-transparent',
+              )}
             >
               {l.label}
             </Link>
@@ -77,7 +85,11 @@ export function PublicHeader() {
               key={l.href}
               href={l.href}
               onClick={() => setOpen(false)}
-              className="block rounded-xl px-3 py-2.5 text-sm font-medium text-ink-700 hover:bg-risac-50"
+              aria-current={active(l.href) ? 'page' : undefined}
+              className={clsx(
+                'block rounded-xl border-l-4 px-3 py-2.5 text-sm font-medium hover:bg-sun-50',
+                active(l.href) ? 'border-sun-400 bg-sun-50 text-ink-950' : 'border-transparent text-ink-700',
+              )}
             >
               {l.label}
             </Link>

@@ -18,22 +18,22 @@ export function PublicFooter() {
             <p className="text-sm font-semibold text-ink-900">Le réseau</p>
             <ul className="mt-4 space-y-2.5 text-sm text-ink-500">
               <li>
-                <Link href="/enfants-a-soutenir" className="inline-flex min-h-[44px] items-center hover:text-risac-700 sm:min-h-0">
+                <Link href="/enfants-a-soutenir" className="inline-flex min-h-[44px] items-center hover:text-risac-700 sm:min-h-[32px]">
                   Enfants à soutenir
                 </Link>
               </li>
               <li>
-                <Link href="/projets-ouverts" className="inline-flex min-h-[44px] items-center hover:text-risac-700 sm:min-h-0">
+                <Link href="/projets-ouverts" className="inline-flex min-h-[44px] items-center hover:text-risac-700 sm:min-h-[32px]">
                   Projets en cours
                 </Link>
               </li>
               <li>
-                <Link href="/structures" className="inline-flex min-h-[44px] items-center hover:text-risac-700 sm:min-h-0">
+                <Link href="/structures" className="inline-flex min-h-[44px] items-center hover:text-risac-700 sm:min-h-[32px]">
                   Orphelinats labellisés
                 </Link>
               </li>
               <li>
-                <Link href="/partenaires" className="inline-flex min-h-[44px] items-center hover:text-risac-700 sm:min-h-0">
+                <Link href="/partenaires" className="inline-flex min-h-[44px] items-center hover:text-risac-700 sm:min-h-[32px]">
                   Partenaires
                 </Link>
               </li>
@@ -44,12 +44,12 @@ export function PublicFooter() {
             <p className="text-sm font-semibold text-ink-900">Soutenir</p>
             <ul className="mt-4 space-y-2.5 text-sm text-ink-500">
               <li>
-                <Link href="/inscription" className="inline-flex min-h-[44px] items-center hover:text-risac-700 sm:min-h-0">
+                <Link href="/inscription" className="inline-flex min-h-[44px] items-center hover:text-risac-700 sm:min-h-[32px]">
                   Devenir bailleur
                 </Link>
               </li>
               <li>
-                <Link href="/don-fonds-general" className="inline-flex min-h-[44px] items-center hover:text-risac-700 sm:min-h-0">
+                <Link href="/don-fonds-general" className="inline-flex min-h-[44px] items-center hover:text-risac-700 sm:min-h-[32px]">
                   Global Congo Children Fund
                 </Link>
               </li>

@@ -33,7 +33,7 @@ export function DonorBoard({ data }: { data: any }) {
       <section className="card card-pad">
         <SectionTitle
           action={
-            <Link href="/mes-parrainages" className="text-sm font-medium text-risac-600 hover:text-risac-700">
+            <Link href="/mes-parrainages" className="link-action">
               Gérer
             </Link>
           }
@@ -53,7 +53,7 @@ export function DonorBoard({ data }: { data: any }) {
               <Link
                 key={s.id}
                 href={`/enfants-a-soutenir/${s.child.id}`}
-                className="flex items-center gap-3 rounded-xl border border-ink-100 px-4 py-3 transition-colors hover:border-risac-200 hover:bg-risac-50/40"
+                className="flex items-center gap-3 rounded-xl border border-ink-100 px-4 py-3 transition-colors hover:border-sun-300 hover:bg-sun-50"
               >
                 <Avatar src={s.child.publicPhotoUrl} firstName={s.child.firstName} size="md" />
                 <span className="min-w-0 flex-1">
@@ -73,7 +73,7 @@ export function DonorBoard({ data }: { data: any }) {
       <section className="card card-pad">
         <SectionTitle
           action={
-            <Link href="/communication" className="text-sm font-medium text-risac-600 hover:text-risac-700">
+            <Link href="/communication" className="link-action">
               Tout le fil
             </Link>
           }
@@ -92,7 +92,7 @@ export function DonorBoard({ data }: { data: any }) {
                 <Link
                   key={p.id}
                   href={`/communication/${p.id}`}
-                  className="flex gap-4 rounded-xl border border-ink-100 p-3 transition-colors hover:border-risac-200 hover:bg-risac-50/40"
+                  className="flex gap-4 rounded-xl border border-ink-100 p-3 transition-colors hover:border-sun-300 hover:bg-sun-50"
                 >
                   {photo && <SafeImage src={photo} className="h-16 w-16 shrink-0 rounded-xl object-cover" />}
                   <span className="min-w-0 flex-1">

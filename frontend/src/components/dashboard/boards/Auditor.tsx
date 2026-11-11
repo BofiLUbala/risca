@@ -53,7 +53,7 @@ export function AuditorBoard({ data }: { data: any }) {
       <section className="card card-pad">
         <SectionTitle
           action={
-            <Link href="/journal-audit" className="text-sm font-medium text-risac-600 hover:text-risac-700">
+            <Link href="/journal-audit" className="link-action">
               Journal complet
             </Link>
           }

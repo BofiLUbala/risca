@@ -46,7 +46,7 @@ export function RegionalBoard({ data }: { data: any }) {
         <section className="card card-pad lg:col-span-2">
           <SectionTitle
             action={
-              <Link href="/enfants" className="text-sm font-medium text-risac-600 hover:text-risac-700">
+              <Link href="/enfants" className="link-action">
                 Tout voir
               </Link>
             }
@@ -98,7 +98,7 @@ export function RegionalBoard({ data }: { data: any }) {
               <Link
                 key={c.id}
                 href={`/enfants/${c.id}`}
-                className="flex items-center justify-between gap-3 rounded-xl bg-ink-50 px-4 py-3 hover:bg-risac-50"
+                className="flex items-center justify-between gap-3 rounded-xl bg-ink-50 px-4 py-3 hover:bg-sun-50"
               >
                 <span className="flex items-center gap-2 text-sm font-medium text-ink-800">
                   <GraduationCap className="h-4 w-4 text-ink-400" />

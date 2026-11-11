@@ -84,7 +84,7 @@ export function ChildCard({ child, headingLevel = 'h3' }: { child: PublicChild; 
         )}
 
         {child.publicNeeds && (
-          <p className="mt-3 flex items-start gap-1.5 rounded-xl bg-risac-50 px-3 py-2 text-xs text-risac-700">
+          <p className="mt-3 flex items-start gap-1.5 rounded-xl border-l-4 border-sun-400 bg-sun-50 px-3 py-2 text-xs text-ink-800">
             <HeartHandshake className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             <span className="line-clamp-2">{child.publicNeeds}</span>
           </p>

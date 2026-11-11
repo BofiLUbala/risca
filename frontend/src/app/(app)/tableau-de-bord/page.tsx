@@ -46,7 +46,7 @@ export default function DashboardPage() {
     <div className="space-y-7">
       <header>
         <h1 className="text-xl font-semibold tracking-tight text-ink-950 sm:text-2xl">
-          Bonjour {user.firstName}
+          Bonjour <span className="mark-sun">{user.firstName}</span>
         </h1>
         <p className="mt-1 text-sm text-ink-500">
           {ROLE_LABEL[user.role]}

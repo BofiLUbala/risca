@@ -105,11 +105,42 @@
   }
 
   .btn-primary {
-    @apply btn bg-warning-400 text-ink-950 shadow-soft hover:bg-warning-500 active:bg-warning-600;
+    @apply btn bg-sun-400 text-ink-950 shadow-soft hover:bg-sun-300 active:bg-sun-500;
   }
 
   .btn-soft {
-    @apply btn bg-warning-100 text-ink-950 hover:bg-warning-200;
+    @apply btn bg-sun-100 text-ink-950 hover:bg-sun-200;
+  }
+
+  /* Bouton clair posé sur une bande bleu marine. */
+  .btn-on-dark {
+    @apply btn border border-white/40 text-white hover:border-sun-400 hover:bg-white/10;
+  }
+
+  /* Lien d'action dans le texte : bleu lisible, soulignement jaune au survol. */
+  .link-action {
+    @apply inline-flex min-h-[44px] items-center gap-1 rounded text-sm font-semibold text-risac-700 underline decoration-transparent
+           decoration-2 underline-offset-4 transition-[text-decoration-color,color] duration-base hover:text-risac-900
+           hover:decoration-sun-400;
+  }
+
+  /* Petite pastille jaune devant les sous-titres : repère de marque. */
+  .brand-tick::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 1em;
+    margin-right: 0.5rem;
+    vertical-align: -0.15em;
+    border-radius: 2px;
+    background: theme('colors.sun.400');
+  }
+
+  /* Surlignage de marque d'un mot du titre. */
+  .mark-sun {
+    background-image: linear-gradient(transparent 62%, theme('colors.sun.300') 62%);
+    background-repeat: no-repeat;
+    padding-inline: 0.08em;
   }
 
   .btn-ghost {
@@ -117,7 +148,7 @@
   }
 
   .btn-outline {
-    @apply btn border border-warning-400 bg-white text-ink-900 hover:border-warning-500 hover:bg-warning-50;
+    @apply btn border border-sun-400 bg-white text-ink-900 hover:border-sun-500 hover:bg-sun-50;
   }
 
   .btn-danger {
@@ -133,7 +164,7 @@
   .input {
     @apply min-h-[44px] w-full rounded-xl border border-ink-300 bg-white px-3.5 py-2 text-sm text-ink-900
            placeholder:text-ink-400 transition-[border-color,box-shadow] duration-base ease-standard
-           focus:border-risac-600 focus:outline-none focus:ring-4 focus:ring-risac-100
+           focus:border-risac-600 focus:outline-none focus:ring-4 focus:ring-sun-200
            disabled:cursor-not-allowed disabled:bg-ink-100 disabled:text-ink-500
            aria-[invalid=true]:border-danger-500 aria-[invalid=true]:focus:ring-danger-100
            motion-reduce:transition-none sm:min-h-[40px];

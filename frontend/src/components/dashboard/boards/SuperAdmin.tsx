@@ -45,7 +45,7 @@ export function SuperAdminBoard({ data }: { data: any }) {
         <section className="card card-pad lg:col-span-2">
           <SectionTitle
             action={
-              <Link href="/enfants" className="text-sm font-medium text-risac-600 hover:text-risac-700">
+              <Link href="/enfants" className="link-action">
                 Voir les dossiers
               </Link>
             }

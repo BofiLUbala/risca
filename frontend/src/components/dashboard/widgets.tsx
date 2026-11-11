@@ -14,7 +14,7 @@ export function SectionTitle({
 }) {
   return (
     <div className="mb-4 flex items-center justify-between gap-3">
-      <h2 className="section-title">{children}</h2>
+      <h2 className="section-title brand-tick">{children}</h2>
       {action}
     </div>
   );
@@ -26,7 +26,7 @@ export function Progress({ value, total, label }: { value: number; total: number
     <div>
       <div className="h-2 overflow-hidden rounded-full bg-ink-100">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-risac-400 to-risac-600 transition-all duration-500"
+          className="h-full rounded-full bg-sun-400 transition-[width] duration-500"
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -124,7 +124,7 @@ export function QueueItem({ request }: { request: any }) {
   return (
     <Link
       href={`/validations/${request.id}`}
-      className="flex items-start gap-3 rounded-xl border border-ink-100 bg-white px-4 py-3 transition-colors hover:border-risac-200 hover:bg-risac-50/40"
+      className="flex items-start gap-3 rounded-xl border border-ink-100 bg-white px-4 py-3 transition-colors hover:border-sun-300 hover:bg-sun-50"
     >
       <span className="mt-0.5">
         <Badge status={request.status} />

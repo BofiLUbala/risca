@@ -48,9 +48,18 @@ const danger = {
   50: '#fdeeed', 100: '#fadbd9', 200: '#f4b8b4', 300: '#ec8b85', 400: '#e1675f',
   500: '#d9574f', 600: '#c2453d', 700: '#a03831', 800: '#822f2a', 900: '#6b2824',
 };
+// Alerte : orange, volontairement distinct du jaune de marque pour que
+// « attention » ne se confonde jamais avec la couleur d'accent.
 const warning = {
-  50: '#fdf6e3', 100: '#faeab9', 200: '#f5d97f', 300: '#efc84d', 400: '#e9b937',
-  500: '#e6ad28', 600: '#c78d12', 700: '#8a5d0a', 800: '#6e4a0b', 900: '#58390e',
+  50: '#fff5eb', 100: '#ffe6cc', 200: '#fdcb96', 300: '#fbab5c', 400: '#f68f32',
+  500: '#e8751a', 600: '#c45c10', 700: '#9a460e', 800: '#7a3911', 900: '#622f11',
+};
+// Jaune du logo (#E7B92C) : accent de marque. 400 = jaune du logo.
+// Toujours en aplat ou en trait, jamais en texte sur fond blanc (contraste 1,9:1) ;
+// texte posé dessus : ink-950. Sur le bleu marine, le jaune 400 passe 6:1.
+const sun = {
+  50: '#fdf8e6', 100: '#fbefc0', 200: '#f6df85', 300: '#f0cd4e', 400: '#e7b92c',
+  500: '#d1a11a', 600: '#a87e10', 700: '#7f5d0f', 800: '#5f4510', 900: '#4a3610',
 };
 // Confidentialité des dossiers sensibles.
 const confidential = {
@@ -71,6 +80,7 @@ module.exports = {
     extend: {
       colors: {
         risac,
+        sun,
         ink,
         success,
         danger,
@@ -109,7 +119,7 @@ module.exports = {
       boxShadow: {
         soft: '0 1px 2px rgba(15, 47, 73, 0.05), 0 2px 8px rgba(15, 47, 73, 0.05)',
         lift: '0 2px 4px rgba(15, 47, 73, 0.06), 0 10px 28px rgba(15, 47, 73, 0.12)',
-        glow: '0 0 0 4px rgba(23, 74, 112, 0.18)',
+        glow: '0 0 0 4px rgba(231, 185, 44, 0.35)',
         inset: 'inset 0 1px 0 rgba(255, 255, 255, 0.08)',
       },
       backgroundImage: {

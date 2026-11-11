@@ -63,7 +63,7 @@ export function ProjectCard({
         <div className="mt-4">
           <div className="h-2 overflow-hidden rounded-full bg-ink-100">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-risac-400 to-risac-600 transition-all duration-500"
+              className="h-full rounded-full bg-sun-400 transition-[width] duration-500"
               style={{ width: `${pct}%` }}
             />
           </div>
