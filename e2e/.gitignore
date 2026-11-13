@@ -1,0 +1,5 @@
+node_modules/
+# Jetons de session des comptes de test : jamais dans le dépôt
+.auth/
+test-results/
+results/

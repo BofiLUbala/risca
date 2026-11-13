@@ -147,7 +147,7 @@ export default function DisbursementsPage() {
                     <Badge status={d.status} />
                   </div>
                   <p className="mt-1 text-xs text-ink-400">
-                    {d.reference} &middot; {d.orphanage.name} &middot; demande le {date(d.createdAt)}
+                    {d.reference} &middot; {d.orphanage.name} &middot; demandée le {date(d.createdAt)}
                     {d.requestedBy ? ` par ${d.requestedBy.firstName} ${d.requestedBy.lastName}` : ''}
                   </p>
                 </div>

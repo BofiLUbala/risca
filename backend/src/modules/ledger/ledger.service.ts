@@ -202,8 +202,9 @@ export class LedgerService {
       _count: { id: true },
     });
 
+    // Un décaissement payé passe directement en « justificatifs attendus » : l'argent est déjà sorti.
     const disbursed = await this.prisma.disbursementRequest.aggregate({
-      where: { status: { in: ['PAID', 'SETTLED'] } },
+      where: { status: { in: ['PAID', 'AWAITING_RECEIPTS', 'SETTLED'] } },
       _sum: { amount: true },
       _count: { id: true },
     });

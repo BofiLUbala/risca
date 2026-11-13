@@ -8,10 +8,35 @@
       "port": 4000
     },
     {
+      "name": "risac-api-e2e",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "backend", "run", "dev"],
+      "port": 4000,
+      "env": {
+        "DATABASE_URL": "postgresql://risac:risac_dev_pwd@localhost:5444/risac_e2e?schema=public",
+        "MAIL_ECHO_OTP": "true"
+      }
+    },
+    {
       "name": "risac-web",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "frontend", "run", "dev"],
       "port": 3100
+    },
+    {
+      "name": "risac-web-prod",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "frontend", "run", "start"],
+      "port": 3100
+    },
+    {
+      "name": "risac-mobile-web-e2e",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "mobile", "run", "web"],
+      "port": 8081,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://localhost:4000/api"
+      }
     },
     {
       "name": "risac-mobile-web",

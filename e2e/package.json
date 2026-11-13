@@ -1,0 +1,13 @@
+{
+  "name": "risac-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tests E2E visuels RISAC (web Next.js) — Playwright avec le Chrome installé",
+  "scripts": {
+    "test": "playwright test",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1"
+  }
+}

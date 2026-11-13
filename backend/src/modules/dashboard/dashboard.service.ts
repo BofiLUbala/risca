@@ -274,7 +274,7 @@ export class DashboardService {
     });
 
     const disbursed = await this.prisma.disbursementRequest.aggregate({
-      where: { status: { in: ['PAID', 'SETTLED'] }, orphanage: { countryId } },
+      where: { status: { in: ['PAID', 'AWAITING_RECEIPTS', 'SETTLED'] }, orphanage: { countryId } },
       _sum: { amount: true },
     });
 
@@ -356,6 +356,8 @@ export class DashboardService {
   private async ambassador(user: AuthUser) {
     const childIds = await this.scope.assignedChildIds(user.id);
     const ids = childIds.length ? childIds : ['__none__'];
+    // L'ambassadeur confirme aussi les demandes sur projet ou sur la structure de ses orphelinats.
+    const orphanageIds = await this.scope.ambassadorOrphanageIds(user.id);
 
     const [queue, visitReports, posts, disbursementsToConfirm] = await Promise.all([
       this.approvals.queueFor(user),
@@ -365,7 +367,13 @@ export class DashboardService {
         select: { id: true, viewCount: true, reactionCount: true, commentCount: true },
       }),
       this.prisma.disbursementRequest.count({
-        where: { status: DisbursementStatus.REQUESTED, childId: { in: ids } },
+        where: {
+          status: DisbursementStatus.REQUESTED,
+          OR: [
+            { childId: { in: ids } },
+            { childId: null, orphanageId: { in: orphanageIds.length ? orphanageIds : ['__none__'] } },
+          ],
+        },
       }),
     ]);
 
