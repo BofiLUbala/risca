@@ -16,6 +16,7 @@ export const ROLE_ACTIONS: Record<Role, RoleAction[]> = {
     { href: '/moderation', label: 'Moderer canaux et publications', hint: 'Signalements et contenus masques', icon: 'ShieldAlert' },
     { href: '/notifications', label: 'Notifications ciblees', hint: 'Tous, pays, rôle ou région', icon: 'BellRing' },
     { href: '/journal-audit', label: 'Journal d’audit', hint: 'Qui a consulte ou modifie quoi', icon: 'ScrollText' },
+    { href: '/lettres', label: 'Lettres de promotion', hint: 'Lire, transmettre au n°2 ou au n°3, valider', icon: 'Mail' },
     { href: '/securite-acces', label: 'Sécurité des accès', hint: 'Connectés, appareils, tentatives échouées, comptes bloqués', icon: 'MonitorSmartphone' },
     { href: '/parametres', label: 'Paramètres du réseau', hint: 'Seuils, frais, devises, categories', icon: 'Settings' },
     { href: '/finance', label: 'Flux financiers', hint: 'Comptes, dons, rapprochement', icon: 'Wallet' },
@@ -46,6 +47,7 @@ export const ROLE_ACTIONS: Record<Role, RoleAction[]> = {
   REGIONAL_MANAGER: [
     { href: '/validations', label: 'File de validation', hint: 'Dossiers, projets, orphelinats, fiches', icon: 'CheckCircle2' },
     { href: '/utilisateurs?role=AMBASSADOR', label: 'Ambassadeurs et agents', hint: 'Inviter et suivre la performance', icon: 'UserCog' },
+    { href: '/lettres', label: 'Lettre de promotion', hint: 'Écrire au Super Admin, puis promouvoir un agent', icon: 'Mail' },
     { href: '/orphelinats', label: 'Audits et transferts', hint: 'Planning des audits, transferts', icon: 'Home' },
     { href: '/enfants', label: 'Dossiers de la région', hint: 'Complétude, post-majorite', icon: 'Users' },
   ],

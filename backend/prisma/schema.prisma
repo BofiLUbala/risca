@@ -412,6 +412,11 @@ model User {
   favorites            Favorite[]
   refreshTokens        RefreshToken[]
   sessions             UserSession[]
+  promotionLettersWritten   PromotionLetter[] @relation("PromotionAuthor")
+  promotionLettersAbout     PromotionLetter[] @relation("PromotionCandidate")
+  promotionLettersAssigned  PromotionLetter[] @relation("PromotionAssignee")
+  promotionLettersForwarded PromotionLetter[] @relation("PromotionForwarder")
+  promotionLettersDecided   PromotionLetter[] @relation("PromotionDecider")
   consentsWitnessed    Consent[]             @relation("ConsentWitness")
   devices              Device[]
 
@@ -434,6 +439,44 @@ model RefreshToken {
   createdAt DateTime  @default(now())
 
   @@index([userId])
+}
+
+enum PromotionStatus {
+  SUBMITTED
+  FORWARDED
+  APPROVED
+  REJECTED
+  EXECUTED
+}
+
+/// Lettre d'un chef régional demandant la promotion d'un agent. Elle arrive chez le Super Admin n°1, qui la tranche
+/// ou la transmet au n°2 ou au n°3 ; une fois validée, le chef régional peut promouvoir (EXECUTED).
+model PromotionLetter {
+  id            String          @id @default(cuid())
+  authorId      String
+  author        User            @relation("PromotionAuthor", fields: [authorId], references: [id])
+  candidateId   String
+  candidate     User            @relation("PromotionCandidate", fields: [candidateId], references: [id])
+  requestedRole Role
+  subject       String
+  body          String
+  status        PromotionStatus @default(SUBMITTED)
+  assigneeId    String?
+  assignee      User?           @relation("PromotionAssignee", fields: [assigneeId], references: [id])
+  forwardedById String?
+  forwardedBy   User?           @relation("PromotionForwarder", fields: [forwardedById], references: [id])
+  forwardedAt   DateTime?
+  decidedById   String?
+  decidedBy     User?           @relation("PromotionDecider", fields: [decidedById], references: [id])
+  decidedAt     DateTime?
+  decisionNote  String?
+  executedAt    DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([authorId])
+  @@index([assigneeId, status])
+  @@index([candidateId])
 }
 
 /// Une connexion d'un appareil : début, dernier signe de vie, fin. Sert au suivi des connectés par le Super Admin.

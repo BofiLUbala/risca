@@ -18,6 +18,7 @@ import { TemplatesModule } from './modules/templates/templates.module';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { PostsModule } from './modules/posts/posts.module';
 import { ChannelsModule } from './modules/channels/channels.module';
+import { PromotionsModule } from './modules/promotions/promotions.module';
 import { LedgerModule } from './modules/ledger/ledger.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { DisbursementsModule } from './modules/disbursements/disbursements.module';
@@ -50,6 +51,7 @@ import { HealthController } from './health.controller';
     ProjectsModule,
     PostsModule,
     ChannelsModule,
+    PromotionsModule,
     LedgerModule,
     PaymentsModule,
     DisbursementsModule,
