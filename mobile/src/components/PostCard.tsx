@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { api, mediaUrl } from '../lib/api';
-import { Avatar, Badge, Progrèss } from './ui';
+import { Avatar, Badge, Progress } from './ui';
 import { CommentIcon, HeartIcon } from './icons';
 import { money, relative } from '../lib/format';
 import { ROLE_LABEL } from '../lib/auth';
@@ -81,7 +81,7 @@ export function PostCard({ post, onSupport }: { post: any; onSupport?: (childId:
           <View style={s.project}>
             <Text style={s.projectTitle}>{post.project.title}</Text>
             <View style={{ marginTop: 8 }}>
-              <Progrèss value={post.project.collectedAmount} total={post.project.targetAmount} />
+              <Progress value={post.project.collectedAmount} total={post.project.targetAmount} />
             </View>
             <Text style={s.projectMeta}>
               {money(post.project.collectedAmount, post.project.currency)} sur{' '}
