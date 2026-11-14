@@ -9,7 +9,7 @@ import type { Role } from '@/lib/roles';
 import { Badge } from '@/components/ui/Badge';
 import { Empty } from '@/components/ui/Empty';
 import { SkeletonList } from '@/components/ui/Loading';
-import { num } from '@/lib/format';
+import { dateTime, num } from '@/lib/format';
 
 /** Mêmes rôles que `POST /orphanages` côté API (orphanages.controller.ts). */
 const CAN_CREATE: Role[] = ['SUPER_ADMIN', 'NATIONAL_MANAGER', 'REGIONAL_MANAGER', 'FIELD_AGENT'];
@@ -64,6 +64,13 @@ export default function OrphanagesPage() {
 
               {o.description && (
                 <p className="mt-3 line-clamp-2 text-sm text-ink-600">{o.description}</p>
+              )}
+
+              {o.proposedBy && (
+                <p className="mt-2 text-xs text-ink-400">
+                  Enregistré par {o.proposedBy.firstName} {o.proposedBy.lastName}
+                  {o.createdAt ? ` le ${dateTime(o.createdAt)}` : ''}
+                </p>
               )}
 
               <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-ink-100 pt-3 text-xs text-ink-500">

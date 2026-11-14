@@ -62,6 +62,12 @@ export default function OrphanageDetailPage({ params }: { params: Promise<{ id: 
               <Badge status={o.status} />
               <Badge status={o.labelStatus} />
             </div>
+            {o.proposedBy && (
+              <p className="mt-1.5 text-xs text-ink-400">
+                Enregistré par {o.proposedBy.firstName} {o.proposedBy.lastName}
+                {o.createdAt ? ` le ${new Date(o.createdAt).toLocaleDateString('fr-FR')}` : ''}
+              </p>
+            )}
             <p className="mt-2 flex flex-wrap items-center gap-1.5 text-sm text-ink-500">
               <MapPin className="h-4 w-4" />
               {o.city ? `${o.city}, ` : ''}

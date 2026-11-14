@@ -125,6 +125,15 @@ export default function UsersPage() {
                   {u.orphanage ? ` - ${u.orphanage.name}` : ''}
                   {u.province ? ` - ${u.province.nameFr}` : ''}
                 </p>
+                {user?.role === 'SUPER_ADMIN' && (
+                  <p className="break-words text-xs text-ink-400">
+                    {u.invitedBy
+                      ? `Invité par ${u.invitedBy.firstName} ${u.invitedBy.lastName} (${ROLE_LABEL[u.invitedBy.role as Role]}${
+                          u.invitedBy.role === 'SUPER_ADMIN' && u.invitedBy.adminRank ? ` n°${u.invitedBy.adminRank}` : ''
+                        }) le ${dateTime(u.createdAt)}`
+                      : `Compte créé le ${dateTime(u.createdAt)} (inscription libre ou installation)`}
+                  </p>
+                )}
               </div>
               <span className="hidden text-xs text-ink-500 sm:block">
                 {u.lastLoginAt ? dateTime(u.lastLoginAt) : 'jamais connecté'}

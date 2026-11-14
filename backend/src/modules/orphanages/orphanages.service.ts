@@ -79,6 +79,7 @@ export class OrphanagesService implements OnModuleInit {
         country: { select: { id: true, iso2: true, nameFr: true } },
         province: { select: { id: true, code: true, nameFr: true, riskZone: true } },
         director: { select: { id: true, firstName: true, lastName: true, email: true } },
+        proposedBy: { select: { id: true, firstName: true, lastName: true, role: true } },
         _count: { select: { children: true, projects: true } },
       },
     });
@@ -121,6 +122,7 @@ export class OrphanagesService implements OnModuleInit {
         country: true,
         province: true,
         director: { select: { id: true, firstName: true, lastName: true, email: true, phone: true } },
+        proposedBy: { select: { id: true, firstName: true, lastName: true, role: true } },
         members: { select: { id: true, firstName: true, lastName: true, role: true, staffFunction: true, email: true } },
         ambassadorLinks: true,
         labelAudits: { orderBy: { createdAt: 'desc' } },
@@ -167,6 +169,14 @@ export class OrphanagesService implements OnModuleInit {
     if (!province || province.countryId !== dto.countryId) {
       throw new BadRequestException('La province ne correspond pas au pays choisi');
     }
+    // Hiérarchie : on n'enregistre une structure que dans son propre pays (responsable national) ou dans sa propre
+    // province (chef régional, agent de terrain). Elle n'apparaîtra ensuite que dans les listes de ce périmètre.
+    if (user.role === Role.NATIONAL_MANAGER && dto.countryId !== user.countryId) {
+      throw new ForbiddenException('Vous ne pouvez enregistrer un orphelinat que dans votre pays');
+    }
+    if ((user.role === Role.REGIONAL_MANAGER || user.role === Role.FIELD_AGENT) && dto.provinceId !== user.provinceId) {
+      throw new ForbiddenException('Vous ne pouvez enregistrer un orphelinat que dans votre région');
+    }
     this.assertPlaces(dto.totalPlaces ?? 0, dto.occupiedPlaces ?? 0);
 
     let slug = slugify(dto.name);
@@ -191,6 +201,7 @@ export class OrphanagesService implements OnModuleInit {
         totalPlaces: dto.totalPlaces ?? 0,
         occupiedPlaces: dto.occupiedPlaces ?? 0,
         hideExactLocation: province.riskZone,
+        proposedById: user.id,
         status: user.role === Role.SUPER_ADMIN ? OrphanageStatus.APPROVED : OrphanageStatus.PROPOSED,
       },
     });

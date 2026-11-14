@@ -59,7 +59,7 @@ export class UsersService {
       ],
     };
 
-    return this.prisma.user.findMany({
+    const rows = await this.prisma.user.findMany({
       where,
       orderBy: [{ role: 'asc' }, { lastName: 'asc' }],
       select: {
@@ -77,6 +77,7 @@ export class UsersService {
         adminRank: true,
         lastLoginAt: true,
         createdAt: true,
+        invitedById: true,
         invitationExpiresAt: true,
         country: { select: { id: true, iso2: true, nameFr: true } },
         province: { select: { id: true, code: true, nameFr: true } },
@@ -85,6 +86,24 @@ export class UsersService {
         _count: { select: { assignments: true, posts: true } },
       },
     });
+    return this.withInviter(rows, user);
+  }
+
+  /**
+   * Qui a invité ou créé chaque compte (la date de création figure déjà sur la fiche) : visible des seuls Super Admin.
+   * Un compte sans invitant s'est inscrit lui-même (bailleur) ou a été créé à l'installation (Super Admin n°1).
+   */
+  private async withInviter<T extends { invitedById?: string | null }>(rows: T[], viewer: AuthUser) {
+    if (viewer.role !== Role.SUPER_ADMIN) return rows.map(({ invitedById, ...rest }) => rest);
+    const ids = [...new Set(rows.map((r) => r.invitedById).filter((id): id is string => !!id))];
+    const inviters = ids.length
+      ? await this.prisma.user.findMany({
+          where: { id: { in: ids } },
+          select: { id: true, firstName: true, lastName: true, role: true, adminRank: true },
+        })
+      : [];
+    const byId = new Map(inviters.map((i) => [i.id, i]));
+    return rows.map((r) => ({ ...r, invitedBy: r.invitedById ? (byId.get(r.invitedById) ?? null) : null }));
   }
 
   async get(id: string, user: AuthUser) {
@@ -109,6 +128,7 @@ export class UsersService {
         lastLoginAt: true,
         failedLoginCount: true,
         createdAt: true,
+        invitedById: true,
         country: true,
         province: true,
         orphanage: { select: { id: true, name: true, slug: true } },
@@ -121,7 +141,7 @@ export class UsersService {
       },
     });
     if (!found) throw new NotFoundException('Utilisateur introuvable ou hors de votre périmètre');
-    return found;
+    return (await this.withInviter([found], user))[0];
   }
 
   /** Enfants d un ambassadeur, groupes par orphelinat (section 11). */

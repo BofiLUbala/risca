@@ -1,18 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import { ArrowLeft, Save } from 'lucide-react';
 import { api, fetcher } from '@/lib/api';
+import { useAuth } from '@/lib/auth-context';
 import { Spinner } from '@/components/ui/Loading';
 import { CountrySelect, ProvinceSelect } from '@/components/geo/GeoSelects';
 
 /** Chef regional ou Agent propose, puis le Super Admin valide (section 4). */
 export default function NewOrphanagePage() {
   const router = useRouter();
+  const { user } = useAuth();
   const { data: countries } = useSWR<any[]>('/geo/countries', fetcher);
+  // Hors Super Admin, la structure est enregistrée dans son propre pays (responsable national) ou sa propre région
+  // (chef régional, agent de terrain) : ces choix sont figés, l'API refuse le reste.
+  const lockCountry = !!user && user.role !== 'SUPER_ADMIN' && !!user.country;
+  const lockProvince = !!user && (user.role === 'REGIONAL_MANAGER' || user.role === 'FIELD_AGENT') && !!user.province;
 
   const [form, setForm] = useState({
     name: '',
@@ -34,6 +40,16 @@ export default function NewOrphanagePage() {
     form.countryId ? `/geo/countries/${form.countryId}/provinces` : null,
     fetcher,
   );
+
+  // Pays et région de l'auteur, préremplis dès que le profil est chargé.
+  useEffect(() => {
+    if (!user) return;
+    setForm((f) => ({
+      ...f,
+      countryId: lockCountry ? (user.country?.id ?? f.countryId) : f.countryId,
+      provinceId: lockProvince ? (user.province?.id ?? f.provinceId) : f.provinceId,
+    }));
+  }, [user?.id, lockCountry, lockProvince]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -90,23 +106,35 @@ export default function NewOrphanagePage() {
             <label htmlFor="ctry" className="label">
               Pays <span className="text-accent-coral">*</span>
             </label>
-            <CountrySelect
-              id="ctry"
-              value={form.countryId}
-              onChange={(id) => setForm({ ...form, countryId: id, provinceId: '' })}
-            />
+            {lockCountry ? (
+              <p id="ctry" className="input bg-ink-50 text-ink-700">
+                {user?.country?.nameFr}
+              </p>
+            ) : (
+              <CountrySelect
+                id="ctry"
+                value={form.countryId}
+                onChange={(id) => setForm({ ...form, countryId: id, provinceId: '' })}
+              />
+            )}
           </div>
           <div>
             <label htmlFor="prov" className="label">
               Province <span className="text-accent-coral">*</span>
             </label>
-            <ProvinceSelect
-              id="prov"
-              required
-              countryId={form.countryId}
-              value={form.provinceId}
-              onChange={(id) => setForm({ ...form, provinceId: id })}
-            />
+            {lockProvince ? (
+              <p id="prov" className="input bg-ink-50 text-ink-700">
+                {user?.province?.nameFr}
+              </p>
+            ) : (
+              <ProvinceSelect
+                id="prov"
+                required
+                countryId={form.countryId}
+                value={form.provinceId}
+                onChange={(id) => setForm({ ...form, provinceId: id })}
+              />
+            )}
           </div>
           <div>
             <label htmlFor="city" className="label">

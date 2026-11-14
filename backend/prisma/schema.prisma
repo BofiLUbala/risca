@@ -412,6 +412,7 @@ model User {
   favorites            Favorite[]
   refreshTokens        RefreshToken[]
   sessions             UserSession[]
+  orphanagesProposed        Orphanage[]       @relation("OrphanageProposer")
   promotionLettersWritten   PromotionLetter[] @relation("PromotionAuthor")
   promotionLettersAbout     PromotionLetter[] @relation("PromotionCandidate")
   promotionLettersAssigned  PromotionLetter[] @relation("PromotionAssignee")
@@ -500,6 +501,9 @@ model Orphanage {
   id          String   @id @default(cuid())
   name        String
   slug        String   @unique
+  /// Qui a proposé ou enregistré la structure (chef régional, agent de terrain, responsable national ou Super Admin).
+  proposedById String?
+  proposedBy   User?   @relation("OrphanageProposer", fields: [proposedById], references: [id])
   logoUrl     String?
   videoUrl    String?
   photos      String[]

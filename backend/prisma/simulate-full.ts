@@ -547,6 +547,38 @@ async function main() {
   if (!auditText.includes('USER_PROMOTED')) throw new ApiFailure('la promotion n’est pas dans le journal d’audit');
   ok('chaque étape est dans le journal d’audit');
 
+  step('Traçabilité des invitations', 'le Super Admin voit qui a invité chaque compte, et quand');
+  const allUsers = rows(await call(admin, 'GET', '/users')) as any[];
+  const promu = allUsers.find((u) => u.id === U['agent.promu']);
+  if (!promu?.invitedBy || promu.invitedBy.id !== U['regional.nordkivu'] || !promu.createdAt) throw new ApiFailure('le Super Admin ne voit pas qui a invité l’agent, ni quand');
+  ok(`« ${promu.firstName} ${promu.lastName} » : invité par ${promu.invitedBy.firstName} ${promu.invitedBy.lastName} le ${new Date(promu.createdAt).toLocaleDateString('fr-FR')}`);
+  const adm2 = allUsers.find((u) => u.id === U.admin2);
+  if (adm2?.invitedBy?.adminRank !== 1) throw new ApiFailure('le Super Admin n°2 doit apparaître comme invité par le n°1');
+  ok('le Super Admin n°2 apparaît comme invité par le Super Admin n°1');
+  const regList = rows(await call(S['regional.nordkivu'], 'GET', '/users')) as any[];
+  if (regList.some((u) => 'invitedBy' in u || 'invitedById' in u)) throw new ApiFailure('seul le Super Admin doit voir qui a invité qui');
+  ok('les autres rôles ne voient pas qui a invité qui');
+
+  step('Orphelinat enregistré par un agent de terrain', 'visible selon la hiérarchie, le pays et la région');
+  const agent = S['agent.terrain'];
+  const agentMe = await call(agent, 'GET', '/auth/me');
+  const orphDto = { name: 'Foyer Test Agent', countryId: agentMe.country.id, provinceId: agentMe.province.id, city: 'Goma', totalPlaces: 20, occupiedPlaces: 5 };
+  await expectStatus('l’agent ne peut pas enregistrer un orphelinat hors de sa région', 403, () => call(agent, 'POST', '/orphanages', { ...orphDto, name: 'Foyer Hors Région', provinceId: sudMe.province.id }));
+  const created = await call(agent, 'POST', '/orphanages', orphDto);
+  if (created.status !== 'PROPOSED') throw new ApiFailure('l’orphelinat de l’agent doit être en proposition');
+  ok('l’agent de terrain enregistre un orphelinat : il part en vérification (chef régional puis Super Admin)');
+  const inList = async (who: Session) => ((rows(await call(who, 'GET', '/orphanages')) as any[]).some((o) => o.id === created.id));
+  if (!(await inList(agent))) throw new ApiFailure('l’agent ne voit pas l’orphelinat qu’il a enregistré');
+  if (!(await inList(S['regional.nordkivu']))) throw new ApiFailure('le chef régional du Nord-Kivu doit le voir');
+  if (!(await inList(S.national))) throw new ApiFailure('le responsable national doit le voir');
+  if (!(await inList(admin))) throw new ApiFailure('le Super Admin doit le voir');
+  if (await inList(S['regional.sudkivu'])) throw new ApiFailure('le chef régional du Sud-Kivu ne doit pas le voir');
+  if (await inList(S.ambassadeur2)) throw new ApiFailure('un ambassadeur d’une autre région ne doit pas le voir');
+  ok('visible : l’agent, son chef régional, le responsable national, le Super Admin. Invisible : autre région, autre ambassadeur');
+  const detail = await call(admin, 'GET', `/orphanages/${created.id}`);
+  if (detail.proposedBy?.id !== agentMe.id) throw new ApiFailure('la fiche doit indiquer qui a enregistré la structure');
+  ok(`la fiche indique « enregistré par ${detail.proposedBy.firstName} ${detail.proposedBy.lastName} »`);
+
   step('Sécurité des accès', 'connectés, appareils, tentatives échouées, blocage de 3 h au 5e échec');
   await join(admin, 'cible.blocage', 'Partenaire de test (blocage)', { firstName: 'Cible', lastName: 'Blocage', role: 'PARTNER', countryId: natMe.country.id, organizationName: 'Association Test' });
   const ANDROID = 'Mozilla/5.0 (Linux; Android 14; SM-A546B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36';
