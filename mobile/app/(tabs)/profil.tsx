@@ -46,7 +46,7 @@ export default function ProfileScreen() {
           {!notifications?.length ? (
             <Text style={s.muted}>Aucune notification.</Text>
           ) : (
-            notifications.slice(0, 8).map((n) => (
+            notifications.slice(0, 5).map((n) => (
               <View key={n.id} style={s.notif}>
                 <View style={[s.dot, { backgroundColor: n.read ? colors.ink[200] : colors.risac[500] }]} />
                 <View style={{ flex: 1 }}>

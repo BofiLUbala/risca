@@ -4,7 +4,7 @@ import { notify } from '../../src/lib/dialog';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useSWR from 'swr';
 import { api, fetcher } from '../../src/lib/api';
-import { Badge, Button, Card, Empty, Loading } from '../../src/components/ui';
+import { Badge, Button, Card, Empty, Loading, ScreenHeader } from '../../src/components/ui';
 import { relative } from '../../src/lib/format';
 import { colors, radius, spacing, typography } from '../../src/theme';
 
@@ -42,12 +42,10 @@ export default function ValidationsScreen() {
 
   return (
     <SafeAreaView style={s.safe} edges={['top']}>
-      <View style={s.header}>
-        <Text style={s.title}>Ma file de validation</Text>
-        <Text style={s.subtitle}>
-          {data ? `${data.length} élément(s) attendent votre décision` : 'Chargement…'}
-        </Text>
-      </View>
+      <ScreenHeader
+        title="Ma file de validation"
+        subtitle={data ? `${data.length} élément(s) attendent votre décision` : 'Chargement…'}
+      />
 
       <FlatList
         data={data ?? []}

@@ -1,8 +1,27 @@
 import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../src/lib/auth';
+import { View, type ColorValue } from 'react-native';
 import { TabIcon } from '../../src/components/TabIcon';
 import { colors } from '../../src/theme';
+
+/** Icône d'onglet avec un repère jaune au-dessus de l'onglet actif. */
+function ActiveIcon({ name, color, focused }: { name: string; color: ColorValue; focused: boolean }) {
+  return (
+    <View style={{ alignItems: 'center' }}>
+      <View
+        style={{
+          width: 22,
+          height: 3,
+          borderRadius: 2,
+          marginBottom: 3,
+          backgroundColor: focused ? colors.sun[400] : 'transparent',
+        }}
+      />
+      <TabIcon name={name} color={color} />
+    </View>
+  );
+}
 
 export default function TabsLayout() {
   const { user } = useAuth();
@@ -37,21 +56,21 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Accueil',
-          tabBarIcon: ({ color }) => <TabIcon name="home" color={color} />,
+          tabBarIcon: ({ color, focused }) => <ActiveIcon name={"home"} color={color} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="fil"
         options={{
           title: 'Fil',
-          tabBarIcon: ({ color }) => <TabIcon name="feed" color={color} />,
+          tabBarIcon: ({ color, focused }) => <ActiveIcon name={"feed"} color={color} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="enfants"
         options={{
           title: isDonor ? 'Soutenir' : 'Enfants',
-          tabBarIcon: ({ color }) => <TabIcon name={isDonor ? 'heart' : 'children'} color={color} />,
+          tabBarIcon: ({ color, focused }) => <ActiveIcon name={isDonor ? 'heart' : 'children'} color={color} focused={focused} />,
         }}
       />
       <Tabs.Screen
@@ -59,21 +78,21 @@ export default function TabsLayout() {
         options={{
           title: 'Validations',
           href: isFieldRole ? undefined : null,
-          tabBarIcon: ({ color }) => <TabIcon name="validate" color={color} />,
+          tabBarIcon: ({ color, focused }) => <ActiveIcon name={"validate"} color={color} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="messages"
         options={{
           title: 'Messages',
-          tabBarIcon: ({ color }) => <TabIcon name="messages" color={color} />,
+          tabBarIcon: ({ color, focused }) => <ActiveIcon name={"messages"} color={color} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="profil"
         options={{
           title: 'Profil',
-          tabBarIcon: ({ color }) => <TabIcon name="profile" color={color} />,
+          tabBarIcon: ({ color, focused }) => <ActiveIcon name={"profile"} color={color} focused={focused} />,
         }}
       />
     </Tabs>

@@ -7,7 +7,7 @@ import { fetcher } from '../../src/lib/api';
 import { useAuth } from '../../src/lib/auth';
 import { Composer } from '../../src/components/Composer';
 import { PostCard } from '../../src/components/PostCard';
-import { Empty, Loading } from '../../src/components/ui';
+import { Empty, Loading, ScreenHeader } from '../../src/components/ui';
 import { colors, radius, spacing, typography } from '../../src/theme';
 
 export default function FeedScreen() {
@@ -23,8 +23,8 @@ export default function FeedScreen() {
 
   return (
     <SafeAreaView style={s.safe} edges={['top']}>
+      <ScreenHeader title="Communication" subtitle="Les nouvelles du réseau et des enfants." />
       <View style={s.header}>
-        <Text style={s.title}>Espace de communication</Text>
         {isDonor ? (
           <View style={s.toggle}>
             <Pressable

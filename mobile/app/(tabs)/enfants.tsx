@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import useSWR from 'swr';
 import { fetcher, mediaUrl } from '../../src/lib/api';
 import { useAuth } from '../../src/lib/auth';
-import { Avatar, Badge, Empty, Loading } from '../../src/components/ui';
+import { Avatar, Badge, Empty, Loading, ScreenHeader } from '../../src/components/ui';
 import { colors, radius, spacing, typography } from '../../src/theme';
 
 export default function ChildrenScreen() {
@@ -26,7 +26,7 @@ function PublicChildren() {
 
   return (
     <SafeAreaView style={s.safe} edges={['top']}>
-      <Text style={s.title}>Enfants à soutenir</Text>
+      <ScreenHeader title="Enfants à soutenir" subtitle="Choisissez un enfant à parrainer ou à aider." />
       <FlatList
         data={data ?? []}
         keyExtractor={(c) => c.id}
@@ -86,10 +86,10 @@ function ScopedChildren() {
 
   return (
     <SafeAreaView style={s.safe} edges={['top']}>
-      <Text style={s.title}>Enfants</Text>
-      <Text style={s.subtitle}>
-        {data ? `${data.total} dossier(s) dans votre périmètre` : 'Chargement…'}
-      </Text>
+      <ScreenHeader
+        title="Enfants"
+        subtitle={data ? `${data.total} dossier(s) dans votre périmètre` : 'Chargement…'}
+      />
 
       <FlatList
         data={data?.items ?? []}
@@ -147,6 +147,7 @@ const s = StyleSheet.create({
   rowMeta: { ...typography.caption, color: colors.ink[500], marginTop: 2 },
   tile: {
     flex: 1,
+    maxWidth: '48.5%',
     backgroundColor: colors.white,
     borderRadius: radius.xl,
     borderWidth: 1,
@@ -155,23 +156,23 @@ const s = StyleSheet.create({
     marginBottom: spacing.md,
   },
   tilePhoto: {
-    aspectRatio: 1,
-    backgroundColor: colors.risac[200],
+    aspectRatio: 4 / 3,
+    backgroundColor: colors.risac[100],
     alignItems: 'center',
     justifyContent: 'center',
   },
   tileImg: { width: '100%', height: '100%' },
-  tileInitial: { fontSize: 40, fontWeight: '600', color: colors.white },
+  tileInitial: { fontSize: 36, fontWeight: '600', color: colors.risac[600] },
   tileBadge: {
     position: 'absolute',
     top: 8,
     right: 8,
-    backgroundColor: colors.amber,
+    backgroundColor: colors.sun[400],
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: radius.full,
   },
-  tileBadgeText: { fontSize: 10, fontWeight: '600', color: colors.white },
+  tileBadgeText: { fontSize: 10, fontWeight: '700', color: colors.navy },
   tileBody: { padding: spacing.md },
   tileName: { ...typography.bodyMedium, color: colors.ink[900] },
   tileMeta: { ...typography.caption, color: colors.ink[400], marginTop: 2 },

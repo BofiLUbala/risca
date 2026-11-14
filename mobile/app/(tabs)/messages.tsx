@@ -7,7 +7,7 @@ import useSWR from 'swr';
 import { api, fetcher } from '../../src/lib/api';
 import { getSocket } from '../../src/lib/socket';
 import { useAuth } from '../../src/lib/auth';
-import { Avatar, Empty, Loading } from '../../src/components/ui';
+import { Avatar, Empty, Loading, ScreenHeader } from '../../src/components/ui';
 import { BackIcon } from '../../src/components/icons';
 import { relative } from '../../src/lib/format';
 import { colors, radius, spacing, typography } from '../../src/theme';
@@ -73,7 +73,7 @@ export default function MessagesScreen() {
   if (!activeId) {
     return (
       <SafeAreaView style={s.safe} edges={['top']}>
-        <Text style={s.title}>Messagerie</Text>
+        <ScreenHeader title="Messagerie" subtitle="Vos canaux d’échange avec le réseau." />
         <FlatList
           data={channels ?? []}
           keyExtractor={(c) => c.id}

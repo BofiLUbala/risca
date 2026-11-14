@@ -68,6 +68,7 @@ export function Button({
 export function Stat({ label: lbl, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <Card style={s.stat}>
+      <View style={s.statBar} />
       <Text style={s.statLabel} numberOfLines={2}>{lbl}</Text>
       <Text style={s.statValue}>{value}</Text>
       {hint ? <Text style={s.statHint} numberOfLines={2}>{hint}</Text> : null}
@@ -106,6 +107,25 @@ export function Row({ label: lbl, value }: { label: string; value?: ReactNode })
     <View style={s.row}>
       <Text style={s.rowLabel}>{lbl}</Text>
       <Text style={s.rowValue}>{value ?? '-'}</Text>
+    </View>
+  );
+}
+
+/**
+ * Titre d'écran commun à tous les onglets : un petit repère jaune, le titre, une ligne de contexte.
+ * `right` accueille un élément à droite (l'emblème sur l'accueil).
+ */
+export function ScreenHeader({
+  title, subtitle, right,
+}: { title: string; subtitle?: string; right?: ReactNode }) {
+  return (
+    <View style={s.header}>
+      <View style={{ flex: 1 }}>
+        <View style={s.headerBar} />
+        <Text style={s.headerTitle} accessibilityRole="header">{title}</Text>
+        {subtitle ? <Text style={s.headerSubtitle}>{subtitle}</Text> : null}
+      </View>
+      {right}
     </View>
   );
 }
@@ -152,7 +172,7 @@ const s = StyleSheet.create({
     minHeight: 48,
     borderRadius: radius.lg,
   },
-  btnPressed: { opacity: 0.85 },
+  btnPressed: { opacity: 0.9, transform: [{ scale: 0.98 }] },
   btnDisabled: { opacity: 0.5 },
   btn_primary: { backgroundColor: colors.sun[400] },
   btn_outline: { backgroundColor: colors.white, borderWidth: 1, borderColor: colors.ink[300] },
@@ -166,9 +186,21 @@ const s = StyleSheet.create({
   btnText_soft: { color: colors.risac[800] },
   btnText_danger: { color: colors.white },
   stat: { flex: 1, minWidth: 150 },
+  statBar: { width: 20, height: 3, borderRadius: radius.full, backgroundColor: colors.sun[400], marginBottom: 10 },
   statLabel: { ...typography.small, color: colors.ink[500] },
-  statValue: { ...typography.title, color: colors.ink[900], marginTop: 6 },
-  statHint: { ...typography.caption, color: colors.ink[400], marginTop: 3 },
+  statValue: { ...typography.display, color: colors.ink[950], marginTop: 6, fontVariant: ['tabular-nums'] },
+  statHint: { ...typography.caption, color: colors.ink[500], marginTop: 3 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
+  },
+  headerBar: { width: 28, height: 4, borderRadius: radius.full, backgroundColor: colors.sun[400], marginBottom: 8 },
+  headerTitle: { ...typography.display, color: colors.ink[950] },
+  headerSubtitle: { ...typography.small, color: colors.ink[500], marginTop: 2 },
   empty: { alignItems: 'center', paddingVertical: spacing['4xl'], paddingHorizontal: spacing.xl },
   emptyTitle: { ...typography.heading, color: colors.ink[800], textAlign: 'center' },
   emptyText: { ...typography.small, color: colors.ink[500], textAlign: 'center', marginTop: 6 },
