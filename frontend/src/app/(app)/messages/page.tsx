@@ -13,6 +13,7 @@ import { Empty } from '@/components/ui/Empty';
 import { SkeletonList } from '@/components/ui/Loading';
 import { relative } from '@/lib/format';
 import { ChannelMembers } from '@/components/messages/ChannelMembers';
+import { NewChannel } from '@/components/messages/NewChannel';
 
 const CHANNEL_LABEL: Record<string, string> = {
   GENERAL: 'Général',
@@ -34,7 +35,8 @@ export default function MessagesPage() {
   // Le Super Admin et le Modérateur peuvent basculer sur tous les canaux du reseau.
   const [allChannels, setAllChannels] = useState(false);
   const listKey = allChannels && isModerator ? '/channels/all' : '/channels';
-  const { data: channels, isLoading, mutate } = useSWR<any[]>(listKey, fetcher);
+  const { data: channels, isLoading, error: listError, mutate } = useSWR<any[]>(listKey, fetcher);
+  const [creating, setCreating] = useState(false);
 
   const [activeId, setActiveId] = useState<string | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
@@ -81,6 +83,20 @@ export default function MessagesPage() {
     };
   }, [activeId, mutate]);
 
+  // Filet de sécurité : si la connexion temps réel ne passe pas, on relit les messages du canal toutes les 5 secondes.
+  useEffect(() => {
+    if (!activeId) return;
+    const timer = setInterval(() => {
+      if (document.hidden) return;
+      api
+        .get<any[]>(`/channels/${activeId}/messages?take=60`)
+        .then((rows) => setMessages((prev) => (rows.length === prev.length && rows[rows.length - 1]?.id === prev[prev.length - 1]?.id ? prev : rows)))
+        .catch(() => undefined);
+      void mutate();
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [activeId, mutate]);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -90,8 +106,11 @@ export default function MessagesPage() {
     if (!draft.trim() || !activeId) return;
     setError(null);
     try {
-      await api.post(`/channels/${activeId}/messages`, { content: draft });
+      const sent = await api.post<any>(`/channels/${activeId}/messages`, { content: draft });
       setDraft('');
+      // Le message s'affiche tout de suite, sans attendre la connexion temps réel (qui peut être bloquée par le réseau).
+      if (sent?.id) setMessages((prev) => (prev.some((x) => x.id === sent.id) ? prev : [...prev, sent]));
+      void mutate();
     } catch (err: any) {
       const v = err?.payload?.violations?.[0];
       setError(v ? v.message : (err?.payload?.message ?? err?.message ?? 'Envoi impossible'));
@@ -138,9 +157,16 @@ export default function MessagesPage() {
     <div className="grid h-[calc(100vh-10rem)] gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">
       <aside aria-label="Canaux de discussion" className={clsx('card flex flex-col overflow-hidden', activeId && 'hidden lg:flex')}>
         <div className="space-y-2.5 border-b border-ink-100 px-4 py-3">
-          <h1 className="text-sm font-semibold text-ink-900">
-            {allChannels && isModerator ? 'Tous les canaux' : 'Mes canaux'}
-          </h1>
+          <div className="flex items-center justify-between gap-2">
+            <h1 className="text-sm font-semibold text-ink-900">
+              {allChannels && isModerator ? 'Tous les canaux' : 'Mes canaux'}
+            </h1>
+            {canManageMembers && (
+              <button type="button" onClick={() => setCreating(true)} className="btn-primary min-h-[36px] px-3 text-xs">
+                Nouveau canal
+              </button>
+            )}
+          </div>
           {isModerator && (
             <div className="flex rounded-xl bg-ink-100 p-1" role="tablist" aria-label="Périmètre des canaux">
               {[
@@ -170,6 +196,22 @@ export default function MessagesPage() {
           {isLoading ? (
             <div className="p-4">
               <SkeletonList rows={4} />
+            </div>
+          ) : listError ? (
+            <div className="p-4 text-sm text-rose-700" role="alert">
+              Les canaux n’ont pas pu être chargés.{' '}
+              <button type="button" onClick={() => mutate()} className="font-medium underline">
+                Réessayer
+              </button>
+            </div>
+          ) : !channels?.length ? (
+            <div className="p-6 text-center text-sm text-ink-500">
+              <p className="font-medium text-ink-700">Aucun canal pour le moment</p>
+              <p className="mt-1">
+                {canManageMembers
+                  ? 'Créez un canal et choisissez ses membres pour lancer la discussion.'
+                  : 'Un responsable doit vous ajouter à un canal pour que vous puissiez écrire.'}
+              </p>
             </div>
           ) : (
             channels?.map((c) => (
@@ -415,6 +457,16 @@ export default function MessagesPage() {
         </aside>
       )}
       </div>
+      {creating && (
+        <NewChannel
+          onClose={() => setCreating(false)}
+          onCreated={(id) => {
+            setCreating(false);
+            setAllChannels(false);
+            void mutate().then(() => setActiveId(id));
+          }}
+        />
+      )}
     </div>
   );
 }
