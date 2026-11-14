@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import { api, fetcher } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
-import { ROLE_LABEL } from '@/lib/roles';
+import { INVITABLE, ROLE_LABEL, type Role } from '@/lib/roles';
 import { CountrySelect, ProvinceSelect } from '@/components/geo/GeoSelects';
 
 /** Invitation : role, pays et province choisis dans des listes liees (section 3). */
@@ -25,6 +25,24 @@ export function InviteForm({ onInvited }: { onInvited: () => void }) {
     orphanageId: '',
     staffFunction: '',
   });
+  // Le rôle proposé par défaut doit être invitable ; un responsable territorial reste dans son périmètre.
+  useEffect(() => {
+    if (!user) return;
+    const allowed = (INVITABLE[user.role as Role] ?? []).filter((r) => r !== 'SUPER_ADMIN' || canInviteAdmin);
+    setForm((f) => ({
+      ...f,
+      role: allowed.includes(f.role as Role) ? f.role : (allowed[0] ?? f.role),
+      ...(user.role !== 'SUPER_ADMIN'
+        ? {
+            countryId: (user as any).country?.id ?? f.countryId,
+            provinceId: (user as any).province?.id ?? f.provinceId,
+            orphanageId: (user as any).orphanage?.id ?? f.orphanageId,
+          }
+        : {}),
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
   const [link, setLink] = useState<string | null>(null);
   const [emailSent, setEmailSent] = useState<boolean>(true);
   const [invitedEmail, setInvitedEmail] = useState('');
@@ -113,6 +131,7 @@ export function InviteForm({ onInvited }: { onInvited: () => void }) {
             className="input"
           >
             {Object.entries(ROLE_LABEL)
+              .filter(([k]) => (INVITABLE[user?.role as Role] ?? []).includes(k as Role))
               .filter(([k]) => k !== 'SUPER_ADMIN' || canInviteAdmin)
               .map(([k, v]) => (
                 <option key={k} value={k}>

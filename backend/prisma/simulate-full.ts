@@ -470,6 +470,41 @@ async function main() {
   await expectStatus('le n°3 ne peut pas déconnecter le n°1 de force', 403, () => call(S.admin3, 'POST', `/auth/users/${U.admin}/force-logout`));
   await expectStatus('même le n°1 ne peut pas se réinitialiser lui-même ici', 403, () => call(admin, 'POST', `/auth/admin/${U.admin}/reset-credentials`));
 
+  step('Hiérarchie des rôles', 'on n’invite et on ne voit que ses subordonnés, jamais son supérieur ni un pair');
+  const natMe = await call(S.national, 'GET', '/auth/me');
+  const regMe = await call(S['regional.nordkivu'], 'GET', '/auth/me');
+  const dirMe = await call(S['chef.espoir'], 'GET', '/auth/me');
+  const sudMe = await call(S['regional.sudkivu'], 'GET', '/auth/me');
+  const geo = { countryId: natMe.country.id, provinceId: regMe.province.id };
+  const tryInvite = (who: Session, role: string, extra: Record<string, unknown> = {}) =>
+    call(who, 'POST', '/auth/invite', { email: `h${Math.random().toString(36).slice(2, 8)}@${DOMAIN}`, firstName: 'Test', lastName: 'Hiérarchie', role, ...extra });
+  await expectStatus('le responsable national ne peut pas inviter un Super Admin', 403, () => tryInvite(S.national, 'SUPER_ADMIN'));
+  await expectStatus('le responsable national ne peut pas inviter un autre responsable national (pair)', 403, () => tryInvite(S.national, 'NATIONAL_MANAGER', geo));
+  await expectStatus('le chef régional ne peut pas inviter un responsable national (supérieur)', 403, () => tryInvite(S['regional.nordkivu'], 'NATIONAL_MANAGER', geo));
+  await expectStatus('le chef régional ne peut pas inviter un chef régional (pair)', 403, () => tryInvite(S['regional.nordkivu'], 'REGIONAL_MANAGER', geo));
+  await expectStatus('le chef régional ne peut pas inviter hors de sa province', 403, () => tryInvite(S['regional.nordkivu'], 'AMBASSADOR', { countryId: geo.countryId, provinceId: sudMe.province.id }));
+  await expectStatus('le chef d’orphelinat ne peut pas inviter un chef régional (supérieur)', 403, () => tryInvite(S['chef.espoir'], 'REGIONAL_MANAGER', geo));
+  await expectStatus('le chef d’orphelinat ne peut pas inviter un ambassadeur', 403, () => tryInvite(S['chef.espoir'], 'AMBASSADOR', geo));
+  await expectStatus('l’ambassadeur ne peut inviter personne', 403, () => tryInvite(S.ambassadeur1, 'AMBASSADOR', geo));
+  await expectStatus('le personnel ne peut inviter personne', 403, () => tryInvite(S['psychologue.espoir'], 'ORPHANAGE_STAFF', { orphanageId: dirMe.orphanage.id }));
+  ok('les invitations vers le haut, entre pairs ou hors périmètre sont refusées');
+
+  const seen = async (who: Session) => (rows(await call(who, 'GET', '/users')) as any[]).map((u) => u.role as string);
+  const natSees = await seen(S.national);
+  const regSees = await seen(S['regional.nordkivu']);
+  const dirSees = await seen(S['chef.espoir']);
+  const never = (list: string[], banned: string[]) => banned.filter((r) => list.includes(r));
+  const leaks = [
+    ['responsable national', never(natSees, ['SUPER_ADMIN', 'ADMIN_FINANCE', 'MODERATOR', 'ETHICS_AUDITOR', 'DONOR', 'PARTNER']), natSees.filter((r) => r === 'NATIONAL_MANAGER').length > 1 ? ['NATIONAL_MANAGER'] : []],
+    ['chef régional', never(regSees, ['SUPER_ADMIN', 'NATIONAL_MANAGER']), regSees.filter((r) => r === 'REGIONAL_MANAGER').length > 1 ? ['REGIONAL_MANAGER'] : []],
+    ['chef d’orphelinat', never(dirSees, ['SUPER_ADMIN', 'NATIONAL_MANAGER', 'REGIONAL_MANAGER', 'AMBASSADOR']), dirSees.filter((r) => r === 'ORPHANAGE_DIRECTOR').length > 1 ? ['ORPHANAGE_DIRECTOR'] : []],
+  ] as Array<[string, string[], string[]]>;
+  for (const [who, up, peers] of leaks) {
+    if (up.length || peers.length) throw new ApiFailure(`${who} voit son supérieur ou un pair : ${[...up, ...peers].join(', ')}`);
+  }
+  ok('un responsable ne voit ni son supérieur ni ses pairs dans la liste des utilisateurs');
+  await expectStatus('le chef régional ne peut pas ouvrir la fiche du Super Admin', 404, () => call(S['regional.nordkivu'], 'GET', `/users/${U.admin}`));
+
   step('Super Admin n°3', 'perd sa clé : écrit au n°1, qui réinitialise ses identifiants ; l’ancienne clé ne marche plus');
   const reset = await call(admin, 'POST', `/auth/admin/${U.admin3}/reset-credentials`);
   await expectStatus('avec l’ancienne clé, le n°3 ne peut plus se connecter', 401, () => adminLogin(`admin3@${DOMAIN}`, ADMIN_PWD, KEY3, 'ancien'));

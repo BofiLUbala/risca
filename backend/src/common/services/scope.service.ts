@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuthUser } from '../decorators/current-user.decorator';
+import { VISIBLE_SUBORDINATES } from '../hierarchy';
 
 /**
  * Perimetre de visibilite par role (Plan fonctionnel sections 3 et 12).
@@ -94,15 +95,21 @@ export class ScopeService {
       case Role.MODERATOR:
       case Role.ETHICS_AUDITOR:
         return {};
+      // Hiérarchie : un responsable ne voit que ses subordonnés de son périmètre, jamais son supérieur ni un pair.
       case Role.NATIONAL_MANAGER:
-        return { countryId: user.countryId ?? NONE };
+        return this.below(user, { countryId: user.countryId ?? NONE });
       case Role.REGIONAL_MANAGER:
-        return { provinceId: user.provinceId ?? NONE };
+        return this.below(user, { provinceId: user.provinceId ?? NONE });
       case Role.ORPHANAGE_DIRECTOR:
-        return { orphanageId: user.orphanageId ?? NONE };
+        return this.below(user, { orphanageId: user.orphanageId ?? NONE });
       default:
         return { id: user.id };
     }
+  }
+
+  private below(user: AuthUser, perimeter: Prisma.UserWhereInput): Prisma.UserWhereInput {
+    const roles = VISIBLE_SUBORDINATES[user.role as Role] ?? [];
+    return { OR: [{ id: user.id }, { AND: [perimeter, { role: { in: roles } }] }] };
   }
 
   async assertAmbassadorOwnsChild(user: AuthUser, childId: string): Promise<void> {

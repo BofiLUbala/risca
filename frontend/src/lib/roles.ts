@@ -27,6 +27,14 @@ export const ROLE_LABEL: Record<Role, string> = {
   PARTNER: 'Partenaire',
 };
 
+/** Rôles qu'un rôle peut inviter (Plan fonctionnel §3) : jamais son supérieur ni un pair. Miroir de backend/src/common/hierarchy.ts. */
+export const INVITABLE: Partial<Record<Role, Role[]>> = {
+  SUPER_ADMIN: Object.keys(ROLE_LABEL) as Role[],
+  NATIONAL_MANAGER: ['REGIONAL_MANAGER', 'AMBASSADOR', 'FIELD_AGENT', 'ORPHANAGE_STAFF'],
+  REGIONAL_MANAGER: ['AMBASSADOR', 'FIELD_AGENT', 'ORPHANAGE_STAFF'],
+  ORPHANAGE_DIRECTOR: ['ORPHANAGE_STAFF'],
+};
+
 export const STATUS_LABEL: Record<string, string> = {
   DRAFT: 'Brouillon',
   IN_VALIDATION: 'En validation',

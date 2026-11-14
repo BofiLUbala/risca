@@ -16,6 +16,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../../common/services/audit.service';
 import { MailerService } from '../../common/services/mailer.service';
 import { AuthUser } from '../../common/decorators/current-user.decorator';
+import { canInviteRole } from '../../common/hierarchy';
 import {
   ActivateDto,
   AdminRegisterDto,
@@ -266,7 +267,22 @@ export class AuthService {
     return { ...tokens, user: await this.me(user.id) };
   }
 
+  /** Un responsable n'invite que ses subordonnés, dans son propre périmètre (pays, province ou orphelinat). */
+  private assertCanInvite(inviter: AuthUser, dto: { role: Role; countryId?: string; provinceId?: string; orphanageId?: string }) {
+    if (!canInviteRole(inviter.role as Role, dto.role)) {
+      throw new ForbiddenException('Votre rôle ne vous permet pas d’inviter ce type de compte');
+    }
+    if (inviter.role === Role.SUPER_ADMIN) return;
+    const out = 'Ce compte est hors de votre périmètre';
+    if (inviter.role === Role.NATIONAL_MANAGER && dto.countryId !== inviter.countryId) throw new ForbiddenException(out);
+    if (inviter.role === Role.REGIONAL_MANAGER && (dto.provinceId !== inviter.provinceId || (dto.countryId && dto.countryId !== inviter.countryId))) {
+      throw new ForbiddenException(out);
+    }
+    if (inviter.role === Role.ORPHANAGE_DIRECTOR && dto.orphanageId !== inviter.orphanageId) throw new ForbiddenException(out);
+  }
+
   async invite(dto: InviteDto, inviter: AuthUser) {
+    this.assertCanInvite(inviter, dto);
     // Seul le Super Admin n°1 invite un Super Admin (n°2 ou n°3) ; trois au maximum.
     if (dto.role === Role.SUPER_ADMIN) this.assertPrimaryAdmin(inviter);
     const email = dto.email.toLowerCase();
@@ -343,6 +359,7 @@ export class AuthService {
   async resendInvitation(userId: string, actor: AuthUser) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('Utilisateur introuvable');
+    this.assertCanInvite(actor, { role: user.role, countryId: user.countryId ?? undefined, provinceId: user.provinceId ?? undefined, orphanageId: user.orphanageId ?? undefined });
     if (user.status !== UserStatus.INVITED) throw new BadRequestException('Ce compte est déjà activé');
 
     const token = crypto.randomBytes(32).toString('hex');
