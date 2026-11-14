@@ -7,7 +7,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '../../src/lib/auth';
 import { Button } from '../../src/components/ui';
 import { Logo } from '../../src/components/Logo';
-import { colors, radius, spacing, typography } from '../../src/theme';
+import { colors, radius, shadow, spacing, typography } from '../../src/theme';
 
 export default function LoginScreen() {
   const { login } = useAuth();
@@ -49,11 +49,15 @@ export default function LoginScreen() {
         style={{ flex: 1 }}
       >
         <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled">
-          <Logo size={56} />
+          {/* Une seule carte centrée, le logo centré en tête : même modèle que le site web. */}
+          <View style={s.card}>
+          <View style={s.logo}>
+            <Logo size={36} />
+          </View>
 
-          <Text style={s.title}>Se connecter</Text>
+          <Text style={s.title} accessibilityRole="header">Se connecter</Text>
           <Text style={s.subtitle}>
-            Accédez à votre espace selon votre rôle dans le réseau RISAC.
+            Accédez à votre espace selon votre rôle dans le réseau.
           </Text>
 
           {error ? (
@@ -71,7 +75,10 @@ export default function LoginScreen() {
               placeholderTextColor={colors.ink[400]}
               keyboardType="email-address"
               autoCapitalize="none"
+              autoCorrect={false}
               autoComplete="email"
+              textContentType="emailAddress"
+              accessibilityLabel="Adresse e-mail"
               style={s.input}
             />
           </View>
@@ -81,10 +88,10 @@ export default function LoginScreen() {
             <TextInput
               value={password}
               onChangeText={setPassword}
-              placeholder="........"
-              placeholderTextColor={colors.ink[400]}
               secureTextEntry
               autoComplete="current-password"
+              textContentType="password"
+              accessibilityLabel="Mot de passe"
               style={s.input}
             />
           </View>
@@ -98,6 +105,9 @@ export default function LoginScreen() {
                 placeholder="000000"
                 placeholderTextColor={colors.ink[400]}
                 keyboardType="number-pad"
+                autoComplete="one-time-code"
+                textContentType="oneTimeCode"
+                accessibilityLabel="Code de double authentification"
                 maxLength={6}
                 style={[s.input, s.otp]}
               />
@@ -108,13 +118,16 @@ export default function LoginScreen() {
             title={needsTotp ? 'Valider le code' : 'Se connecter'}
             onPress={submit}
             loading={busy}
-            style={{ marginTop: spacing.sm }}
+            style={{ marginTop: spacing.xs }}
           />
 
+          <View style={s.divider} />
           <Text style={s.hint}>
-            Les comptes du réseau sont créés par invitation. Les bailleurs peuvent s’inscrire depuis
-            le site web.
+            Les comptes du réseau sont créés par invitation. Les bailleurs s’inscrivent depuis le site
+            web.
           </Text>
+          </View>
+          <Text style={s.footnote}>Réseau International des Structures d’Accueil du Congo</Text>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -122,10 +135,27 @@ export default function LoginScreen() {
 }
 
 const s = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.white },
-  scroll: { padding: spacing.xl, paddingTop: spacing['3xl'], gap: spacing.md },
-  title: { ...typography.display, color: colors.ink[950], marginTop: spacing['2xl'] },
-  subtitle: { ...typography.body, color: colors.ink[500], marginBottom: spacing.lg },
+  safe: { flex: 1, backgroundColor: colors.ink[50] },
+  scroll: { flexGrow: 1, justifyContent: 'center', padding: spacing.lg, gap: spacing.md },
+  card: {
+    backgroundColor: colors.white,
+    borderRadius: radius['2xl'],
+    borderTopWidth: 4,
+    borderTopColor: colors.amber,
+    borderWidth: 1,
+    borderColor: colors.ink[200],
+    padding: spacing.xl,
+    gap: spacing.md,
+    width: '100%',
+    maxWidth: 420,
+    alignSelf: 'center',
+    ...shadow.lift,
+  },
+  logo: { alignSelf: 'center', marginBottom: spacing.xs },
+  title: { ...typography.title, fontSize: 22, color: colors.ink[950], textAlign: 'center' },
+  subtitle: { ...typography.small, color: colors.ink[500], textAlign: 'center', marginTop: -spacing.sm, marginBottom: spacing.xs },
+  divider: { height: 1, backgroundColor: colors.ink[100], marginTop: spacing.xs },
+  footnote: { ...typography.caption, fontWeight: '400', color: colors.ink[500], textAlign: 'center' },
   field: { gap: 6 },
   label: { ...typography.small, fontWeight: '500', color: colors.ink[700] },
   input: {
@@ -141,5 +171,5 @@ const s = StyleSheet.create({
   otp: { textAlign: 'center', letterSpacing: 8, fontSize: 18 },
   error: { backgroundColor: colors.coralSoft, borderRadius: radius.lg, padding: spacing.md },
   errorText: { ...typography.small, color: colors.coralText },
-  hint: { ...typography.small, color: colors.ink[400], marginTop: spacing.md, lineHeight: 19 },
+  hint: { ...typography.small, color: colors.ink[500], textAlign: 'center', lineHeight: 19 },
 });

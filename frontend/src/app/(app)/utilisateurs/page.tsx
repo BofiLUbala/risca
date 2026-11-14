@@ -60,7 +60,7 @@ export default function UsersPage() {
         <div>
           <h1 className="page-title">Utilisateurs</h1>
           <p className="mt-1 text-sm text-ink-500">
-            {data ? `${data.length} compte(s) dans votre périmètre` : 'Chargement...'}
+            {data ? `${data.length} compte(s) dans votre périmètre` : 'Chargement…'}
           </p>
         </div>
         {canInvite && (

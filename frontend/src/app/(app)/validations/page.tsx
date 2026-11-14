@@ -30,7 +30,7 @@ export default function ValidationsPage() {
       <div>
         <h1 className="page-title">Ma file de validation</h1>
         <p className="mt-1 text-sm text-ink-500">
-          {data ? `${data.length} element(s) attendent votre decision` : 'Chargement...'}
+          {data ? `${data.length} élément(s) attendent votre décision` : 'Chargement…'}
         </p>
       </div>
 

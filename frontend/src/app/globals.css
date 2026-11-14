@@ -89,6 +89,23 @@
     @apply p-5 sm:p-6;
   }
 
+  /* Lien dans une phrase : même couleur et même soulignement au survol que .link-action,
+     sans la hauteur tactile de 44 px réservée aux liens isolés. */
+  .link-inline {
+    @apply rounded font-semibold text-risac-700 underline decoration-transparent decoration-2 underline-offset-4
+           transition-[text-decoration-color,color] duration-base hover:text-risac-900 hover:decoration-sun-400
+           focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sun-200 motion-reduce:transition-none;
+  }
+
+  /* Fond des pages d'accès : uni, avec une seule lueur douce de la marque derrière la carte. */
+  .auth-ground {
+    @apply bg-ink-50;
+    background-image: radial-gradient(60rem 28rem at 50% -6rem, rgb(23 74 112 / 0.1), transparent 70%);
+  }
+  .dark .auth-ground {
+    background-image: radial-gradient(60rem 28rem at 50% -6rem, rgb(231 185 44 / 0.08), transparent 70%);
+  }
+
   /* Bandeau de marque : réservé aux zones d'accueil, jamais aux écrans de travail. */
   .brand-band {
     @apply bg-brand-band text-white;

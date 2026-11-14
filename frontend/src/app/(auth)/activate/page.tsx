@@ -165,12 +165,12 @@ function ActivateForm() {
 export default function ActivatePage() {
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight text-ink-950">Activer votre compte</h1>
-      <p className="mt-2 text-sm text-ink-500">
+      <h1 className="text-balance text-center text-xl font-semibold tracking-tight text-ink-950 sm:text-2xl">Activer votre compte</h1>
+      <p className="mt-1 text-pretty text-center text-sm text-ink-500">
         Saisissez le code re&ccedil;u par e-mail et d&eacute;finissez votre mot de passe pour rejoindre le
         r&eacute;seau RISAC.
       </p>
-      <div className="mt-8">
+      <div className="mt-6">
         <Suspense fallback={<Spinner />}>
           <ActivateForm />
         </Suspense>

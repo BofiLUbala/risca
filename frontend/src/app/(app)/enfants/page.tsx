@@ -43,7 +43,7 @@ export default function ChildrenPage() {
         <div>
           <h1 className="page-title">Enfants</h1>
           <p className="mt-1 text-sm text-ink-500">
-            {data ? `${data.total} dossier(s) dans votre périmètre` : 'Chargement...'}
+            {data ? `${data.total} dossier(s) dans votre périmètre` : 'Chargement…'}
           </p>
         </div>
         {canCreate && (

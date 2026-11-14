@@ -95,13 +95,13 @@ export default function RegisterPage() {
   if (step === 'verify') {
     return (
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-ink-950">Confirmez votre adresse</h1>
-        <p className="mt-2 text-sm text-ink-500">
+        <h1 className="text-balance text-center text-xl font-semibold tracking-tight text-ink-950 sm:text-2xl">Confirmez votre adresse</h1>
+        <p className="mt-1 text-pretty text-center text-sm text-ink-500">
           Saisissez le code &agrave; 6 chiffres envoy&eacute; &agrave; <strong>{form.email}</strong> pour activer
           votre compte.
         </p>
 
-        <form onSubmit={onVerify} className="mt-8 space-y-5" noValidate>
+        <form onSubmit={onVerify} className="mt-6 space-y-4" noValidate>
           {error && (
             <div role="alert" className="flex items-start gap-2.5 rounded-xl bg-rose-50 px-3.5 py-3 text-sm text-rose-700">
               <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
@@ -148,13 +148,13 @@ export default function RegisterPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight text-ink-950">Devenir bailleur</h1>
-      <p className="mt-2 text-sm text-ink-500">
+      <h1 className="text-balance text-center text-xl font-semibold tracking-tight text-ink-950 sm:text-2xl">Devenir bailleur</h1>
+      <p className="mt-1 text-pretty text-center text-sm text-ink-500">
         Soutenez un enfant ou un projet, et suivez chaque d&eacute;pense jusqu&apos;&agrave; sa
         preuve.
       </p>
 
-      <form onSubmit={onSubmit} className="mt-8 space-y-5" noValidate>
+      <form onSubmit={onSubmit} className="mt-6 space-y-4" noValidate>
         {error && (
           <div
             role="alert"

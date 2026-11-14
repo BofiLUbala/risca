@@ -199,13 +199,13 @@ export default function AdminPage() {
 
   return (
     <div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center justify-center gap-3">
         <span className="grid h-10 w-10 place-items-center rounded-xl bg-risac-50 text-risac-700">
           <ShieldCheck className="h-5 w-5" aria-hidden="true" />
         </span>
         <h1 className="page-title">Espace administrateur</h1>
       </div>
-      <p className="page-subtitle">Réservé au Super Admin et aux équipes d’administration de RISAC.</p>
+      <p className="page-subtitle text-center">Réservé au Super Admin et aux équipes d’administration de RISAC.</p>
 
       <div role="tablist" aria-label="Accès administrateur" className="mt-6 flex gap-1 rounded-xl bg-ink-100 p-1">
         <button
@@ -232,12 +232,12 @@ export default function AdminPage() {
         </button>
       </div>
 
-      <div className="mt-6 space-y-5">
+      <div className="mt-5 space-y-4">
         {error && <Alert>{error}</Alert>}
         {info && <Alert tone="ok">{info}</Alert>}
 
         {tab === 'login' && (
-          <form id="panel-login" role="tabpanel" aria-labelledby="tab-login" onSubmit={onLogin} className="space-y-5" noValidate>
+          <form id="panel-login" role="tabpanel" aria-labelledby="tab-login" onSubmit={onLogin} className="space-y-4" noValidate>
             <div>
               <label htmlFor="a-email" className="label">
                 Adresse e-mail
@@ -321,7 +321,7 @@ export default function AdminPage() {
         )}
 
         {tab === 'create' && step === 'form' && (!setup || setup.creationOpen) && (
-          <form id="panel-create" role="tabpanel" aria-labelledby="tab-create" onSubmit={onCreate} className="space-y-5" noValidate>
+          <form id="panel-create" role="tabpanel" aria-labelledby="tab-create" onSubmit={onCreate} className="space-y-4" noValidate>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="c-first" className="label">

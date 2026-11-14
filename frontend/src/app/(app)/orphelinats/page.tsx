@@ -17,7 +17,7 @@ export default function OrphanagesPage() {
       <div>
         <h1 className="page-title">Orphelinats</h1>
         <p className="mt-1 text-sm text-ink-500">
-          {data ? `${data.length} structure(s) dans votre périmètre` : 'Chargement...'}
+          {data ? `${data.length} structure(s) dans votre périmètre` : 'Chargement…'}
         </p>
       </div>
 
