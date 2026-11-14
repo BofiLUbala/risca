@@ -68,6 +68,11 @@ export class ActivateDto {
   /** Code à 6 chiffres reçu par e-mail. */
   @Matches(/^\d{6}$/, { message: 'Le code de vérification doit contenir 6 chiffres' })
   otp: string;
+
+  /** Super Admin invité : la clé administrateur qu'il choisit lui-même (16 caractères au moins). */
+  @IsOptional()
+  @IsString()
+  adminKey?: string;
 }
 
 export class AdminRegisterDto {
@@ -162,4 +167,44 @@ export class SetMaintenanceDto {
   @IsOptional()
   @IsString()
   message?: string;
+}
+
+export class ChangeAdminKeyDto {
+  @IsString()
+  currentPassword: string;
+
+  @IsString()
+  currentKey: string;
+
+  @IsString()
+  @MinLength(16, { message: 'La nouvelle clé administrateur doit contenir au moins 16 caractères' })
+  newKey: string;
+}
+
+/** Récupération du Super Admin n°1 : clé d'installation du serveur + code reçu par e-mail. */
+export class RecoverStartDto {
+  @IsEmail({}, { message: 'Adresse e-mail invalide' })
+  email: string;
+
+  @IsString()
+  setupKey: string;
+}
+
+export class RecoverConfirmDto {
+  @IsEmail({}, { message: 'Adresse e-mail invalide' })
+  email: string;
+
+  @Matches(/^\d{6}$/, { message: 'Le code de vérification doit contenir 6 chiffres' })
+  otp: string;
+
+  @IsString()
+  setupKey: string;
+
+  @IsString()
+  @MinLength(12, { message: 'Le mot de passe administrateur doit contenir au moins 12 caractères' })
+  password: string;
+
+  @IsString()
+  @MinLength(16, { message: 'La clé administrateur doit contenir au moins 16 caractères' })
+  adminKey: string;
 }

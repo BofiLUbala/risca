@@ -17,6 +17,8 @@ export interface Me {
   locale: string;
   staffFunction?: string | null;
   twoFactorEnabled: boolean;
+  /** Rang du Super Admin : 1 = principal, 2 et 3 = secondaires ; absent pour les autres rôles. */
+  adminRank?: number | null;
   /** Dispense d acces : le compte n est pas bloque par les notifications. */
   pushExempt?: boolean;
   organizationName?: string | null;

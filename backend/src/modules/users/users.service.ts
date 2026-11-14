@@ -15,6 +15,19 @@ export class UsersService {
     private notifications: NotificationsService,
   ) {}
 
+  /**
+   * Hiérarchie des Super Admin : une action sur un AUTRE Super Admin (suspension, gel, anonymisation...) revient
+   * au Super Admin n°1, et personne ne peut agir sur le n°1. Chacun peut agir sur son propre compte.
+   */
+  private async assertCanActOnAdmin(targetId: string, actor: AuthUser) {
+    const target = await this.prisma.user.findUnique({ where: { id: targetId }, select: { id: true, role: true, adminRank: true } });
+    if (!target || target.role !== Role.SUPER_ADMIN || target.id === actor.id) return;
+    if (target.adminRank === 1) throw new ForbiddenException('Le Super Admin n°1 ne peut pas être modifié par un autre compte');
+    if (actor.role !== Role.SUPER_ADMIN || actor.adminRank !== 1) {
+      throw new ForbiddenException('Seul le Super Admin n°1 peut agir sur un autre Super Admin');
+    }
+  }
+
   async list(
     user: AuthUser,
     params: {
@@ -61,6 +74,7 @@ export class UsersService {
         organizationName: true,
         twoFactorEnabled: true,
         pushExempt: true,
+        adminRank: true,
         lastLoginAt: true,
         createdAt: true,
         invitationExpiresAt: true,
@@ -91,6 +105,7 @@ export class UsersService {
         organizationBio: true,
         website: true,
         twoFactorEnabled: true,
+        adminRank: true,
         lastLoginAt: true,
         failedLoginCount: true,
         createdAt: true,
@@ -152,6 +167,7 @@ export class UsersService {
     if (target.role === Role.SUPER_ADMIN && user.role !== Role.SUPER_ADMIN) {
       throw new ForbiddenException('Impossible de modifier un Super Admin');
     }
+    await this.assertCanActOnAdmin(id, user);
 
     const updated = await this.prisma.user.update({
       where: { id },
@@ -189,6 +205,7 @@ export class UsersService {
       throw new ForbiddenException('Réservé à l’Auditeur Éthique et au Super Admin');
     }
     if (!reason) throw new BadRequestException('Un motif est obligatoire');
+    await this.assertCanActOnAdmin(id, user);
 
     const updated = await this.prisma.user.update({
       where: { id },
@@ -257,6 +274,7 @@ export class UsersService {
     if (user.role !== Role.SUPER_ADMIN) {
       throw new ForbiddenException('Reserve au Super Admin');
     }
+    await this.assertCanActOnAdmin(id, user);
     const updated = await this.prisma.user.update({
       where: { id },
       data: { pushExempt: exempt },
@@ -285,6 +303,7 @@ export class UsersService {
     }
     const target = await this.prisma.user.findUnique({ where: { id } });
     if (!target) throw new NotFoundException('Utilisateur introuvable');
+    await this.assertCanActOnAdmin(id, user);
     if (target.email.startsWith('anonyme+')) {
       throw new BadRequestException('Ce compte est deja anonymise');
     }

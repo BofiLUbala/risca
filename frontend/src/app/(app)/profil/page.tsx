@@ -128,7 +128,7 @@ export default function ProfilePage() {
 
       <PushSection />
 
-      <SecuritySection twoFactorEnabled={user.twoFactorEnabled} role={user.role} onChanged={refresh} />
+      <SecuritySection twoFactorEnabled={user.twoFactorEnabled} role={user.role} isSuperAdmin={user.role === 'SUPER_ADMIN'} onChanged={refresh} />
     </div>
   );
 }

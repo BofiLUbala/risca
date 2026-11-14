@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
@@ -9,10 +9,13 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import {
   ActivateDto,
   AdminRegisterDto,
+  ChangeAdminKeyDto,
   ChangePasswordDto,
   Enable2faDto,
   InviteDto,
   LoginDto,
+  RecoverConfirmDto,
+  RecoverStartDto,
   RefreshDto,
   RegisterDonorDto,
   ResendActivationOtpDto,
@@ -47,6 +50,45 @@ export class AuthController {
   @Post('admin/register')
   registerAdmin(@Body() dto: AdminRegisterDto) {
     return this.auth.registerAdmin(dto);
+  }
+
+  /** La page d'activation demande ce que le lien contient (un Super Admin y choisit aussi sa clé). */
+  @Public()
+  @Get('activate/info')
+  activationInfo(@Query('token') token: string) {
+    return this.auth.activationInfo(token);
+  }
+
+  /** Récupération du Super Admin n°1 : clé d'installation du serveur + code reçu par e-mail. */
+  @Public()
+  @Post('admin/recover/start')
+  recoverStart(@Body() dto: RecoverStartDto) {
+    return this.auth.recoverPrimaryStart(dto);
+  }
+
+  @Public()
+  @Post('admin/recover/confirm')
+  recoverConfirm(@Body() dto: RecoverConfirmDto) {
+    return this.auth.recoverPrimaryConfirm(dto);
+  }
+
+  @Roles(Role.SUPER_ADMIN)
+  @Post('admin/change-key')
+  changeAdminKey(@CurrentUser() user: AuthUser, @Body() dto: ChangeAdminKeyDto) {
+    return this.auth.changeAdminKey(user, dto);
+  }
+
+  /** Super Admin n°1 seulement : identifiants perdus d'un Super Admin n°2 ou n°3. */
+  @Roles(Role.SUPER_ADMIN)
+  @Post('admin/:id/reset-credentials')
+  resetAdminCredentials(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.auth.resetAdminCredentials(id, user);
+  }
+
+  @Roles(Role.SUPER_ADMIN)
+  @Post('admin/:id/unlock')
+  unlockAdmin(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.auth.unlockAdmin(id, user);
   }
 
   @Public()

@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { api, setTokens } from '@/lib/api';
@@ -21,6 +21,22 @@ function ActivateForm() {
   const [info, setInfo] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [resending, setResending] = useState(false);
+  // Ce que le lien contient : un Super Admin invité choisit aussi sa clé administrateur.
+  const [needsKey, setNeedsKey] = useState(false);
+  const [adminRank, setAdminRank] = useState<number | null>(null);
+  const [adminKey, setAdminKey] = useState('');
+  const [adminKeyConfirm, setAdminKeyConfirm] = useState('');
+
+  useEffect(() => {
+    if (!token) return;
+    api
+      .get<{ needsAdminKey: boolean; adminRank: number | null }>(`/auth/activate/info?token=${encodeURIComponent(token)}`)
+      .then((i) => {
+        setNeedsKey(!!i.needsAdminKey);
+        setAdminRank(i.adminRank ?? null);
+      })
+      .catch(() => undefined); // un lien invalide est signalé à l'envoi du formulaire
+  }, [token]);
 
   async function resendCode() {
     setError(null);
@@ -51,9 +67,23 @@ function ActivateForm() {
       setError('Les deux mots de passe ne correspondent pas');
       return;
     }
+    if (needsKey) {
+      if (password.length < 12) {
+        setError('Le mot de passe d’un Super Admin doit contenir au moins 12 caractères');
+        return;
+      }
+      if (adminKey.trim().length < 16) {
+        setError('La clé administrateur doit contenir au moins 16 caractères');
+        return;
+      }
+      if (adminKey !== adminKeyConfirm) {
+        setError('Les deux clés administrateur ne correspondent pas');
+        return;
+      }
+    }
     setBusy(true);
     try {
-      const res = await api.post<any>('/auth/activate', { token, otp, password });
+      const res = await api.post<any>('/auth/activate', { token, otp, password, ...(needsKey ? { adminKey: adminKey.trim() } : {}) });
       setTokens(res.accessToken, res.refreshToken);
       await refresh();
       router.push(res.twoFactorRequired ? '/profil?2fa=1' : '/tableau-de-bord');
@@ -130,7 +160,7 @@ function ActivateForm() {
         <PasswordInput
           id="password"
           required
-          minLength={8}
+          minLength={needsKey ? 12 : 8}
           autoComplete="new-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -152,6 +182,44 @@ function ActivateForm() {
           className="input"
         />
       </div>
+
+      {needsKey && (
+        <div className="space-y-4 rounded-xl border border-sun-200 bg-sun-50 p-4">
+          <p className="text-sm text-ink-800">
+            <strong>Super Admin{adminRank ? ` n°${adminRank}` : ''}.</strong> Choisissez votre clé administrateur : elle vous sera demandée à
+            chaque connexion, en plus du mot de passe. Conservez-la précieusement : si vous la perdez, seul le Super Admin n°1 peut
+            réinitialiser vos identifiants.
+          </p>
+          <div>
+            <label htmlFor="admin-key" className="label">
+              Clé administrateur (16 caractères au moins)
+            </label>
+            <PasswordInput
+              id="admin-key"
+              name="adminKey"
+              required
+              minLength={16}
+              autoComplete="off"
+              value={adminKey}
+              onChange={(e) => setAdminKey(e.target.value)}
+              className="input font-mono"
+            />
+          </div>
+          <div>
+            <label htmlFor="admin-key-confirm" className="label">
+              Confirmer la clé administrateur
+            </label>
+            <PasswordInput
+              id="admin-key-confirm"
+              required
+              autoComplete="off"
+              value={adminKeyConfirm}
+              onChange={(e) => setAdminKeyConfirm(e.target.value)}
+              className="input font-mono"
+            />
+          </div>
+        </div>
+      )}
 
       <button type="submit" disabled={busy} className="btn-primary w-full py-3">
         {busy ? <Spinner className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}

@@ -232,6 +232,7 @@ async function seedUsers() {
         firstName: u.firstName,
         lastName: u.lastName,
         role: u.role,
+        adminRank: u.role === Role.SUPER_ADMIN ? 1 : null,
         status: UserStatus.ACTIVE,
         countryId: country?.id ?? null,
         provinceId: province?.id ?? null,

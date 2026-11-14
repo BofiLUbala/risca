@@ -8,7 +8,7 @@ import { useAuth } from '../../src/lib/auth';
 import { Button } from '../../src/components/ui';
 import { Logo } from '../../src/components/Logo';
 import { CheckIcon, EyeIcon } from '../../src/components/icons';
-import { getRememberedEmail, setRememberedEmail } from '../../src/lib/remember';
+import { getRememberedAdminKey, getRememberedEmail, setRememberedAdminKey, setRememberedEmail } from '../../src/lib/remember';
 import { colors, radius, shadow, spacing, typography } from '../../src/theme';
 
 export default function LoginScreen() {
@@ -21,6 +21,10 @@ export default function LoginScreen() {
   const [remember, setRemember] = useState(false);
   const [totp, setTotp] = useState('');
   const [needsTotp, setNeedsTotp] = useState(false);
+  const [adminKey, setAdminKey] = useState('');
+  const [needsKey, setNeedsKey] = useState(false);
+  const [rememberKey, setRememberKey] = useState(false);
+  const [showKey, setShowKey] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -32,15 +36,23 @@ export default function LoginScreen() {
         setRemember(true);
       }
     });
+    // Clé administrateur mémorisée à la demande du Super Admin : elle est envoyée dès le premier appel.
+    void getRememberedAdminKey().then((k) => {
+      if (k) {
+        setAdminKey(k);
+        setRememberKey(true);
+      }
+    });
   }, []);
 
   async function submit() {
     setError(null);
     setBusy(true);
     try {
-      const res = await login(email.trim(), password, needsTotp ? totp : undefined);
+      const res = await login(email.trim(), password, needsTotp ? totp : undefined, adminKey.trim() || undefined);
       if (res.adminKeyRequired) {
-        setError('Compte Super Admin : connectez-vous depuis le site web, page /admin, avec votre clé administrateur.');
+        setNeedsKey(true);
+        setError(adminKey ? 'Clé administrateur incorrecte.' : 'Compte Super Admin : saisissez votre clé administrateur.');
         setBusy(false);
         return;
       }
@@ -50,6 +62,7 @@ export default function LoginScreen() {
         return;
       }
       await setRememberedEmail(remember ? email.trim() : null);
+      await setRememberedAdminKey(needsKey && rememberKey ? adminKey.trim() : null);
       router.replace('/(tabs)');
     } catch (e: any) {
       setError(e?.message ?? 'Connexion impossible');
@@ -134,6 +147,45 @@ export default function LoginScreen() {
             <View style={[s.box, remember && s.boxOn]}>{remember ? <CheckIcon color={colors.white} /> : null}</View>
             <Text style={s.rememberText}>Se souvenir de moi</Text>
           </Pressable>
+
+          {needsKey ? (
+            <View style={s.field}>
+              <Text style={s.label}>Clé administrateur</Text>
+              <View style={s.passwordWrap}>
+                <TextInput
+                  value={adminKey}
+                  onChangeText={setAdminKey}
+                  secureTextEntry={!showKey}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  accessibilityLabel="Clé administrateur"
+                  style={[s.input, s.passwordInput]}
+                />
+                <Pressable
+                  onPress={() => setShowKey((v) => !v)}
+                  accessibilityRole="button"
+                  accessibilityLabel={showKey ? 'Masquer la clé' : 'Afficher la clé'}
+                  hitSlop={8}
+                  style={s.eye}
+                >
+                  <EyeIcon off={showKey} color={colors.ink[500]} />
+                </Pressable>
+              </View>
+              <Pressable
+                onPress={() => setRememberKey((v) => !v)}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: rememberKey }}
+                accessibilityLabel="Mémoriser ma clé sur cet appareil"
+                style={s.remember}
+              >
+                <View style={[s.box, rememberKey && s.boxOn]}>{rememberKey ? <CheckIcon color={colors.white} /> : null}</View>
+                <Text style={s.rememberText}>Mémoriser ma clé sur cet appareil</Text>
+              </Pressable>
+              <Text style={s.hint}>
+                Clé perdue ? Super Admin n°2 ou n°3 : écrivez au Super Admin n°1, il réinitialise vos identifiants. Super Admin n°1 : récupération depuis le site web, page /admin.
+              </Text>
+            </View>
+          ) : null}
 
           {needsTotp ? (
             <View style={s.field}>

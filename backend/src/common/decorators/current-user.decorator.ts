@@ -9,6 +9,8 @@ export interface AuthUser {
   orphanageId?: string | null;
   staffFunction?: string | null;
   status: string;
+  /** Rang du Super Admin (1 = principal, 2 et 3 = secondaires) ; absent pour les autres rôles. */
+  adminRank?: number | null;
 }
 
 export const CurrentUser = createParamDecorator((data: keyof AuthUser | undefined, ctx: ExecutionContext) => {

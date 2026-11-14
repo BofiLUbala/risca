@@ -121,6 +121,7 @@ export default function UsersPage() {
                 </p>
                 <p className="break-words text-xs text-ink-500 sm:truncate">
                   {u.email} &middot; {ROLE_LABEL[u.role as Role]}
+                  {u.role === 'SUPER_ADMIN' && u.adminRank ? ` n°${u.adminRank}` : ''}
                   {u.orphanage ? ` - ${u.orphanage.name}` : ''}
                   {u.province ? ` - ${u.province.nameFr}` : ''}
                 </p>
@@ -136,7 +137,8 @@ export default function UsersPage() {
                   </button>
                 )}
                 {['SUPER_ADMIN', 'MODERATOR', 'NATIONAL_MANAGER'].includes(user?.role ?? '') &&
-                  u.id !== user?.id && (
+                  u.id !== user?.id &&
+                  !(u.role === 'SUPER_ADMIN' && (u.adminRank === 1 || user?.adminRank !== 1)) && (
                     <select
                       onChange={(e) => e.target.value && setStatus(u.id, e.target.value)}
                       value=""

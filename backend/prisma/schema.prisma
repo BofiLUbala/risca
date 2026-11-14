@@ -373,8 +373,11 @@ model User {
   activationOtpAttempts  Int       @default(0)
   activationOtpSentAt    DateTime?
 
-  // Clé administrateur choisie par l'unique Super Admin à la création de son compte (hachée, jamais en clair).
+  // Clé administrateur choisie par chaque Super Admin (hachée, jamais en clair).
   adminKeyHash String?
+  // Rang du Super Admin : 1 = principal (seul à débloquer et réinitialiser les autres), 2 et 3 = secondaires.
+  // Trois au maximum, rang unique : garanti par des index créés au démarrage (prisma.service.ts).
+  adminRank Int?
 
   organizationName String?
   organizationBio  String?

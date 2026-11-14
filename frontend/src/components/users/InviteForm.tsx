@@ -3,11 +3,15 @@
 import { useState } from 'react';
 import useSWR from 'swr';
 import { api, fetcher } from '@/lib/api';
+import { useAuth } from '@/lib/auth-context';
 import { ROLE_LABEL } from '@/lib/roles';
 import { CountrySelect, ProvinceSelect } from '@/components/geo/GeoSelects';
 
 /** Invitation : role, pays et province choisis dans des listes liees (section 3). */
 export function InviteForm({ onInvited }: { onInvited: () => void }) {
+  const { user } = useAuth();
+  // Seul le Super Admin n°1 peut inviter un autre Super Admin (il y en a trois au plus).
+  const canInviteAdmin = user?.role === 'SUPER_ADMIN' && user?.adminRank === 1;
   const { data: countries } = useSWR<any[]>('/geo/countries', fetcher);
   const { data: orphanages } = useSWR<any[]>('/orphanages', fetcher);
 
@@ -108,11 +112,13 @@ export function InviteForm({ onInvited }: { onInvited: () => void }) {
             onChange={(e) => setForm({ ...form, role: e.target.value })}
             className="input"
           >
-            {Object.entries(ROLE_LABEL).map(([k, v]) => (
-              <option key={k} value={k}>
-                {v}
-              </option>
-            ))}
+            {Object.entries(ROLE_LABEL)
+              .filter(([k]) => k !== 'SUPER_ADMIN' || canInviteAdmin)
+              .map(([k, v]) => (
+                <option key={k} value={k}>
+                  {v}
+                </option>
+              ))}
           </select>
         </div>
         <div>

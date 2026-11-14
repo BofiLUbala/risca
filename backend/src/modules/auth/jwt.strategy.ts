@@ -33,6 +33,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
         provinceId: true,
         orphanageId: true,
         staffFunction: true,
+        adminRank: true,
         tokenVersion: true,
       },
     });
@@ -53,6 +54,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       provinceId: user.provinceId,
       orphanageId: user.orphanageId,
       staffFunction: user.staffFunction,
+      adminRank: user.adminRank,
     };
   }
 }

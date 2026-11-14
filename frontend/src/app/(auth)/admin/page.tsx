@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
@@ -8,10 +8,12 @@ import { AlertCircle, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { api, fetcher, setTokens } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { Spinner } from '@/components/ui/Loading';
-import { postLoginPath } from '@/lib/remember';
+import { postLoginPath, getRememberedEmail, setRememberedEmail } from '@/lib/remember';
+import { AdminRecovery } from '@/components/auth/AdminRecovery';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 
 // Rôles autorisés à entrer par cette porte : les comptes d'administration.
+const KEY_STORAGE = 'risac.admin-key';
 const ADMIN_ROLES = ['SUPER_ADMIN', 'ADMIN_FINANCE', 'MODERATOR', 'ETHICS_AUDITOR'];
 
 type Tab = 'login' | 'create';
@@ -57,6 +59,24 @@ export default function AdminPage() {
   const [needsTotp, setNeedsTotp] = useState(false);
   const [loginKey, setLoginKey] = useState('');
   const [needsKey, setNeedsKey] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
+  const [rememberKey, setRememberKey] = useState(false);
+  const [showLost, setShowLost] = useState(false);
+
+  // Préremplit l'e-mail mémorisé et, si l'utilisateur l'a choisi, la clé de cet appareil.
+  useEffect(() => {
+    const saved = getRememberedEmail();
+    if (saved) setEmail(saved);
+    try {
+      const k = localStorage.getItem(KEY_STORAGE);
+      if (k) {
+        setLoginKey(k);
+        setRememberKey(true);
+      }
+    } catch {
+      /* stockage indisponible */
+    }
+  }, []);
 
   // Création du compte
   const [firstName, setFirstName] = useState('');
@@ -101,6 +121,7 @@ export default function AdminPage() {
     setBusy(true);
     try {
       const res = await login(email, password, needsTotp ? totp : undefined, loginKey || undefined);
+      setRememberedEmail(rememberMe ? email : null);
       if (res.adminKeyRequired) {
         setNeedsKey(true);
         setInfo('Saisissez la clé administrateur que vous avez choisie à la création de votre compte.');
@@ -118,6 +139,12 @@ export default function AdminPage() {
         setError('Cet espace est réservé aux comptes d’administration. Utilisez la page de connexion générale.');
         setBusy(false);
         return;
+      }
+      try {
+        if (rememberKey && loginKey) localStorage.setItem(KEY_STORAGE, loginKey);
+        else localStorage.removeItem(KEY_STORAGE);
+      } catch {
+        /* stockage indisponible */
       }
       router.push(res.user ? postLoginPath(res.user) : '/tableau-de-bord');
     } catch (err: any) {
@@ -239,6 +266,7 @@ export default function AdminPage() {
         {info && <Alert tone="ok">{info}</Alert>}
 
         {tab === 'login' && (
+          <>
           <form id="panel-login" role="tabpanel" aria-labelledby="tab-login" onSubmit={onLogin} className="space-y-4" noValidate>
             <div>
               <label htmlFor="a-email" className="label">
@@ -283,6 +311,19 @@ export default function AdminPage() {
                 />
               </div>
             )}
+            <label className="flex items-center gap-2.5 text-sm text-ink-700">
+              <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="h-4 w-4 rounded border-ink-300" />
+              Se souvenir de moi
+            </label>
+            {needsKey && (
+              <div>
+                <label className="flex items-start gap-2.5 text-sm text-ink-700">
+                  <input type="checkbox" checked={rememberKey} onChange={(e) => setRememberKey(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-ink-300" />
+                  <span>Mémoriser ma clé sur cet appareil</span>
+                </label>
+                <p className="mt-1 pl-6 text-xs text-ink-500">À éviter sur un ordinateur partagé : la clé serait lisible par quiconque utilise ce navigateur.</p>
+              </div>
+            )}
             {needsTotp && (
               <div className="animate-fade-up">
                 <label htmlFor="a-totp" className="label">
@@ -305,14 +346,23 @@ export default function AdminPage() {
               {busy ? <Spinner className="h-4 w-4" /> : null}
               {needsTotp ? 'Valider le code' : 'Se connecter'}
             </button>
+            <button
+              type="button"
+              onClick={() => setShowLost((v) => !v)}
+              aria-expanded={showLost}
+              className="text-sm font-medium text-risac-700 hover:text-risac-800"
+            >
+              Identifiants ou clé perdus ?
+            </button>
           </form>
+          {showLost && <AdminRecovery />}
+          </>
         )}
 
         {tab === 'create' && step === 'form' && setup && !setup.creationOpen && (
           <div id="panel-create" role="tabpanel" aria-labelledby="tab-create" className="space-y-4">
             <Alert>
-              Un Super Admin existe déjà : la plateforme n’en admet qu’un seul. Connectez-vous avec son compte et sa
-              clé administrateur.
+              Les trois comptes Super Admin sont déjà créés. Le Super Admin n°1 invite les deux autres depuis la page Utilisateurs ; connectez-vous avec votre compte et votre clé administrateur.
             </Alert>
             <button type="button" onClick={() => switchTab('login')} className="btn-outline w-full py-3">
               Aller à la connexion

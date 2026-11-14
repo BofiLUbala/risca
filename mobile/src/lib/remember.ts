@@ -19,6 +19,18 @@ export async function setRememberedEmail(email: string | null): Promise<void> {
   else await store.del(EMAIL_KEY);
 }
 
+const KEY_KEY = 'risac_admin_key';
+
+/** Clé administrateur d'un Super Admin, mémorisée (à sa demande) dans le stockage chiffré de l'appareil. */
+export async function getRememberedAdminKey(): Promise<string> {
+  return (await store.get(KEY_KEY)) ?? '';
+}
+
+export async function setRememberedAdminKey(key: string | null): Promise<void> {
+  if (key) await store.set(KEY_KEY, key);
+  else await store.del(KEY_KEY);
+}
+
 /** Écrans où l'on ne revient jamais (accès). */
 const SKIP = /^\/(connexion)(\/|$)/;
 

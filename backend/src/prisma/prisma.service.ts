@@ -5,22 +5,35 @@ import { PrismaClient } from '@prisma/client';
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   async onModuleInit() {
     await this.$connect();
-    await this.enforceSingleSuperAdmin();
+    await this.enforceSuperAdminLimit();
   }
 
   /**
-   * Règle métier : il n'existe qu'un seul Super Admin. Prisma ne sait pas déclarer un index
-   * partiel : on le crée ici, de façon idempotente. La base refuse alors toute seconde ligne
-   * SUPER_ADMIN, même si deux requêtes arrivent en même temps.
+   * Règle métier : trois Super Admin au plus, numérotés 1 (principal), 2 et 3. Prisma ne sait pas
+   * déclarer un index partiel : on les crée ici, de façon idempotente. La base refuse alors un
+   * quatrième Super Admin ou deux comptes du même rang, même si deux requêtes arrivent en même temps.
    */
-  private async enforceSingleSuperAdmin() {
+  private async enforceSuperAdminLimit() {
     try {
+      // Ancienne règle « un seul Super Admin » : remplacée par les rangs.
+      await this.$executeRawUnsafe(`DROP INDEX IF EXISTS "one_super_admin_only"`);
+      // Le Super Admin existant (créé avant les rangs) devient le principal.
       await this.$executeRawUnsafe(
-        `CREATE UNIQUE INDEX IF NOT EXISTS "one_super_admin_only" ON "User" ("role") WHERE "role" = 'SUPER_ADMIN'`,
+        `UPDATE "User" SET "adminRank" = 1
+           WHERE "role" = 'SUPER_ADMIN' AND "adminRank" IS NULL
+             AND NOT EXISTS (SELECT 1 FROM "User" u WHERE u."role" = 'SUPER_ADMIN' AND u."adminRank" = 1)`,
       );
+      await this.$executeRawUnsafe(
+        `CREATE UNIQUE INDEX IF NOT EXISTS "super_admin_rank_unique" ON "User" ("adminRank") WHERE "role" = 'SUPER_ADMIN'`,
+      );
+      await this.$executeRawUnsafe(`
+        DO $$ BEGIN
+          ALTER TABLE "User" ADD CONSTRAINT "super_admin_rank_range"
+            CHECK ("role" <> 'SUPER_ADMIN' OR "adminRank" BETWEEN 1 AND 3);
+        EXCEPTION WHEN duplicate_object THEN NULL; END $$;`);
     } catch (e: any) {
-      // Une base qui contient déjà plusieurs Super Admin ne peut pas recevoir l'index : on le dit clairement.
-      console.error(`[RISAC] Index « un seul Super Admin » impossible à créer : ${e?.message ?? e}`);
+      // Une base qui contient déjà un état incompatible ne peut pas recevoir les règles : on le dit clairement.
+      console.error(`[RISAC] Règles « trois Super Admin au plus » impossibles à créer : ${e?.message ?? e}`);
     }
   }
 

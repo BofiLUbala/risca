@@ -19,8 +19,11 @@ import { AuthUser } from '../../common/decorators/current-user.decorator';
 import {
   ActivateDto,
   AdminRegisterDto,
+  ChangeAdminKeyDto,
   InviteDto,
   LoginDto,
+  RecoverConfirmDto,
+  RecoverStartDto,
   RegisterDonorDto,
   ResendActivationOtpDto,
   ResendVerifyEmailDto,
@@ -199,7 +202,7 @@ export class AuthService {
 
     if (user.status === UserStatus.INVITED) {
       throw new ForbiddenException(
-        user.role === Role.DONOR || user.role === Role.SUPER_ADMIN
+        user.role === Role.DONOR || (user.role === Role.SUPER_ADMIN && !user.invitationToken)
           ? 'Adresse e-mail non confirmée : saisissez le code reçu par e-mail'
           : 'Compte non activé, utilisez le lien et le code reçus par e-mail',
       );
@@ -264,9 +267,8 @@ export class AuthService {
   }
 
   async invite(dto: InviteDto, inviter: AuthUser) {
-    if (dto.role === Role.SUPER_ADMIN) {
-      throw new BadRequestException('Il ne peut y avoir qu’un seul Super Admin');
-    }
+    // Seul le Super Admin n°1 invite un Super Admin (n°2 ou n°3) ; trois au maximum.
+    if (dto.role === Role.SUPER_ADMIN) this.assertPrimaryAdmin(inviter);
     const email = dto.email.toLowerCase();
     const existing = await this.prisma.user.findUnique({ where: { email } });
     if (existing) throw new BadRequestException('Un compte existe déjà avec cette adresse');
@@ -286,12 +288,24 @@ export class AuthService {
 
     const token = crypto.randomBytes(32).toString('hex');
 
+    let adminRank: number | null = null;
+    if (dto.role === Role.SUPER_ADMIN) {
+      const used = new Set(
+        (await this.prisma.user.findMany({ where: { role: Role.SUPER_ADMIN }, select: { adminRank: true } })).map((a) => a.adminRank),
+      );
+      adminRank = [2, 3].find((r) => !used.has(r)) ?? null;
+      if (!adminRank) {
+        throw new BadRequestException('Il y a déjà trois Super Admin : le maximum est atteint');
+      }
+    }
+
     const user = await this.prisma.user.create({
       data: {
         email,
         firstName: dto.firstName,
         lastName: dto.lastName,
         role: dto.role,
+        adminRank,
         status: UserStatus.INVITED,
         countryId: dto.countryId ?? null,
         provinceId: dto.provinceId ?? null,
@@ -374,6 +388,17 @@ export class AuthService {
     if (!user.invitationExpiresAt || user.invitationExpiresAt < new Date()) {
       throw new BadRequestException('Lien d’activation expire, demandez un nouvel envoi');
     }
+    // Un Super Admin choisit, à l'activation, son mot de passe (12 caractères) et sa clé administrateur (16).
+    let adminKeyHash: string | undefined;
+    if (user.role === Role.SUPER_ADMIN) {
+      const key = this.cleanKey(dto.adminKey);
+      if (key.length < 16) throw new BadRequestException('La clé administrateur doit contenir au moins 16 caractères');
+      if (dto.password.length < 12) {
+        throw new BadRequestException('Le mot de passe d’un Super Admin doit contenir au moins 12 caractères');
+      }
+      adminKeyHash = await argon2.hash(key);
+    }
+
     await this.assertOtpValid(user, dto.otp);
 
     const passwordHash = await argon2.hash(dto.password);
@@ -382,6 +407,7 @@ export class AuthService {
       where: { id: user.id },
       data: {
         passwordHash,
+        ...(adminKeyHash ? { adminKeyHash } : {}),
         status: UserStatus.ACTIVE,
         invitationToken: null,
         invitationExpiresAt: null,
@@ -513,6 +539,7 @@ export class AuthService {
             firstName: dto.firstName,
             lastName: dto.lastName,
             role: Role.SUPER_ADMIN,
+            adminRank: 1,
             // Actif seulement après confirmation de l'adresse par le code reçu.
             status: UserStatus.INVITED,
           },
@@ -650,6 +677,7 @@ export class AuthService {
 
   /** Forcer la deconnexion d un utilisateur (Super Admin, section 11). */
   async forceLogout(userId: string, actor: AuthUser) {
+    await this.assertCanActOnAdmin(userId, actor);
     await this.prisma.user.update({ where: { id: userId }, data: { tokenVersion: { increment: 1 } } });
     await this.prisma.refreshToken.updateMany({
       where: { userId, revokedAt: null },
@@ -721,6 +749,167 @@ export class AuthService {
     return { success: true };
   }
 
+  // ───────────── Super Admin n°1 / n°2 / n°3 ─────────────
+
+  /** Seul le Super Admin n°1 invite, réinitialise, débloque et suspend les autres Super Admin. */
+  private assertPrimaryAdmin(actor: AuthUser) {
+    if (actor.role !== Role.SUPER_ADMIN || actor.adminRank !== 1) {
+      throw new ForbiddenException('Réservé au Super Admin n°1');
+    }
+  }
+
+  /**
+   * Une action sur un autre Super Admin (déconnexion forcée, blocage, gel...) revient au n°1, et personne
+   * ne peut agir sur le n°1. Un Super Admin peut en revanche toujours agir sur lui-même.
+   */
+  async assertCanActOnAdmin(targetId: string, actor: AuthUser) {
+    const target = await this.prisma.user.findUnique({ where: { id: targetId }, select: { id: true, role: true, adminRank: true } });
+    if (!target || target.role !== Role.SUPER_ADMIN || target.id === actor.id) return;
+    if (target.adminRank === 1) throw new ForbiddenException('Le Super Admin n°1 ne peut pas être modifié par un autre compte');
+    this.assertPrimaryAdmin(actor);
+  }
+
+  /** Ce que la page d'activation doit savoir du lien : un Super Admin y choisit aussi sa clé. */
+  async activationInfo(token: string) {
+    const user = await this.prisma.user.findUnique({ where: { invitationToken: token } });
+    if (!user || user.status !== UserStatus.INVITED || !user.invitationExpiresAt || user.invitationExpiresAt < new Date()) {
+      throw new BadRequestException('Lien d’activation invalide ou expiré');
+    }
+    return { firstName: user.firstName, role: user.role, adminRank: user.adminRank, needsAdminKey: user.role === Role.SUPER_ADMIN };
+  }
+
+  /**
+   * Identifiants perdus d'un Super Admin n°2 ou n°3 : le n°1 efface son mot de passe et sa clé et lui
+   * renvoie un lien d'activation avec un nouveau code. Le compte choisit alors de nouveaux identifiants.
+   */
+  async resetAdminCredentials(targetId: string, actor: AuthUser) {
+    this.assertPrimaryAdmin(actor);
+    const target = await this.prisma.user.findUnique({ where: { id: targetId } });
+    if (!target || target.role !== Role.SUPER_ADMIN) throw new NotFoundException('Super Admin introuvable');
+    if (target.id === actor.id || target.adminRank === 1) {
+      throw new ForbiddenException('Le Super Admin n°1 récupère son accès avec la clé d’installation du serveur');
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const user = await this.prisma.user.update({
+      where: { id: target.id },
+      data: {
+        passwordHash: null,
+        adminKeyHash: null,
+        twoFactorEnabled: false,
+        twoFactorSecret: null,
+        status: UserStatus.INVITED,
+        tokenVersion: { increment: 1 },
+        failedLoginCount: 0,
+        lockedUntil: null,
+        invitationToken: token,
+        invitationExpiresAt: new Date(Date.now() + INVITATION_TTL_HOURS * 3600000),
+      },
+    });
+    await this.prisma.refreshToken.updateMany({ where: { userId: user.id, revokedAt: null }, data: { revokedAt: new Date() } });
+    await this.audit.log({
+      actorId: actor.id,
+      actorRole: actor.role,
+      action: 'ADMIN_CREDENTIALS_RESET',
+      entityType: 'User',
+      entityId: user.id,
+      metadata: { adminRank: user.adminRank },
+    });
+
+    const activationUrl = `${process.env.APP_WEB_URL}/activate?token=${token}`;
+    const delivery = await this.issueActivationOtp(user, 'ACTIVATION', activationUrl);
+    return { id: user.id, email: user.email, activationUrl, expiresAt: user.invitationExpiresAt, ...delivery };
+  }
+
+  /** Débloque un Super Admin n°2 ou n°3 : fin du verrouillage après échecs, et remise en service s'il était suspendu. */
+  async unlockAdmin(targetId: string, actor: AuthUser) {
+    this.assertPrimaryAdmin(actor);
+    const target = await this.prisma.user.findUnique({ where: { id: targetId } });
+    if (!target || target.role !== Role.SUPER_ADMIN) throw new NotFoundException('Super Admin introuvable');
+    if (target.adminRank === 1) throw new ForbiddenException('Le Super Admin n°1 ne peut pas être modifié par un autre compte');
+
+    const reactivate = ([UserStatus.SUSPENDED, UserStatus.BLOCKED, UserStatus.FROZEN] as UserStatus[]).includes(target.status);
+    const updated = await this.prisma.user.update({
+      where: { id: target.id },
+      data: { failedLoginCount: 0, lockedUntil: null, ...(reactivate ? { status: UserStatus.ACTIVE } : {}) },
+      select: { id: true, status: true, failedLoginCount: true },
+    });
+    await this.audit.log({
+      actorId: actor.id,
+      actorRole: actor.role,
+      action: 'ADMIN_UNLOCKED',
+      entityType: 'User',
+      entityId: target.id,
+      metadata: { from: target.status, reactivated: reactivate },
+    });
+    return updated;
+  }
+
+  /** Changement volontaire de la clé administrateur : mot de passe et clé actuels exigés. */
+  async changeAdminKey(actor: AuthUser, dto: ChangeAdminKeyDto) {
+    if (actor.role !== Role.SUPER_ADMIN) throw new ForbiddenException('Réservé aux Super Admin');
+    const user = await this.prisma.user.findUnique({ where: { id: actor.id } });
+    const passOk = !!user?.passwordHash && (await argon2.verify(user.passwordHash, dto.currentPassword).catch(() => false));
+    const keyOk = !!user?.adminKeyHash && (await argon2.verify(user.adminKeyHash, this.cleanKey(dto.currentKey)).catch(() => false));
+    if (!user || !passOk || !keyOk) throw new BadRequestException('Mot de passe ou clé actuels incorrects');
+
+    const newKey = this.cleanKey(dto.newKey);
+    if (newKey.length < 16) throw new BadRequestException('La nouvelle clé administrateur doit contenir au moins 16 caractères');
+    await this.prisma.user.update({ where: { id: user.id }, data: { adminKeyHash: await argon2.hash(newKey) } });
+    await this.audit.log({ actorId: actor.id, actorRole: actor.role, action: 'ADMIN_KEY_CHANGED', entityType: 'User', entityId: actor.id });
+    return { success: true };
+  }
+
+  /** Le Super Admin n°1 est le seul à n'avoir personne au-dessus de lui : sa récupération passe par le serveur. */
+  private async primaryForRecovery(email: string, setupKeyGiven: string) {
+    const installKey = process.env.ADMIN_SETUP_KEY?.trim();
+    if (!installKey) {
+      throw new ForbiddenException('Récupération indisponible : la clé d’installation du serveur n’est pas configurée. Contactez l’hébergeur.');
+    }
+    if (!this.sameSecret(this.cleanKey(setupKeyGiven), installKey)) {
+      await this.audit.log({ action: 'ADMIN_RECOVERY_REFUSED', entityType: 'User', metadata: { email } });
+      throw new ForbiddenException('Clé d’installation incorrecte');
+    }
+    const user = await this.prisma.user.findFirst({ where: { email: email.toLowerCase(), role: Role.SUPER_ADMIN, adminRank: 1 } });
+    if (!user) throw new BadRequestException('Aucun Super Admin n°1 avec cette adresse');
+    return user;
+  }
+
+  async recoverPrimaryStart(dto: RecoverStartDto) {
+    const user = await this.primaryForRecovery(dto.email, dto.setupKey);
+    this.assertOtpCooldown(user.activationOtpSentAt);
+    const delivery = await this.issueActivationOtp(user, 'VERIFY_EMAIL');
+    await this.audit.log({ actorId: user.id, actorRole: Role.SUPER_ADMIN, action: 'ADMIN_RECOVERY_STARTED', entityType: 'User', entityId: user.id });
+    return { ok: true, ...delivery };
+  }
+
+  async recoverPrimaryConfirm(dto: RecoverConfirmDto) {
+    const user = await this.primaryForRecovery(dto.email, dto.setupKey);
+    const key = this.cleanKey(dto.adminKey);
+    if (key.length < 16) throw new BadRequestException('La clé administrateur doit contenir au moins 16 caractères');
+    await this.assertOtpValid(user, dto.otp);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash: await argon2.hash(dto.password),
+        adminKeyHash: await argon2.hash(key),
+        twoFactorEnabled: false,
+        twoFactorSecret: null,
+        status: UserStatus.ACTIVE,
+        tokenVersion: { increment: 1 },
+        failedLoginCount: 0,
+        lockedUntil: null,
+        activationOtpHash: null,
+        activationOtpExpiresAt: null,
+        activationOtpAttempts: 0,
+      },
+    });
+    await this.prisma.refreshToken.updateMany({ where: { userId: user.id, revokedAt: null }, data: { revokedAt: new Date() } });
+    await this.audit.log({ actorId: user.id, actorRole: Role.SUPER_ADMIN, action: 'ADMIN_RECOVERED', entityType: 'User', entityId: user.id });
+    return { ok: true };
+  }
+
   async me(userId: string) {
     return this.prisma.user.findUnique({
       where: { id: userId },
@@ -735,6 +924,7 @@ export class AuthService {
         locale: true,
         staffFunction: true,
         twoFactorEnabled: true,
+        adminRank: true,
         pushExempt: true,
         organizationName: true,
         lastLoginAt: true,

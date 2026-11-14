@@ -43,7 +43,7 @@ export interface Me {
 interface AuthState {
   user: Me | null;
   loading: boolean;
-  login: (email: string, password: string, totp?: string) => Promise<{ twoFactorRequired?: boolean; adminKeyRequired?: boolean }>;
+  login: (email: string, password: string, totp?: string, adminKey?: string) => Promise<{ twoFactorRequired?: boolean; adminKeyRequired?: boolean }>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 }
@@ -83,8 +83,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loadMe();
   }, []);
 
-  async function login(email: string, password: string, totp?: string) {
-    const res = await api.post<any>('/auth/login', { email, password, ...(totp ? { totp } : {}) });
+  async function login(email: string, password: string, totp?: string, adminKey?: string) {
+    const res = await api.post<any>('/auth/login', { email, password, ...(totp ? { totp } : {}), ...(adminKey ? { adminKey } : {}) });
     if (res.adminKeyRequired) return { adminKeyRequired: true };
     if (res.twoFactorRequired) return { twoFactorRequired: true };
     closeSocket();

@@ -153,13 +153,13 @@ async function main() {
   step('Super Admin', 'crée son compte (page /admin) avec sa clé administrateur, puis confirme son e-mail');
   const reg = await call(null, 'POST', '/auth/admin/register', {
     email: `admin@${DOMAIN}`, firstName: 'Albert', lastName: 'Ndondo',
-    password: ADMIN_PWD, adminKey: ADMIN_KEY, ...(process.env.SIM_SETUP_KEY ? { setupKey: process.env.SIM_SETUP_KEY } : {}),
+    password: ADMIN_PWD, adminKey: ADMIN_KEY, setupKey: process.env.SIM_SETUP_KEY ?? 'cle-installation-simulation-locale',
   });
   if (!reg.devOtp) throw new ApiFailure('Pas de code de confirmation : API sans MAIL_ECHO_OTP=true');
   await call(null, 'POST', '/auth/verify-email', { email: `admin@${DOMAIN}`, otp: reg.devOtp });
   const lg = await call(null, 'POST', '/auth/login', { email: `admin@${DOMAIN}`, password: ADMIN_PWD, adminKey: ADMIN_KEY });
   if (!lg.accessToken) throw new ApiFailure('Connexion du Super Admin impossible');
-  const admin: Session = { token: lg.accessToken, user: lg.user, label: 'Super Admin' };
+  let admin: Session = { token: lg.accessToken, user: lg.user, label: 'Super Admin' };
   S.admin = admin;
   U.admin = lg.user.id;
   EMAILS.admin = { email: `admin@${DOMAIN}`, role: 'SUPER_ADMIN (mot de passe et clé propres)' };
@@ -398,6 +398,126 @@ async function main() {
   const audit: any = await call(S.hcetde, 'GET', '/dashboard/audit-log?take=100');
   const recon: any = await call(S.hcetde, 'GET', '/ledger/reconcile');
   ok(`journal d’audit : ${audit?.total ?? rows(audit).length} entrées ; comptes équilibrés : ${recon.balanced}`);
+
+
+  // ───────────────────────── 14. Trois Super Admin : hiérarchie et récupération ─────────────────────────
+  const expectStatus = async (what: string, status: number, run: () => Promise<unknown>) => {
+    try {
+      await run();
+    } catch (e) {
+      if (e instanceof ApiFailure && e.message.includes(`→ ${status} `)) return ok(what);
+      throw new ApiFailure(`${what} : réponse inattendue (${e instanceof Error ? e.message : e})`);
+    }
+    throw new ApiFailure(`${what} : l'action aurait dû être refusée (${status})`);
+  };
+  const KEY2 = 'cle-super-admin-deux-2026';
+  const KEY3 = 'cle-super-admin-trois-2026';
+  const adminLogin = async (email: string, password: string, adminKey: string, label: string): Promise<Session> => {
+    const r = await call(null, 'POST', '/auth/login', { email, password, adminKey });
+    if (!r.accessToken) throw new ApiFailure(`Connexion impossible pour ${email}`);
+    return { token: r.accessToken, user: r.user, label };
+  };
+  const activateAdmin = async (inv: any, password: string, adminKey: string) => {
+    const token = new URL(inv.activationUrl).searchParams.get('token');
+    const info = await call(null, 'GET', `/auth/activate/info?token=${token}`);
+    if (!info.needsAdminKey) throw new ApiFailure('La page d’activation devrait demander une clé administrateur');
+    await call(null, 'POST', '/auth/activate', { token, otp: inv.devOtp, password, adminKey });
+  };
+
+  step('Super Admin n°1', 'invite les Super Admin n°2 et n°3 ; chacun choisit son mot de passe et sa clé à l’activation');
+  const inv2 = await call(admin, 'POST', '/auth/invite', { email: `admin2@${DOMAIN}`, firstName: 'Sylvie', lastName: 'Kamate', role: 'SUPER_ADMIN' });
+  await activateAdmin(inv2, ADMIN_PWD, KEY2);
+  S.admin2 = await adminLogin(`admin2@${DOMAIN}`, ADMIN_PWD, KEY2, 'Super Admin n°2');
+  const inv3 = await call(admin, 'POST', '/auth/invite', { email: `admin3@${DOMAIN}`, firstName: 'Thierry', lastName: 'Bulongo', role: 'SUPER_ADMIN' });
+  await activateAdmin(inv3, ADMIN_PWD, KEY3);
+  S.admin3 = await adminLogin(`admin3@${DOMAIN}`, ADMIN_PWD, KEY3, 'Super Admin n°3');
+  U.admin2 = inv2.id;
+  U.admin3 = inv3.id;
+  EMAILS.admin2 = { email: `admin2@${DOMAIN}`, role: 'SUPER_ADMIN n°2 (mot de passe ' + ADMIN_PWD + ', clé ' + KEY2 + ')' };
+  EMAILS.admin3 = { email: `admin3@${DOMAIN}`, role: 'SUPER_ADMIN n°3 (mot de passe ' + ADMIN_PWD + ', clé ' + KEY3 + ')' };
+  const me2: any = await call(S.admin2, 'GET', '/auth/me');
+  const me3: any = await call(S.admin3, 'GET', '/auth/me');
+  if (me2.adminRank !== 2 || me3.adminRank !== 3) throw new ApiFailure(`Rangs attendus 2 et 3, obtenus ${me2.adminRank} et ${me3.adminRank}`);
+  ok('Sylvie = Super Admin n°2, Thierry = Super Admin n°3, connectés avec leur clé');
+
+  step('Limites', 'un quatrième Super Admin est refusé ; seul le n°1 invite un Super Admin');
+  await expectStatus('quatrième Super Admin refusé (maximum atteint)', 400, () =>
+    call(admin, 'POST', '/auth/invite', { email: `admin4@${DOMAIN}`, firstName: 'Quatre', lastName: 'Trop', role: 'SUPER_ADMIN' }),
+  );
+  await expectStatus('le n°2 ne peut pas inviter un Super Admin', 403, () =>
+    call(S.admin2, 'POST', '/auth/invite', { email: `admin5@${DOMAIN}`, firstName: 'Cinq', lastName: 'Non', role: 'SUPER_ADMIN' }),
+  );
+  await expectStatus('la création publique d’un nouveau Super Admin est fermée', 403, () =>
+    call(null, 'POST', '/auth/admin/register', { email: `pirate@${DOMAIN}`, firstName: 'Pi', lastName: 'Rate', password: ADMIN_PWD, adminKey: 'une-cle-de-seize-caracteres', setupKey: process.env.SIM_SETUP_KEY ?? 'cle-installation-simulation-locale' }),
+  );
+
+  step('Super Admin n°2 et n°3', 'font tout le reste comme le n°1 : validation, publication, canaux, gestion des comptes');
+  const queue2: any[] = await call(S.admin2, 'GET', '/approvals/queue');
+  const queue3: any[] = await call(S.admin3, 'GET', '/approvals/queue');
+  if (!queue2.length || queue2.length !== queue3.length) throw new ApiFailure('Les n°2 et n°3 devraient voir la même file de validations');
+  await call(S.admin2, 'POST', `/approvals/${queue2[0].id}/approve`, { comment: 'Validé par le Super Admin n°2.' });
+  await call(S.admin3, 'POST', '/posts', { type: 'NEWS', content: 'Un nouvel administrateur rejoint la plateforme : la gouvernance du réseau est désormais assurée à plusieurs.' });
+  await call(S.admin2, 'POST', '/channels', { type: 'GENERAL', name: 'Canal des administrateurs', memberIds: [U.admin, U.admin3] });
+  await call(S.admin2, 'PATCH', `/users/${U.bailleur1}/push-exempt`, { exempt: true });
+  await call(S.admin3, 'GET', '/dashboard/audit-log?take=5');
+  ok('validation, publication, canal, dispense et journal : mêmes droits que le n°1');
+
+  step('Hiérarchie', 'le n°2 et le n°3 ne peuvent ni débloquer, ni suspendre, ni réinitialiser un autre Super Admin');
+  await expectStatus('le n°2 ne peut pas réinitialiser les identifiants du n°3', 403, () => call(S.admin2, 'POST', `/auth/admin/${U.admin3}/reset-credentials`));
+  await expectStatus('le n°2 ne peut pas débloquer le n°3', 403, () => call(S.admin2, 'POST', `/auth/admin/${U.admin3}/unlock`));
+  await expectStatus('le n°2 ne peut pas suspendre le n°3', 403, () => call(S.admin2, 'PATCH', `/users/${U.admin3}/status`, { status: 'SUSPENDED', reason: 'test' }));
+  await expectStatus('le n°3 ne peut pas suspendre le n°1', 403, () => call(S.admin3, 'PATCH', `/users/${U.admin}/status`, { status: 'SUSPENDED', reason: 'test' }));
+  await expectStatus('le n°3 ne peut pas déconnecter le n°1 de force', 403, () => call(S.admin3, 'POST', `/auth/users/${U.admin}/force-logout`));
+  await expectStatus('même le n°1 ne peut pas se réinitialiser lui-même ici', 403, () => call(admin, 'POST', `/auth/admin/${U.admin}/reset-credentials`));
+
+  step('Super Admin n°3', 'perd sa clé : écrit au n°1, qui réinitialise ses identifiants ; l’ancienne clé ne marche plus');
+  const reset = await call(admin, 'POST', `/auth/admin/${U.admin3}/reset-credentials`);
+  await expectStatus('avec l’ancienne clé, le n°3 ne peut plus se connecter', 401, () => adminLogin(`admin3@${DOMAIN}`, ADMIN_PWD, KEY3, 'ancien'));
+  await expectStatus('son ancienne session est coupée', 401, () => call(S.admin3, 'GET', '/auth/me'));
+  const NEW_KEY3 = 'nouvelle-cle-super-admin-trois';
+  const NEW_PWD3 = 'NouveauMotDePasseTrois2026!';
+  await activateAdmin(reset, NEW_PWD3, NEW_KEY3);
+  S.admin3 = await adminLogin(`admin3@${DOMAIN}`, NEW_PWD3, NEW_KEY3, 'Super Admin n°3');
+  if ((await call(S.admin3, 'GET', '/auth/me')).adminRank !== 3) throw new ApiFailure('Le n°3 doit garder son rang après la réinitialisation');
+  EMAILS.admin3 = { email: `admin3@${DOMAIN}`, role: 'SUPER_ADMIN n°3 (mot de passe ' + NEW_PWD3 + ', clé ' + NEW_KEY3 + ' : après réinitialisation)' };
+  ok('nouveaux identifiants choisis, rang n°3 conservé');
+
+  step('Super Admin n°1', 'suspend le n°3 puis le débloque');
+  await call(admin, 'PATCH', `/users/${U.admin3}/status`, { status: 'SUSPENDED', reason: 'Vérification de sécurité' });
+  await expectStatus('le n°3 suspendu ne peut plus se connecter', 403, () => adminLogin(`admin3@${DOMAIN}`, NEW_PWD3, NEW_KEY3, 'suspendu'));
+  const unlocked = await call(admin, 'POST', `/auth/admin/${U.admin3}/unlock`);
+  if (unlocked.status !== 'ACTIVE') throw new ApiFailure('Le n°3 devrait être actif après le déblocage');
+  S.admin3 = await adminLogin(`admin3@${DOMAIN}`, NEW_PWD3, NEW_KEY3, 'Super Admin n°3');
+  ok('suspendu puis débloqué par le n°1 : le n°3 se reconnecte');
+
+  step('Super Admin n°2', 'change sa propre clé (mot de passe et clé actuels exigés)');
+  await expectStatus('changement refusé avec une mauvaise clé actuelle', 400, () =>
+    call(S.admin2, 'POST', '/auth/admin/change-key', { currentPassword: ADMIN_PWD, currentKey: 'mauvaise-cle-actuelle-xx', newKey: 'autre-cle-super-admin-deux' }),
+  );
+  const KEY2B = 'autre-cle-super-admin-deux';
+  await call(S.admin2, 'POST', '/auth/admin/change-key', { currentPassword: ADMIN_PWD, currentKey: KEY2, newKey: KEY2B });
+  await expectStatus('l’ancienne clé du n°2 ne marche plus', 401, () => adminLogin(`admin2@${DOMAIN}`, ADMIN_PWD, KEY2, 'ancienne'));
+  S.admin2 = await adminLogin(`admin2@${DOMAIN}`, ADMIN_PWD, KEY2B, 'Super Admin n°2');
+  EMAILS.admin2 = { email: `admin2@${DOMAIN}`, role: 'SUPER_ADMIN n°2 (mot de passe ' + ADMIN_PWD + ', clé ' + KEY2B + ' : après changement)' };
+  ok('nouvelle clé en place, ancienne refusée');
+
+  step('Super Admin n°1', 'perd sa propre clé : récupération par la clé d’installation du serveur et un code reçu par e-mail');
+  const INSTALL = process.env.SIM_SETUP_KEY ?? 'cle-installation-simulation-locale';
+  await expectStatus('récupération refusée avec une mauvaise clé d’installation', 403, () =>
+    call(null, 'POST', '/auth/admin/recover/start', { email: `admin@${DOMAIN}`, setupKey: 'mauvaise-cle-installation' }),
+  );
+  // Limite anti-abus : 60 s entre deux codes (le n°1 vient de s'inscrire). Dans la vraie vie, la perte vient bien plus tard.
+  await new Promise((r) => setTimeout(r, 61000));
+  const rec = await call(null, 'POST', '/auth/admin/recover/start', { email: `admin@${DOMAIN}`, setupKey: INSTALL });
+  if (!rec.devOtp) throw new ApiFailure('Pas de code de récupération : API sans MAIL_ECHO_OTP=true');
+  const NEW_KEY1 = 'nouvelle-cle-super-admin-un-2026';
+  const NEW_PWD1 = 'NouveauMotDePasseUn2026!';
+  await call(null, 'POST', '/auth/admin/recover/confirm', { email: `admin@${DOMAIN}`, otp: rec.devOtp, setupKey: INSTALL, password: NEW_PWD1, adminKey: NEW_KEY1 });
+  await expectStatus('l’ancienne clé du n°1 ne marche plus', 401, () => adminLogin(`admin@${DOMAIN}`, ADMIN_PWD, ADMIN_KEY, 'ancienne'));
+  S.admin = await adminLogin(`admin@${DOMAIN}`, NEW_PWD1, NEW_KEY1, 'Super Admin n°1');
+  admin = S.admin;
+  EMAILS.admin = { email: `admin@${DOMAIN}`, role: 'SUPER_ADMIN n°1 (mot de passe ' + NEW_PWD1 + ', clé ' + NEW_KEY1 + ' : après récupération)' };
+  ok('le n°1 a retrouvé son accès avec de nouveaux identifiants');
 
   step('Super Admin', 'dispense les comptes de test de l’obligation de notifications push (local)');
   let exempted = 0;

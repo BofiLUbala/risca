@@ -9,8 +9,11 @@ import { PasswordInput } from '@/components/ui/PasswordInput';
 export function SecuritySection({
   twoFactorEnabled,
   role,
+  isSuperAdmin,
   onChanged,
 }: {
+  /** Vrai pour un Super Admin : il peut changer sa clé administrateur. */
+  isSuperAdmin?: boolean;
   twoFactorEnabled: boolean;
   /** Rôle de la personne connectée : certains rôles ne peuvent pas désactiver. */
   role?: string;
@@ -22,6 +25,31 @@ export function SecuritySection({
   const [totp, setTotp] = useState('');
   const [twoFaMsg, setTwoFaMsg] = useState<string | null>(null);
   const [disabling, setDisabling] = useState(false);
+  const [keyForm, setKeyForm] = useState({ password: '', current: '', next: '', confirm: '' });
+  const [keyMsg, setKeyMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  async function changeKey(e: React.FormEvent) {
+    e.preventDefault();
+    setKeyMsg(null);
+    if (keyForm.next.trim().length < 16) return setKeyMsg({ ok: false, text: 'La nouvelle clé doit contenir au moins 16 caractères.' });
+    if (keyForm.next !== keyForm.confirm) return setKeyMsg({ ok: false, text: 'Les deux clés ne correspondent pas.' });
+    try {
+      await api.post('/auth/admin/change-key', {
+        currentPassword: keyForm.password,
+        currentKey: keyForm.current,
+        newKey: keyForm.next.trim(),
+      });
+      try {
+        localStorage.removeItem('risac.admin-key');
+      } catch {
+        /* stockage indisponible */
+      }
+      setKeyMsg({ ok: true, text: 'Clé administrateur modifiée. Utilisez la nouvelle clé à la prochaine connexion.' });
+      setKeyForm({ password: '', current: '', next: '', confirm: '' });
+    } catch (err: any) {
+      setKeyMsg({ ok: false, text: err?.message ?? 'Modification impossible' });
+    }
+  }
 
   // La double authentification est obligatoire pour ces rôles : l’API refuse de la
   // désactiver, le bouton n’est donc pas proposé.
@@ -73,6 +101,40 @@ export function SecuritySection({
 
   return (
     <>
+      {isSuperAdmin && (
+        <section className="card card-pad">
+          <h2 className="mb-1 flex items-center gap-2 text-sm font-semibold text-ink-900">
+            <KeyRound className="h-4 w-4" />
+            Clé administrateur
+          </h2>
+          <p className="mb-4 text-xs text-ink-500">
+            Demandée à chaque connexion. Si vous la perdez : Super Admin n°2 ou n°3, écrivez au Super Admin n°1 ; Super Admin n°1, utilisez la récupération de la page de connexion administrateur.
+          </p>
+          <form onSubmit={changeKey} className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="ck-pass" className="label">Mot de passe actuel</label>
+              <PasswordInput id="ck-pass" required value={keyForm.password} onChange={(e) => setKeyForm({ ...keyForm, password: e.target.value })} className="input" />
+            </div>
+            <div>
+              <label htmlFor="ck-cur" className="label">Clé actuelle</label>
+              <PasswordInput id="ck-cur" required autoComplete="off" value={keyForm.current} onChange={(e) => setKeyForm({ ...keyForm, current: e.target.value })} className="input font-mono" />
+            </div>
+            <div>
+              <label htmlFor="ck-new" className="label">Nouvelle clé (16 caractères au moins)</label>
+              <PasswordInput id="ck-new" required minLength={16} autoComplete="off" value={keyForm.next} onChange={(e) => setKeyForm({ ...keyForm, next: e.target.value })} className="input font-mono" />
+            </div>
+            <div>
+              <label htmlFor="ck-conf" className="label">Confirmer la nouvelle clé</label>
+              <PasswordInput id="ck-conf" required autoComplete="off" value={keyForm.confirm} onChange={(e) => setKeyForm({ ...keyForm, confirm: e.target.value })} className="input font-mono" />
+            </div>
+            <div className="sm:col-span-2">
+              <button type="submit" className="btn-outline">Changer ma clé administrateur</button>
+              {keyMsg && <p role="status" className={`mt-3 text-sm ${keyMsg.ok ? 'text-emerald-700' : 'text-rose-700'}`}>{keyMsg.text}</p>}
+            </div>
+          </form>
+        </section>
+      )}
+
       <section className="card card-pad">
         <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-ink-900">
           <KeyRound className="h-4 w-4" />
