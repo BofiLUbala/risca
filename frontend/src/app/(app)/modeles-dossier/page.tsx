@@ -3,6 +3,7 @@ import { promptDialog, confirmDialog } from '@/lib/dialog';
 
 import { useState } from 'react';
 import useSWR from 'swr';
+import { CountrySelect } from '@/components/geo/GeoSelects';
 import { FileCog, Plus, Trash2 } from 'lucide-react';
 import { api, fetcher } from '@/lib/api';
 import { SkeletonList } from '@/components/ui/Loading';
@@ -65,19 +66,7 @@ export default function TemplatesPage() {
         <label htmlFor="country" className="label">
           Pays
         </label>
-        <select
-          id="country"
-          value={countryId}
-          onChange={(e) => setCountryId(e.target.value)}
-          className="input sm:w-80"
-        >
-          <option value="">Choisir un pays</option>
-          {countries?.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.nameFr}
-            </option>
-          ))}
-        </select>
+        <CountrySelect id="country" value={countryId} onChange={(id) => setCountryId(id)} className="sm:w-80" />
       </div>
 
       {error && <p className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">{error}</p>}

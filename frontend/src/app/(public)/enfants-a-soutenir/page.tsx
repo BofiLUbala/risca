@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import useSWR from 'swr';
+import { CountrySelect } from '@/components/geo/GeoSelects';
 import { Users } from 'lucide-react';
 import { fetcher } from '@/lib/api';
 import { ChildCard, type PublicChild } from '@/components/ChildCard';
@@ -41,19 +42,12 @@ export default function PublicChildrenPage() {
       </header>
 
       <div className="mt-6 flex flex-wrap gap-3 rounded-2xl border border-ink-200/70 bg-surface p-4">
-        <select
+        <CountrySelect
           value={countryId}
-          onChange={(e) => setCountryId(e.target.value)}
-          className="input sm:w-56"
-          aria-label="Pays"
-        >
-          <option value="">Tous les pays</option>
-          {countries?.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.nameFr}
-            </option>
-          ))}
-        </select>
+          onChange={(id) => setCountryId(id)}
+          allLabel="Tous les pays"
+          className="w-full sm:w-64"
+        />
 
         <select value={maxAge} onChange={(e) => setMaxAge(e.target.value)} className="input sm:w-48" aria-label="Age">
           <option value="">Tous les ages</option>

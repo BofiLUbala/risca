@@ -1,6 +1,7 @@
 'use client';
 
 import useSWR from 'swr';
+import { CountrySelect } from '@/components/geo/GeoSelects';
 import clsx from 'clsx';
 import { fetcher } from '@/lib/api';
 
@@ -77,19 +78,12 @@ export function FeedFilters({
           </button>
         ))}
 
-        <select
+        <CountrySelect
           value={value.countryId}
-          onChange={(e) => onChange({ ...value, countryId: e.target.value })}
-          aria-label="Filtrer par pays"
-          className="ml-auto shrink-0 rounded-full border border-ink-200 bg-surface px-3 py-1.5 text-xs text-ink-600"
-        >
-          <option value="">Tous les pays</option>
-          {countries?.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.nameFr}
-            </option>
-          ))}
-        </select>
+          onChange={(id) => onChange({ ...value, countryId: id })}
+          allLabel="Tous les pays"
+          className="ml-auto w-52 shrink-0"
+        />
       </div>
       )}
     </div>

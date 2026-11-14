@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import useSWR from 'swr';
+import { CountrySelect, ProvinceSelect } from '@/components/geo/GeoSelects';
 import { Megaphone, Send } from 'lucide-react';
 import { api, fetcher } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
@@ -168,41 +169,27 @@ export function BroadcastForm() {
                   <label htmlFor="bc-country" className="label">
                     Pays
                   </label>
-                  <select
+                  <CountrySelect
                     id="bc-country"
-                    className="input"
                     value={countryId}
-                    onChange={(e) => {
-                      setCountryId(e.target.value);
+                    allLabel="Tous les pays"
+                    onChange={(id) => {
+                      setCountryId(id);
                       setProvinceId('');
                     }}
-                  >
-                    <option value="">Tous les pays</option>
-                    {countries?.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.nameFr}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </div>
                 <div>
                   <label htmlFor="bc-province" className="label">
                     Province
                   </label>
-                  <select
+                  <ProvinceSelect
                     id="bc-province"
-                    className="input"
+                    countryId={countryId}
                     value={provinceId}
-                    onChange={(e) => setProvinceId(e.target.value)}
-                    disabled={!countryId}
-                  >
-                    <option value="">Toutes les provinces</option>
-                    {provinces?.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.nameFr}
-                      </option>
-                    ))}
-                  </select>
+                    allLabel="Toutes les provinces"
+                    onChange={(id) => setProvinceId(id)}
+                  />
                 </div>
               </>
             )}

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import useSWR from 'swr';
 import { api, fetcher } from '@/lib/api';
 import { ROLE_LABEL } from '@/lib/roles';
+import { CountrySelect, ProvinceSelect } from '@/components/geo/GeoSelects';
 
 /** Invitation : role, pays et province choisis dans des listes liees (section 3). */
 export function InviteForm({ onInvited }: { onInvited: () => void }) {
@@ -118,38 +119,22 @@ export function InviteForm({ onInvited }: { onInvited: () => void }) {
           <label htmlFor="ictry" className="label">
             Pays
           </label>
-          <select
+          <CountrySelect
             id="ictry"
             value={form.countryId}
-            onChange={(e) => setForm({ ...form, countryId: e.target.value, provinceId: '' })}
-            className="input"
-          >
-            <option value="">Choisir</option>
-            {countries?.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nameFr}
-              </option>
-            ))}
-          </select>
+            onChange={(id) => setForm({ ...form, countryId: id, provinceId: '' })}
+          />
         </div>
         <div>
           <label htmlFor="iprov" className="label">
             Province
           </label>
-          <select
+          <ProvinceSelect
             id="iprov"
+            countryId={form.countryId}
             value={form.provinceId}
-            onChange={(e) => setForm({ ...form, provinceId: e.target.value })}
-            className="input"
-            disabled={!form.countryId}
-          >
-            <option value="">Choisir</option>
-            {provinces?.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.nameFr}
-              </option>
-            ))}
-          </select>
+            onChange={(id) => setForm({ ...form, provinceId: id })}
+          />
         </div>
 
         {needsOrphanage && (

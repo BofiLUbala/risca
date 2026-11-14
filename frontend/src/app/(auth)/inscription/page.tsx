@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
+import { CountrySelect } from '@/components/geo/GeoSelects';
 import { AlertCircle } from 'lucide-react';
 import { api, fetcher, setTokens } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
@@ -228,19 +229,7 @@ export default function RegisterPage() {
           <label htmlFor="countryId" className="label">
             Pays de r&eacute;sidence
           </label>
-          <select
-            id="countryId"
-            value={form.countryId}
-            onChange={(e) => set('countryId', e.target.value)}
-            className="input"
-          >
-            <option value="">Choisir un pays</option>
-            {countries?.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.nameFr}
-              </option>
-            ))}
-          </select>
+          <CountrySelect id="countryId" value={form.countryId} onChange={(id) => set('countryId', id)} />
           <p className="mt-1.5 text-xs text-ink-400">
             D&eacute;termine les moyens de paiement qui vous sont propos&eacute;s.
           </p>

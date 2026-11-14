@@ -7,6 +7,7 @@ import useSWR from 'swr';
 import { ArrowLeft, Save } from 'lucide-react';
 import { api, fetcher } from '@/lib/api';
 import { Spinner } from '@/components/ui/Loading';
+import { CountrySelect, ProvinceSelect } from '@/components/geo/GeoSelects';
 
 /** Chef regional ou Agent propose, puis le Super Admin valide (section 4). */
 export default function NewOrphanagePage() {
@@ -89,41 +90,23 @@ export default function NewOrphanagePage() {
             <label htmlFor="ctry" className="label">
               Pays <span className="text-accent-coral">*</span>
             </label>
-            <select
+            <CountrySelect
               id="ctry"
-              required
               value={form.countryId}
-              onChange={(e) => setForm({ ...form, countryId: e.target.value, provinceId: '' })}
-              className="input"
-            >
-              <option value="">Choisir</option>
-              {countries?.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nameFr}
-                </option>
-              ))}
-            </select>
+              onChange={(id) => setForm({ ...form, countryId: id, provinceId: '' })}
+            />
           </div>
           <div>
             <label htmlFor="prov" className="label">
               Province <span className="text-accent-coral">*</span>
             </label>
-            <select
+            <ProvinceSelect
               id="prov"
               required
-              disabled={!form.countryId}
+              countryId={form.countryId}
               value={form.provinceId}
-              onChange={(e) => setForm({ ...form, provinceId: e.target.value })}
-              className="input"
-            >
-              <option value="">Choisir</option>
-              {provinces?.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.nameFr}
-                  {p.riskZone ? ' (zone a risque)' : ''}
-                </option>
-              ))}
-            </select>
+              onChange={(id) => setForm({ ...form, provinceId: id })}
+            />
           </div>
           <div>
             <label htmlFor="city" className="label">
