@@ -22,7 +22,7 @@ function Flag({ iso2, name }: { iso2: string; name: string }) {
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={`https://flagcdn.com/w40/${iso2.toLowerCase()}.png`}
+      src={`/flags/${iso2.toLowerCase()}.png`}
       width={24}
       height={18}
       alt={`Drapeau : ${name}`}

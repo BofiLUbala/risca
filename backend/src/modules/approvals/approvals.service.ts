@@ -375,6 +375,10 @@ export class ApprovalsService {
       orderBy: { createdAt: 'asc' },
     });
 
+    // Le Super Admin peut trancher toute étape (assertCanDecide) : sa file montre donc toutes
+    // les validations en attente, ce que compte aussi son tableau de bord.
+    if (user.role === Role.SUPER_ADMIN) return requests;
+
     return requests.filter((r) => {
       const current = r.steps.find((s) => s.order === r.currentStepOrder);
       if (!current) return false;

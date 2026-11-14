@@ -43,7 +43,7 @@ async function request<T>(path: string, init: RequestInit = {}, retry = true): P
   });
 
   if (res.status === 401 && retry) {
-    const refreshed = await tryRefresh();
+    const refreshed = await tryRefresh(token);
     if (refreshed) return request<T>(path, init, false);
   }
 
@@ -54,22 +54,50 @@ async function request<T>(path: string, init: RequestInit = {}, retry = true): P
   return data as T;
 }
 
-async function tryRefresh(): Promise<boolean> {
-  const refreshToken = localStorage.getItem(REFRESH);
-  if (!refreshToken) return false;
-  try {
-    const res = await fetch(`${API_URL}/auth/refresh`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refreshToken }),
+/**
+ * Le jeton de rafraîchissement est à usage unique : deux rafraîchissements simultanés
+ * (plusieurs requêtes d'un même onglet, ou plusieurs onglets) feraient échouer le second et
+ * déconnecteraient l'utilisateur. On les met donc en file :
+ *  - dans un onglet, toutes les requêtes en 401 partagent un seul rafraîchissement ;
+ *  - entre onglets, un verrou du navigateur (Web Locks) les passe l'un après l'autre, et un onglet
+ *    qui obtient le verrou après un autre constate que le jeton d'accès a déjà changé : il l'utilise.
+ */
+let inflight: Promise<boolean> | null = null;
+
+function tryRefresh(staleAccess: string | null): Promise<boolean> {
+  if (!inflight) {
+    inflight = refreshOnce(staleAccess).finally(() => {
+      inflight = null;
     });
-    if (!res.ok) return false;
-    const data = await res.json();
-    setTokens(data.accessToken, data.refreshToken);
-    return true;
-  } catch {
-    return false;
   }
+  return inflight;
+}
+
+async function refreshOnce(staleAccess: string | null): Promise<boolean> {
+  const run = async (): Promise<boolean> => {
+    // Un autre onglet a déjà renouvelé la session pendant l'attente du verrou.
+    const current = getToken();
+    if (current && current !== staleAccess) return true;
+
+    const refreshToken = localStorage.getItem(REFRESH);
+    if (!refreshToken) return false;
+    try {
+      const res = await fetch(`${API_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+      });
+      if (!res.ok) return false;
+      const data = await res.json();
+      setTokens(data.accessToken, data.refreshToken);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const locks = (navigator as Navigator & { locks?: { request: <T>(name: string, cb: () => Promise<T>) => Promise<T> } }).locks;
+  return locks?.request ? locks.request('risac-refresh', run) : run();
 }
 
 export const api = {
