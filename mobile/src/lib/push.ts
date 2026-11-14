@@ -123,14 +123,30 @@ export async function unregisterPush(): Promise<void> {
 }
 
 /** Etat affichable dans le profil, sans rien demander. */
-export async function pushStatus(): Promise<'granted' | 'denied' | 'undetermined'> {
+export async function pushStatus(): Promise<'granted' | 'denied' | 'undetermined' | 'unavailable'> {
   const N = await chargerNotifications();
-  if (!N) return 'undetermined';
+  // Expo Go ou module absent : le push n'existe pas ici, rien ne doit être bloqué.
+  if (!N) return 'unavailable';
   try {
     const p = await N.getPermissionsAsync();
     if (p.granted) return 'granted';
     return p.canAskAgain ? 'undetermined' : 'denied';
   } catch {
-    return 'undetermined';
+    return 'unavailable';
+  }
+}
+
+/**
+ * Demande l'autorisation d'afficher des notifications, avant toute connexion. N'enregistre rien auprès de l'API :
+ * le jeton est rattaché au compte à la connexion (registerPush).
+ */
+export async function askPushPermission(): Promise<'granted' | 'denied' | 'unavailable'> {
+  const N = await chargerNotifications();
+  if (!N) return 'unavailable';
+  try {
+    const asked = await N.requestPermissionsAsync();
+    return asked.granted ? 'granted' : 'denied';
+  } catch {
+    return 'unavailable';
   }
 }

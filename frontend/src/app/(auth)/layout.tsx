@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { Logo } from '@/components/ui/Logo';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { PushFirst } from '@/components/auth/PushFirst';
 
 /**
  * Pages d'accès (connexion, administrateur, inscription, activation).
@@ -29,7 +30,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             >
               <Logo className="h-14" />
             </Link>
-            {children}
+            <PushFirst>{children}</PushFirst>
           </div>
           <p className="mt-4 text-balance text-center text-xs text-ink-500">
             Réseau International des Structures d&apos;Accueil du Congo

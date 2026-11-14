@@ -4,6 +4,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../../common/services/audit.service';
 import { ContentSafetyService } from '../../common/services/content-safety.service';
 import { AuthUser } from '../../common/decorators/current-user.decorator';
+import { PushService } from '../../common/services/push.service';
 
 /** Canaux de messagerie (section 9). */
 @Injectable()
@@ -12,6 +13,7 @@ export class ChannelsService {
     private prisma: PrismaService,
     private audit: AuditService,
     private safety: ContentSafetyService,
+    private push: PushService,
   ) {}
 
   private isModerator(role: string): boolean {
@@ -152,7 +154,35 @@ export class ChannelsService {
       },
     });
 
+    // Les autres membres reçoivent une notification sur leur ordinateur et leur téléphone, application fermée.
+    // Push seul : un message de discussion ne doit pas remplir la cloche de notifications.
+    void this.pushNewMessage(channel, message);
+
     return message;
+  }
+
+  private async pushNewMessage(
+    channel: { id: string; name: string; type: ChannelType; childId: string | null },
+    message: { authorId: string; content: string; author: { firstName: string; lastName: string } },
+  ) {
+    try {
+      const members = await this.prisma.channelMember.findMany({
+        where: { channelId: channel.id, userId: { not: message.authorId } },
+        select: { userId: true },
+      });
+      if (!members.length) return;
+      const author = `${message.author.firstName} ${message.author.lastName}`.trim();
+      await this.push.sendToUsers(members.map((m) => m.userId), {
+        title: channel.name,
+        body: `${author} : ${message.content.slice(0, 100) || 'Pièce jointe'}`,
+        link: '/messages',
+        kind: 'INFO' as any,
+        // Un canal lié à un enfant (parrainage) reste neutre sur un écran verrouillé.
+        sensitive: channel.type === ChannelType.DONOR_AMBASSADOR || !!channel.childId,
+      });
+    } catch {
+      /* le push ne doit jamais faire échouer l'envoi du message */
+    }
   }
 
   /**
