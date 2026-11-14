@@ -7,13 +7,18 @@ import { useAuth } from '@/lib/auth-context';
 import { INVITABLE, ROLE_LABEL, type Role } from '@/lib/roles';
 import { CountrySelect, ProvinceSelect } from '@/components/geo/GeoSelects';
 
+/** Valeur spéciale de la liste des orphelinats : « créer un nouvel orphelinat ». */
+const NEW_ORPHANAGE = '__new__';
+/** Rôles autorisés à créer un orphelinat (POST /orphanages côté API). */
+const ORPHANAGE_CREATORS: Role[] = ['SUPER_ADMIN', 'NATIONAL_MANAGER', 'REGIONAL_MANAGER', 'FIELD_AGENT'];
+
 /** Invitation : role, pays et province choisis dans des listes liees (section 3). */
 export function InviteForm({ onInvited }: { onInvited: () => void }) {
   const { user } = useAuth();
   // Seul le Super Admin n°1 peut inviter un autre Super Admin (il y en a trois au plus).
   const canInviteAdmin = user?.role === 'SUPER_ADMIN' && user?.adminRank === 1;
   const { data: countries } = useSWR<any[]>('/geo/countries', fetcher);
-  const { data: orphanages } = useSWR<any[]>('/orphanages', fetcher);
+  const { data: orphanages, mutate: mutateOrphanages } = useSWR<any[]>('/orphanages', fetcher);
 
   const [form, setForm] = useState({
     email: '',
@@ -55,11 +60,46 @@ export function InviteForm({ onInvited }: { onInvited: () => void }) {
 
   const needsOrphanage = form.role === 'ORPHANAGE_DIRECTOR' || form.role === 'ORPHANAGE_STAFF';
   const needsFunction = form.role === 'ORPHANAGE_STAFF';
+  // Un orphelinat qui n'existe pas encore peut être créé ici, par les rôles que
+  // l'API autorise à le faire (mêmes rôles que POST /orphanages).
+  const canCreateOrphanage = !!user && ORPHANAGE_CREATORS.includes(user.role as Role);
+  const creatingOrphanage = needsOrphanage && form.orphanageId === NEW_ORPHANAGE;
+  const [newOrphanage, setNewOrphanage] = useState({ name: '', city: '' });
+  const [orphanageNote, setOrphanageNote] = useState<string | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setLink(null);
+    setOrphanageNote(null);
+    let orphanageId = form.orphanageId;
+    if (creatingOrphanage) {
+      if (!form.countryId || !form.provinceId) {
+        setError('Choisissez le pays et la province : le nouvel orphelinat y sera créé.');
+        return;
+      }
+      try {
+        const created = await api.post<any>('/orphanages', {
+          name: newOrphanage.name.trim(),
+          countryId: form.countryId,
+          provinceId: form.provinceId,
+          city: newOrphanage.city.trim() || undefined,
+        });
+        orphanageId = created.id;
+        // L'orphelinat existe désormais : on le sélectionne, pour ne pas le recréer
+        // si l'invitation échoue et que l'on renvoie le formulaire.
+        setForm((f) => ({ ...f, orphanageId: created.id }));
+        await mutateOrphanages();
+        setOrphanageNote(
+          user?.role === 'SUPER_ADMIN'
+            ? `Orphelinat « ${created.name} » créé.`
+            : `Orphelinat « ${created.name} » créé. Il doit encore être validé par un chef régional ou le Super Admin.`,
+        );
+      } catch (err: any) {
+        setError(err?.message ?? 'Création de l’orphelinat impossible');
+        return;
+      }
+    }
     try {
       const r = await api.post<any>('/auth/invite', {
         email: form.email,
@@ -68,7 +108,7 @@ export function InviteForm({ onInvited }: { onInvited: () => void }) {
         role: form.role,
         countryId: form.countryId || undefined,
         provinceId: form.provinceId || undefined,
-        orphanageId: form.orphanageId || undefined,
+        orphanageId: (needsOrphanage && orphanageId) || undefined,
         staffFunction: form.staffFunction || undefined,
       });
       setLink(r.activationUrl);
@@ -180,8 +220,43 @@ export function InviteForm({ onInvited }: { onInvited: () => void }) {
                   {o.name}
                 </option>
               ))}
+              {canCreateOrphanage && <option value={NEW_ORPHANAGE}>+ Nouvel orphelinat (pas encore dans la liste)</option>}
             </select>
           </div>
+        )}
+
+        {creatingOrphanage && (
+          <>
+            <div>
+              <label htmlFor="iorphname" className="label">
+                Nom du nouvel orphelinat
+              </label>
+              <input
+                id="iorphname"
+                value={newOrphanage.name}
+                onChange={(e) => setNewOrphanage({ ...newOrphanage, name: e.target.value })}
+                className="input"
+                required
+                minLength={3}
+                placeholder="Ex. Orphelinat Espoir"
+                aria-describedby="iorphname-aide"
+              />
+              <p id="iorphname-aide" className="meta mt-1.5">
+                Il sera créé dans le pays et la province choisis ci-dessus.
+              </p>
+            </div>
+            <div>
+              <label htmlFor="iorphcity" className="label">
+                Ville <span className="font-normal text-ink-500">(facultatif)</span>
+              </label>
+              <input
+                id="iorphcity"
+                value={newOrphanage.city}
+                onChange={(e) => setNewOrphanage({ ...newOrphanage, city: e.target.value })}
+                className="input"
+              />
+            </div>
+          </>
         )}
 
         {needsFunction && (
@@ -206,6 +281,11 @@ export function InviteForm({ onInvited }: { onInvited: () => void }) {
         )}
       </div>
 
+      {orphanageNote && (
+        <p role="status" className="rounded-xl bg-emerald-50 px-3.5 py-2.5 text-sm text-emerald-800">
+          {orphanageNote}
+        </p>
+      )}
       {error && <p className="rounded-xl bg-rose-50 px-3.5 py-2.5 text-sm text-rose-700">{error}</p>}
       {link && emailSent && (
         <div role="status" className="rounded-xl bg-emerald-50 px-3.5 py-3 text-sm text-emerald-800">
