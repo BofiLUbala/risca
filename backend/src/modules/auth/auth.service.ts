@@ -1041,7 +1041,22 @@ export class AuthService {
     return { ok: true };
   }
 
+  /**
+   * Un Super Admin créé avant les rangs n'en a pas encore : s'il n'existe aucun n°1, il le devient. Le rattrapage
+   * du démarrage du serveur peut avoir échoué (colonne ajoutée après coup) ; sans rang, il ne pourrait pas inviter les n°2 et n°3.
+   */
+  private async ensurePrimaryRank(userId: string) {
+    try {
+      await this.prisma.$executeRaw`UPDATE "User" SET "adminRank" = 1
+        WHERE "id" = ${userId} AND "role" = 'SUPER_ADMIN' AND "adminRank" IS NULL
+          AND NOT EXISTS (SELECT 1 FROM "User" u WHERE u."role" = 'SUPER_ADMIN' AND u."adminRank" = 1)`;
+    } catch {
+      /* sans conséquence : le rang sera tenté de nouveau au prochain appel */
+    }
+  }
+
   async me(userId: string) {
+    await this.ensurePrimaryRank(userId);
     return this.prisma.user.findUnique({
       where: { id: userId },
       select: {
