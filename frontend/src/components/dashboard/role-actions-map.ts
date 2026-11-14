@@ -12,6 +12,7 @@ export const ROLE_ACTIONS: Record<Role, RoleAction[]> = {
   SUPER_ADMIN: [
     { href: '/utilisateurs', label: 'Inviter et gérer les comptes', hint: 'Bloquer, suspendre, avertir, forcer la deconnexion', icon: 'UserCog' },
     { href: '/orphelinats', label: 'Valider orphelinats et labellisations', hint: 'Candidatures, audits, badges', icon: 'BadgeCheck' },
+    { href: '/orphelinats/nouveau', label: 'Ajouter un orphelinat', hint: 'Créer une nouvelle structure', icon: 'Plus' },
     { href: '/modeles-dossier', label: 'Modèles de dossier par pays', hint: 'Créer et modifier champs et documents', icon: 'FileCog' },
     { href: '/moderation', label: 'Moderer canaux et publications', hint: 'Signalements et contenus masques', icon: 'ShieldAlert' },
     { href: '/notifications', label: 'Notifications ciblees', hint: 'Tous, pays, rôle ou région', icon: 'BellRing' },
@@ -41,6 +42,7 @@ export const ROLE_ACTIONS: Record<Role, RoleAction[]> = {
   NATIONAL_MANAGER: [
     { href: '/utilisateurs?role=REGIONAL_MANAGER', label: 'Gérer les chefs regionaux', hint: 'Inviter et suivre', icon: 'UserCog' },
     { href: '/orphelinats', label: 'Structures du pays', hint: 'Labellisation et audits', icon: 'Home' },
+    { href: '/orphelinats/nouveau', label: 'Ajouter un orphelinat', hint: 'Nouvelle structure dans le pays', icon: 'Plus' },
     { href: '/modeles-dossier', label: 'Modèle de dossier du pays', hint: 'Si delegue par le Super Admin', icon: 'FileCog' },
     { href: '/notifications', label: 'Notifications au pays', hint: 'Diffusion ciblee', icon: 'BellRing' },
   ],
@@ -49,6 +51,7 @@ export const ROLE_ACTIONS: Record<Role, RoleAction[]> = {
     { href: '/utilisateurs?role=AMBASSADOR', label: 'Ambassadeurs et agents', hint: 'Inviter et suivre la performance', icon: 'UserCog' },
     { href: '/lettres', label: 'Lettre de promotion', hint: 'Écrire au Super Admin, puis promouvoir un agent', icon: 'Mail' },
     { href: '/orphelinats', label: 'Audits et transferts', hint: 'Planning des audits, transferts', icon: 'Home' },
+    { href: '/orphelinats/nouveau', label: 'Ajouter un orphelinat', hint: 'Nouvelle structure dans la région', icon: 'Plus' },
     { href: '/enfants', label: 'Dossiers de la région', hint: 'Complétude, post-majorite', icon: 'Users' },
   ],
   AMBASSADOR: [

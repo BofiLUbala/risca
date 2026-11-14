@@ -2,23 +2,38 @@
 
 import Link from 'next/link';
 import useSWR from 'swr';
-import { Building2, MapPin, Users } from 'lucide-react';
+import { Building2, MapPin, Plus, Users } from 'lucide-react';
 import { fetcher } from '@/lib/api';
+import { useAuth } from '@/lib/auth-context';
+import type { Role } from '@/lib/roles';
 import { Badge } from '@/components/ui/Badge';
 import { Empty } from '@/components/ui/Empty';
 import { SkeletonList } from '@/components/ui/Loading';
 import { num } from '@/lib/format';
 
+/** Mêmes rôles que `POST /orphanages` côté API (orphanages.controller.ts). */
+const CAN_CREATE: Role[] = ['SUPER_ADMIN', 'NATIONAL_MANAGER', 'REGIONAL_MANAGER', 'FIELD_AGENT'];
+
 export default function OrphanagesPage() {
+  const { user } = useAuth();
   const { data, isLoading } = useSWR<any[]>('/orphanages', fetcher);
+  const canCreate = !!user && CAN_CREATE.includes(user.role);
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="page-title">Orphelinats</h1>
-        <p className="mt-1 text-sm text-ink-500">
-          {data ? `${data.length} structure(s) dans votre périmètre` : 'Chargement…'}
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="page-title">Orphelinats</h1>
+          <p className="mt-1 text-sm text-ink-500">
+            {data ? `${data.length} structure(s) dans votre périmètre` : 'Chargement…'}
+          </p>
+        </div>
+        {canCreate && (
+          <Link href="/orphelinats/nouveau" className="btn-primary">
+            <Plus className="h-4 w-4" aria-hidden="true" />
+            {user?.role === 'FIELD_AGENT' ? 'Proposer un orphelinat' : 'Ajouter un orphelinat'}
+          </Link>
+        )}
       </div>
 
       {isLoading ? (
