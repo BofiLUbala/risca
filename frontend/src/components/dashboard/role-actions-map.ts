@@ -16,6 +16,7 @@ export const ROLE_ACTIONS: Record<Role, RoleAction[]> = {
     { href: '/moderation', label: 'Moderer canaux et publications', hint: 'Signalements et contenus masques', icon: 'ShieldAlert' },
     { href: '/notifications', label: 'Notifications ciblees', hint: 'Tous, pays, rôle ou région', icon: 'BellRing' },
     { href: '/journal-audit', label: 'Journal d’audit', hint: 'Qui a consulte ou modifie quoi', icon: 'ScrollText' },
+    { href: '/securite-acces', label: 'Sécurité des accès', hint: 'Connectés, appareils, tentatives échouées, comptes bloqués', icon: 'MonitorSmartphone' },
     { href: '/parametres', label: 'Paramètres du réseau', hint: 'Seuils, frais, devises, categories', icon: 'Settings' },
     { href: '/finance', label: 'Flux financiers', hint: 'Comptes, dons, rapprochement', icon: 'Wallet' },
   ],

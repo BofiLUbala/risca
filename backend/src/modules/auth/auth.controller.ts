@@ -131,6 +131,13 @@ export class AuthController {
     return this.auth.me(user.id);
   }
 
+  /** Connectés, durée, appareils, tentatives échouées et comptes bloqués : réservé aux Super Admin. */
+  @Roles(Role.SUPER_ADMIN)
+  @Get('admin/security')
+  securityOverview() {
+    return this.auth.securityOverview();
+  }
+
   @Roles(Role.SUPER_ADMIN, Role.NATIONAL_MANAGER, Role.REGIONAL_MANAGER, Role.ORPHANAGE_DIRECTOR)
   @Post('invite')
   invite(@Body() dto: InviteDto, @CurrentUser() user: AuthUser) {

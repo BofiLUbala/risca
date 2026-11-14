@@ -411,6 +411,7 @@ model User {
   subscriptions        Subscription[]
   favorites            Favorite[]
   refreshTokens        RefreshToken[]
+  sessions             UserSession[]
   consentsWitnessed    Consent[]             @relation("ConsentWitness")
   devices              Device[]
 
@@ -429,9 +430,25 @@ model RefreshToken {
   expiresAt DateTime
   revokedAt DateTime?
   userAgent String?
+  sessionId String?
   createdAt DateTime  @default(now())
 
   @@index([userId])
+}
+
+/// Une connexion d'un appareil : début, dernier signe de vie, fin. Sert au suivi des connectés par le Super Admin.
+model UserSession {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ip         String?
+  userAgent  String?
+  startedAt  DateTime  @default(now())
+  lastSeenAt DateTime  @default(now())
+  endedAt    DateTime?
+
+  @@index([userId, endedAt])
+  @@index([lastSeenAt])
 }
 
 // ─────────────────────────── ORPHELINATS ───────────────────────────

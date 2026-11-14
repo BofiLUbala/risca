@@ -9,10 +9,15 @@ export interface JwtPayload {
   email: string;
   role: string;
   tv: number;
+  /** Connexion (UserSession) à laquelle appartient ce jeton. */
+  sid?: string;
 }
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+  /** Dernière écriture de « vu à » par connexion : au plus une par minute. */
+  private seen = new Map<string, number>();
+
   constructor(private prisma: PrismaService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -44,6 +49,17 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     if (user.status === 'SUSPENDED') throw new UnauthorizedException('Compte suspendu');
     if (user.status === 'FROZEN') throw new UnauthorizedException('Compte gele par la gouvernance');
     if (user.status === 'INVITED') throw new UnauthorizedException('Compte non active');
+
+    if (payload.sid) {
+      const now = Date.now();
+      if (now - (this.seen.get(payload.sid) ?? 0) > 60_000) {
+        this.seen.set(payload.sid, now);
+        if (this.seen.size > 5000) this.seen.clear();
+        void this.prisma.userSession
+          .updateMany({ where: { id: payload.sid, endedAt: null }, data: { lastSeenAt: new Date() } })
+          .catch(() => undefined);
+      }
+    }
 
     return {
       id: user.id,

@@ -17,6 +17,7 @@ import { AuditService } from '../../common/services/audit.service';
 import { MailerService } from '../../common/services/mailer.service';
 import { AuthUser } from '../../common/decorators/current-user.decorator';
 import { canInviteRole } from '../../common/hierarchy';
+import { describeDevice } from '../../common/device';
 import {
   ActivateDto,
   AdminRegisterDto,
@@ -31,8 +32,9 @@ import {
   VerifyEmailDto,
 } from './dto/auth.dto';
 
+// Au-delà de 4 échecs (donc au 5e), le compte est bloqué 3 h ; ensuite il peut réessayer.
 const MAX_FAILED_LOGINS = 5;
-const LOCK_MINUTES = 15;
+const LOCK_MINUTES = 180;
 const INVITATION_TTL_HOURS = 72;
 
 // Code à usage unique d'activation, remis par e-mail.
@@ -137,8 +139,13 @@ export class AuthService {
   private async issueTokens(
     user: { id: string; email: string; role: Role; tokenVersion: number },
     userAgent?: string,
+    session?: { id?: string; ip?: string },
   ) {
-    const payload = { sub: user.id, email: user.email, role: user.role, tv: user.tokenVersion };
+    // Une nouvelle connexion ouvre une session ; un renouvellement de jeton reste dans la même.
+    const sessionId =
+      session?.id ??
+      (await this.prisma.userSession.create({ data: { userId: user.id, ip: session?.ip ?? null, userAgent: userAgent ?? null } })).id;
+    const payload = { sub: user.id, email: user.email, role: user.role, tv: user.tokenVersion, sid: sessionId };
 
     const accessToken = await this.jwt.signAsync(payload, {
       secret: process.env.JWT_SECRET,
@@ -155,10 +162,137 @@ export class AuthService {
         tokenHash,
         expiresAt: new Date(Date.now() + days * 24 * 60 * 60 * 1000),
         userAgent: userAgent ?? null,
+        sessionId,
       },
     });
 
     return { accessToken, refreshToken };
+  }
+
+  /**
+   * Sécurité des accès (Super Admin) : qui est connecté et depuis quel appareil, combien de temps chacun est resté,
+   * qui a tenté de se connecter sans y arriver, et quels comptes sont bloqués.
+   */
+  async securityOverview() {
+    const now = new Date();
+    const ONLINE_MS = 5 * 60000;
+    const person = { select: { id: true, firstName: true, lastName: true, email: true, role: true, adminRank: true } };
+
+    const [online, recent, failures, locked, failures24h] = await Promise.all([
+      this.prisma.userSession.findMany({
+        where: { endedAt: null, lastSeenAt: { gte: new Date(now.getTime() - ONLINE_MS) } },
+        orderBy: { startedAt: 'asc' },
+        include: { user: person },
+      }),
+      this.prisma.userSession.findMany({ orderBy: { startedAt: 'desc' }, take: 60, include: { user: person } }),
+      this.prisma.auditLog.findMany({
+        where: { action: { in: ['LOGIN_FAILED', 'LOGIN_BLOCKED'] } },
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+        include: { actor: person },
+      }),
+      this.prisma.user.findMany({
+        where: { lockedUntil: { gt: now } },
+        select: { id: true, firstName: true, lastName: true, email: true, role: true, adminRank: true, lockedUntil: true, failedLoginCount: true },
+        orderBy: { lockedUntil: 'desc' },
+      }),
+      this.prisma.auditLog.count({ where: { action: 'LOGIN_FAILED', createdAt: { gte: new Date(now.getTime() - 24 * 3600000) } } }),
+    ]);
+
+    const name = (u?: { firstName: string; lastName: string } | null) => (u ? `${u.firstName} ${u.lastName}`.trim() : null);
+    const session = (x: (typeof online)[number]) => {
+      const end = x.endedAt ?? x.lastSeenAt;
+      return {
+        id: x.id,
+        user: { id: x.user.id, name: name(x.user), email: x.user.email, role: x.user.role, adminRank: x.user.adminRank },
+        device: describeDevice(x.userAgent),
+        ip: x.ip,
+        startedAt: x.startedAt,
+        lastSeenAt: x.lastSeenAt,
+        endedAt: x.endedAt,
+        durationSeconds: Math.max(0, Math.round((end.getTime() - x.startedAt.getTime()) / 1000)),
+        online: !x.endedAt && now.getTime() - x.lastSeenAt.getTime() <= ONLINE_MS,
+      };
+    };
+
+    return {
+      generatedAt: now,
+      onlineNow: online.map(session),
+      recentSessions: recent.map(session),
+      failedAttempts: failures.map((a) => {
+        const meta = (a.metadata ?? {}) as { email?: string; attempt?: number; reason?: string; locked?: boolean };
+        return {
+          id: a.id,
+          at: a.createdAt,
+          type: a.action === 'LOGIN_BLOCKED' ? 'BLOCKED' : 'FAILED',
+          user: a.actor ? { id: a.actor.id, name: name(a.actor), email: a.actor.email, role: a.actor.role, adminRank: a.actor.adminRank } : null,
+          email: a.actor?.email ?? meta.email ?? null,
+          attempt: meta.attempt ?? null,
+          reason: meta.reason ?? null,
+          lockedAfter: !!meta.locked,
+          device: describeDevice(a.userAgent),
+          ip: a.ip,
+        };
+      }),
+      lockedAccounts: locked.map((u) => ({
+        id: u.id,
+        name: name(u),
+        email: u.email,
+        role: u.role,
+        adminRank: u.adminRank,
+        failedLoginCount: u.failedLoginCount,
+        lockedUntil: u.lockedUntil,
+      })),
+      summary: { online: online.length, failedLast24h: failures24h, locked: locked.length },
+      policy: { maxAttempts: MAX_FAILED_LOGINS - 1, lockMinutes: LOCK_MINUTES },
+    };
+  }
+
+  /** Délai restant avant la fin d'un blocage, en toutes lettres. */
+  private lockRemaining(until: Date): string {
+    const min = Math.max(1, Math.ceil((until.getTime() - Date.now()) / 60000));
+    return min >= 60 ? `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, '0')} min` : `${min} min`;
+  }
+
+  /**
+   * Un échec de connexion : on le compte, on le journalise (qui, quand, depuis quel appareil) et, au 5e échec
+   * (donc « au-delà de 4 »), on bloque le compte 3 h. Un blocage expiré remet le compteur à zéro : la personne peut réessayer.
+   */
+  private async registerFailure(
+    user: { id: string; role: Role; failedLoginCount: number; lockedUntil: Date | null },
+    reason: string,
+    meta: { ip?: string; userAgent?: string },
+    message = 'Identifiants invalides',
+  ): Promise<never> {
+    const expired = !!user.lockedUntil && user.lockedUntil <= new Date();
+    const failed = (expired ? 0 : user.failedLoginCount) + 1;
+    const locked = failed >= MAX_FAILED_LOGINS;
+    const lockedUntil = locked ? new Date(Date.now() + LOCK_MINUTES * 60000) : null;
+    await this.prisma.user.update({ where: { id: user.id }, data: { failedLoginCount: failed, lockedUntil } });
+    await this.audit.log({
+      actorId: user.id,
+      actorRole: user.role,
+      action: 'LOGIN_FAILED',
+      entityType: 'User',
+      entityId: user.id,
+      metadata: { attempt: failed, reason, locked },
+      ip: meta.ip,
+      userAgent: meta.userAgent,
+    });
+    if (locked) {
+      await this.audit.log({
+        actorId: user.id,
+        actorRole: user.role,
+        action: 'ACCOUNT_LOCKED',
+        entityType: 'User',
+        entityId: user.id,
+        metadata: { until: lockedUntil, failed },
+        ip: meta.ip,
+        userAgent: meta.userAgent,
+      });
+      throw new ForbiddenException(`Compte bloqué après ${failed} tentatives échouées. Réessayez dans ${this.lockRemaining(lockedUntil)}.`);
+    }
+    throw new UnauthorizedException(message);
   }
 
   async login(dto: LoginDto, meta: { ip?: string; userAgent?: string } = {}) {
@@ -170,36 +304,28 @@ export class AuthService {
         entityType: 'User',
         metadata: { email: dto.email, reason: 'UNKNOWN_ACCOUNT' },
         ip: meta.ip,
+        userAgent: meta.userAgent,
       });
       throw new UnauthorizedException('Identifiants invalides');
     }
 
     if (user.lockedUntil && user.lockedUntil > new Date()) {
-      throw new ForbiddenException('Compte temporairement verrouille, reessayez plus tard');
+      await this.audit.log({
+        actorId: user.id,
+        actorRole: user.role,
+        action: 'LOGIN_BLOCKED',
+        entityType: 'User',
+        entityId: user.id,
+        metadata: { reason: 'ACCOUNT_LOCKED', lockedUntil: user.lockedUntil },
+        ip: meta.ip,
+        userAgent: meta.userAgent,
+      });
+      throw new ForbiddenException(`Compte bloqué après trop de tentatives. Réessayez dans ${this.lockRemaining(user.lockedUntil)}.`);
     }
 
     const valid = await argon2.verify(user.passwordHash, dto.password).catch(() => false);
 
-    if (!valid) {
-      const failed = user.failedLoginCount + 1;
-      await this.prisma.user.update({
-        where: { id: user.id },
-        data: {
-          failedLoginCount: failed,
-          lockedUntil: failed >= MAX_FAILED_LOGINS ? new Date(Date.now() + LOCK_MINUTES * 60000) : null,
-        },
-      });
-      await this.audit.log({
-        actorId: user.id,
-        actorRole: user.role,
-        action: 'LOGIN_FAILED',
-        entityType: 'User',
-        entityId: user.id,
-        metadata: { attempt: failed },
-        ip: meta.ip,
-      });
-      throw new UnauthorizedException('Identifiants invalides');
-    }
+    if (!valid) await this.registerFailure(user, 'BAD_PASSWORD', meta);
 
     if (user.status === UserStatus.INVITED) {
       throw new ForbiddenException(
@@ -217,26 +343,7 @@ export class AuthService {
       const given = this.cleanKey(dto.adminKey);
       if (!given) return { adminKeyRequired: true };
       const keyOk = await argon2.verify(user.adminKeyHash, given).catch(() => false);
-      if (!keyOk) {
-        const failed = user.failedLoginCount + 1;
-        await this.prisma.user.update({
-          where: { id: user.id },
-          data: {
-            failedLoginCount: failed,
-            lockedUntil: failed >= MAX_FAILED_LOGINS ? new Date(Date.now() + LOCK_MINUTES * 60000) : null,
-          },
-        });
-        await this.audit.log({
-          actorId: user.id,
-          actorRole: user.role,
-          action: 'LOGIN_FAILED',
-          entityType: 'User',
-          entityId: user.id,
-          metadata: { attempt: failed, reason: 'BAD_ADMIN_KEY' },
-          ip: meta.ip,
-        });
-        throw new UnauthorizedException('Identifiants invalides');
-      }
+      if (!keyOk) await this.registerFailure(user, 'BAD_ADMIN_KEY', meta);
     }
 
     if (user.twoFactorEnabled) {
@@ -244,7 +351,7 @@ export class AuthService {
         return { twoFactorRequired: true };
       }
       const ok = authenticator.verify({ token: dto.totp, secret: user.twoFactorSecret });
-      if (!ok) throw new UnauthorizedException('Code de double authentification invalide');
+      if (!ok) await this.registerFailure(user, 'BAD_TOTP', meta, 'Code de double authentification invalide');
     }
 
     await this.prisma.user.update({
@@ -252,7 +359,7 @@ export class AuthService {
       data: { failedLoginCount: 0, lockedUntil: null, lastLoginAt: new Date() },
     });
 
-    const tokens = await this.issueTokens(user, meta.userAgent);
+    const tokens = await this.issueTokens(user, meta.userAgent, { ip: meta.ip });
 
     await this.audit.log({
       actorId: user.id,
@@ -672,18 +779,24 @@ export class AuthService {
     }
 
     await this.prisma.refreshToken.update({ where: { id: row.id }, data: { revokedAt: new Date() } });
-    const tokens = await this.issueTokens(row.user, row.userAgent ?? undefined);
+    const open = row.sessionId
+      ? await this.prisma.userSession.findFirst({ where: { id: row.sessionId, endedAt: null }, select: { id: true } })
+      : null;
+    const tokens = await this.issueTokens(row.user, row.userAgent ?? undefined, open ? { id: open.id } : undefined);
     return { ...tokens, user: await this.me(row.userId) };
   }
 
   async logout(userId: string, refreshToken?: string) {
     if (refreshToken) {
       const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+      const row = await this.prisma.refreshToken.findFirst({ where: { tokenHash, userId }, select: { sessionId: true } });
+      if (row?.sessionId) await this.prisma.userSession.updateMany({ where: { id: row.sessionId, endedAt: null }, data: { endedAt: new Date() } });
       await this.prisma.refreshToken.updateMany({
         where: { tokenHash, userId },
         data: { revokedAt: new Date() },
       });
     } else {
+      await this.prisma.userSession.updateMany({ where: { userId, endedAt: null }, data: { endedAt: new Date() } });
       await this.prisma.refreshToken.updateMany({
         where: { userId, revokedAt: null },
         data: { revokedAt: new Date() },
@@ -696,6 +809,7 @@ export class AuthService {
   async forceLogout(userId: string, actor: AuthUser) {
     await this.assertCanActOnAdmin(userId, actor);
     await this.prisma.user.update({ where: { id: userId }, data: { tokenVersion: { increment: 1 } } });
+    await this.prisma.userSession.updateMany({ where: { userId, endedAt: null }, data: { endedAt: new Date() } });
     await this.prisma.refreshToken.updateMany({
       where: { userId, revokedAt: null },
       data: { revokedAt: new Date() },

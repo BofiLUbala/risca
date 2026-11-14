@@ -505,6 +505,48 @@ async function main() {
   ok('un responsable ne voit ni son supérieur ni ses pairs dans la liste des utilisateurs');
   await expectStatus('le chef régional ne peut pas ouvrir la fiche du Super Admin', 404, () => call(S['regional.nordkivu'], 'GET', `/users/${U.admin}`));
 
+  step('Sécurité des accès', 'connectés, appareils, tentatives échouées, blocage de 3 h au 5e échec');
+  await join(admin, 'cible.blocage', 'Partenaire de test (blocage)', { firstName: 'Cible', lastName: 'Blocage', role: 'PARTNER', countryId: natMe.country.id, organizationName: 'Association Test' });
+  const ANDROID = 'Mozilla/5.0 (Linux; Android 14; SM-A546B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36';
+  const rawLogin = async (email: string, password: string) => {
+    const r = await fetch(`${API}/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'User-Agent': ANDROID }, body: JSON.stringify({ email, password }) });
+    return r.status;
+  };
+  const target = `cible.blocage@${DOMAIN}`;
+  for (let i = 1; i <= 4; i++) {
+    const code = await rawLogin(target, 'mauvais-mot-de-passe');
+    if (code !== 401) throw new ApiFailure(`échec ${i} : attendu 401, reçu ${code}`);
+  }
+  ok('4 tentatives échouées : le compte n’est pas encore bloqué (401)');
+  const fifth = await rawLogin(target, 'mauvais-mot-de-passe');
+  if (fifth !== 403) throw new ApiFailure(`le 5e échec doit bloquer le compte (403), reçu ${fifth}`);
+  ok('au 5e échec le compte est bloqué (403)');
+  const good = await rawLogin(target, PWD);
+  if (good !== 403) throw new ApiFailure(`même avec le bon mot de passe, un compte bloqué doit être refusé, reçu ${good}`);
+  ok('pendant le blocage, même le bon mot de passe est refusé');
+  await rawLogin(`inconnu@${DOMAIN}`, 'mauvais-mot-de-passe');
+
+  const sec = await call(admin, 'GET', '/auth/admin/security');
+  const lockedRow = (sec.lockedAccounts as any[]).find((a) => a.email === target);
+  if (!lockedRow) throw new ApiFailure('le compte bloqué n’apparaît pas dans la liste des comptes bloqués');
+  const hours = (new Date(lockedRow.lockedUntil).getTime() - Date.now()) / 3600000;
+  if (hours < 2.9 || hours > 3.01) throw new ApiFailure(`le blocage doit durer 3 h, il dure ${hours.toFixed(2)} h`);
+  ok(`comptes bloqués : ${lockedRow.name} jusqu’à ${new Date(lockedRow.lockedUntil).toLocaleTimeString('fr-FR')} (3 h)`);
+  const fails = (sec.failedAttempts as any[]).filter((a) => a.email === target && a.type === 'FAILED');
+  if (fails.length !== 5 || !fails.some((a) => a.attempt === 5 && a.lockedAfter)) throw new ApiFailure(`attendu 5 échecs dont le 5e bloquant, reçu ${fails.length}`);
+  if (!fails.every((a) => a.device.includes('Android'))) throw new ApiFailure('le téléphone n’est pas identifié dans les tentatives échouées');
+  ok('tentatives échouées : 5 lignes, numérotées, téléphone Android identifié, la 5e a bloqué le compte');
+  if (!(sec.failedAttempts as any[]).some((a) => a.type === 'BLOCKED')) throw new ApiFailure('la tentative refusée pendant le blocage n’est pas journalisée');
+  if (!(sec.failedAttempts as any[]).some((a) => a.email === `inconnu@${DOMAIN}` && !a.user)) throw new ApiFailure('la tentative sur une adresse inconnue n’est pas journalisée');
+  ok('tentatives bloquées et adresses inconnues sont journalisées');
+  const mine = (sec.onlineNow as any[]).find((x) => x.user.id === U.admin);
+  if (!mine) throw new ApiFailure('le Super Admin connecté n’apparaît pas dans « connectés »');
+  ok(`connectés maintenant : ${(sec.onlineNow as any[]).length} (dont ${mine.user.name}, appareil « ${mine.device}», depuis ${mine.durationSeconds} s)`);
+  await expectStatus('un Chef régional ne voit pas la sécurité des accès', 403, () => call(S['regional.nordkivu'], 'GET', '/auth/admin/security'));
+  const sec2 = await call(S.admin2, 'GET', '/auth/admin/security');
+  if (!sec2.onlineNow) throw new ApiFailure('le Super Admin n°2 doit aussi voir la sécurité des accès');
+  ok('le Super Admin n°2 voit aussi la sécurité des accès');
+
   step('Super Admin n°3', 'perd sa clé : écrit au n°1, qui réinitialise ses identifiants ; l’ancienne clé ne marche plus');
   const reset = await call(admin, 'POST', `/auth/admin/${U.admin3}/reset-credentials`);
   await expectStatus('avec l’ancienne clé, le n°3 ne peut plus se connecter', 401, () => adminLogin(`admin3@${DOMAIN}`, ADMIN_PWD, KEY3, 'ancien'));
