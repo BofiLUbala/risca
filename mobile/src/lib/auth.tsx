@@ -11,7 +11,7 @@ export type Role =
 export const ROLE_LABEL: Record<Role, string> = {
   SUPER_ADMIN: 'Super Admin',
   ADMIN_FINANCE: 'Admin Finance',
-  MODERATOR: 'Moderateur',
+  MODERATOR: 'Modérateur',
   ETHICS_AUDITOR: 'Auditeur Éthique',
   NATIONAL_MANAGER: 'Responsable National',
   REGIONAL_MANAGER: 'Chef Régional',

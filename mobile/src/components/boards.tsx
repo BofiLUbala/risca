@@ -50,7 +50,7 @@ function AmbassadorBoard({ data }: { data: any }) {
         <SectionTitle>Mes publications</SectionTitle>
         <Row label="Publications" value={num(data.publications.count)} />
         <Row label="Vues" value={num(data.publications.views)} />
-        <Row label="Reactions" value={num(data.publications.reactions)} />
+        <Row label="Réactions" value={num(data.publications.reactions)} />
         <Row label="Rapports de visite" value={num(data.visitReports)} />
       </Card>
     </>

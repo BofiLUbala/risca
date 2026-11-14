@@ -45,7 +45,7 @@ export default function ValidationsScreen() {
       <View style={s.header}>
         <Text style={s.title}>Ma file de validation</Text>
         <Text style={s.subtitle}>
-          {data ? `${data.length} element(s) attendent votre decision` : 'Chargement...'}
+          {data ? `${data.length} élément(s) attendent votre décision` : 'Chargement…'}
         </Text>
       </View>
 
@@ -70,7 +70,7 @@ export default function ValidationsScreen() {
                 <Text style={s.kind}>{KIND_LABEL[item.kind] ?? item.kind}</Text>
                 <Text style={s.label}>{item.entityLabel ?? item.kind}</Text>
                 <Text style={s.meta}>
-                  {relative(item.createdAt)} - etape {item.currentStepOrder}
+                  {relative(item.createdAt)} - étape {item.currentStepOrder}
                   {item.escalated ? ' - remontee' : ''}
                 </Text>
               </View>
@@ -105,7 +105,7 @@ export default function ValidationsScreen() {
               </View>
             ) : (
               <Button
-                title="Decider"
+                title="Décider"
                 variant="soft"
                 onPress={() => setOpenId(item.id)}
                 style={{ marginTop: spacing.md }}

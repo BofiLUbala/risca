@@ -56,7 +56,7 @@ export function Button({
       style={({ pressed }) => [s.btn, v, (disabled || loading) && s.btnDisabled, pressed && s.btnPressed, style]}
     >
       {loading ? (
-        <ActivityIndicator size="small" color={variant === 'primary' || variant === 'danger' ? colors.white : colors.risac[700]} />
+        <ActivityIndicator size="small" color={variant === 'primary' ? colors.navy : variant === 'danger' ? colors.white : colors.risac[700]} />
       ) : (
         icon
       )}
@@ -154,13 +154,13 @@ const s = StyleSheet.create({
   },
   btnPressed: { opacity: 0.85 },
   btnDisabled: { opacity: 0.5 },
-  btn_primary: { backgroundColor: colors.risac[700] },
+  btn_primary: { backgroundColor: colors.sun[400] },
   btn_outline: { backgroundColor: colors.white, borderWidth: 1, borderColor: colors.ink[300] },
   btn_ghost: { backgroundColor: 'transparent' },
   btn_soft: { backgroundColor: colors.risac[50] },
   btn_danger: { backgroundColor: colors.coral },
   btnText: { ...typography.bodyMedium },
-  btnText_primary: { color: colors.white },
+  btnText_primary: { color: colors.navy },
   btnText_outline: { color: colors.ink[700] },
   btnText_ghost: { color: colors.ink[600] },
   btnText_soft: { color: colors.risac[800] },

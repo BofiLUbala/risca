@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { api, mediaUrl } from '../lib/api';
-import { Avatar, Badge, Progress } from './ui';
+import { Avatar, Badge, Progrèss } from './ui';
 import { CommentIcon, HeartIcon } from './icons';
 import { money, relative } from '../lib/format';
 import { ROLE_LABEL } from '../lib/auth';
@@ -10,7 +10,7 @@ import { colors, radius, spacing, typography } from '../theme';
 const TYPE_LABEL: Record<string, string> = {
   NEWS: 'Nouvelle',
   URGENT_NEED: 'Besoin urgent',
-  VIDEO_PROGRESS: 'Progres',
+  VIDEO_PROGRESS: 'Progrès',
   THANKS: 'Remerciement',
   SPONSORSHIP_CALL: 'Appel au parrainage',
   ORPHANAGE_NEWS: 'Structure',
@@ -81,7 +81,7 @@ export function PostCard({ post, onSupport }: { post: any; onSupport?: (childId:
           <View style={s.project}>
             <Text style={s.projectTitle}>{post.project.title}</Text>
             <View style={{ marginTop: 8 }}>
-              <Progress value={post.project.collectedAmount} total={post.project.targetAmount} />
+              <Progrèss value={post.project.collectedAmount} total={post.project.targetAmount} />
             </View>
             <Text style={s.projectMeta}>
               {money(post.project.collectedAmount, post.project.currency)} sur{' '}
@@ -136,7 +136,7 @@ export function PostCard({ post, onSupport }: { post: any; onSupport?: (childId:
               <TextInput
                 value={draft}
                 onChangeText={setDraft}
-                placeholder="Écrire un commentaire..."
+                placeholder="Écrire un commentaire…"
                 placeholderTextColor={colors.ink[400]}
                 style={s.commentInput}
                 onSubmitEditing={send}

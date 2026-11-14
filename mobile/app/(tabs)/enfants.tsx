@@ -88,7 +88,7 @@ function ScopedChildren() {
     <SafeAreaView style={s.safe} edges={['top']}>
       <Text style={s.title}>Enfants</Text>
       <Text style={s.subtitle}>
-        {data ? `${data.total} dossier(s) dans votre périmètre` : 'Chargement...'}
+        {data ? `${data.total} dossier(s) dans votre périmètre` : 'Chargement…'}
       </Text>
 
       <FlatList

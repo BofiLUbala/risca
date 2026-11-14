@@ -57,11 +57,11 @@ let currentToken: string | null = null;
 async function ensureAndroidChannels(N: ModuleNotifications) {
   if (Platform.OS !== 'android') return;
   const channels: Array<[string, string, number]> = [
-    ['general', 'General', N.AndroidImportance.DEFAULT],
+    ['general', 'Général', N.AndroidImportance.DEFAULT],
     ['validations', 'Validations', N.AndroidImportance.HIGH],
-    ['argent', 'Dons et decaissements', N.AndroidImportance.HIGH],
-    ['securite', 'Securite du compte', N.AndroidImportance.HIGH],
-    ['moderation', 'Moderation', N.AndroidImportance.DEFAULT],
+    ['argent', 'Dons et décaissements', N.AndroidImportance.HIGH],
+    ['securite', 'Sécurité du compte', N.AndroidImportance.HIGH],
+    ['moderation', 'Modération', N.AndroidImportance.DEFAULT],
   ];
   for (const [id, name, importance] of channels) {
     await N.setNotificationChannelAsync(id, { name, importance });

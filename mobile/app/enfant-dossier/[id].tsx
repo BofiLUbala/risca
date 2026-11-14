@@ -62,7 +62,7 @@ export default function ChildDossierScreen() {
 
           <View style={s.tags}>
             {child.warOrphan ? <Badge text="Orphelin de guerre" status="PENDING" /> : null}
-            {child.displaced ? <Badge text="Deplace" status="NEEDS_CORRECTION" /> : null}
+            {child.displaced ? <Badge text="Déplacé" status="NEEDS_CORRECTION" /> : null}
             {child.assignments?.[0] ? (
               <Badge text={`Amb. ${child.assignments[0].ambassador.firstName}`} />
             ) : null}
@@ -85,7 +85,7 @@ export default function ChildDossierScreen() {
           <>
             <Card>
               <SectionTitle>Identité</SectionTitle>
-              <Row label="Sexe" value={child.sex === 'M' ? 'Masculin' : 'Feminin'} />
+              <Row label="Sexe" value={child.sex === 'M' ? 'Masculin' : 'Féminin'} />
               <Row label="Date de naissance" value={date(child.birthDate)} />
               <Row label="Langues" value={child.languages?.join(', ')} />
               <Row label="Admission" value={date(child.admittedAt)} />
@@ -102,12 +102,12 @@ export default function ChildDossierScreen() {
             </Card>
 
             <Card>
-              <SectionTitle>Reparation et post-majorite</SectionTitle>
+              <SectionTitle>Réparation et post-majorité</SectionTitle>
               <Row label="Statut FONAREV" value={child.fonarevStatus} />
               <Row label="Dossier FONAREV" value={child.fonarevFileNumber} />
               <Row
-                label="Post-majorite"
-                value={child.postMajorityPrepared ? 'Preparation engagee' : 'Non engagee'}
+                label="Post-majorité"
+                value={child.postMajorityPrepared ? 'Preparation engagee' : 'Non engagée'}
               />
             </Card>
           </>
@@ -115,7 +115,7 @@ export default function ChildDossierScreen() {
 
         {tab === 'historique' ? (
           <Card>
-            <SectionTitle>Historique non effacable</SectionTitle>
+            <SectionTitle>Historique non effaçable</SectionTitle>
             {!timeline?.length ? (
               <Text style={s.muted}>Aucun événement.</Text>
             ) : (
@@ -156,7 +156,7 @@ export default function ChildDossierScreen() {
         {tab === 'finance' ? (
           <>
             <Card>
-              <SectionTitle>Solde affecte</SectionTitle>
+              <SectionTitle>Solde affecté</SectionTitle>
               <Text style={s.balance}>
                 {money(child.ledgerAccounts?.[0]?.balance ?? 0, child.ledgerAccounts?.[0]?.currency)}
               </Text>

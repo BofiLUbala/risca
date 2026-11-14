@@ -12,7 +12,7 @@ import { colors } from '../theme';
 const TYPES = [
   { value: 'NEWS', label: 'Nouvelle' },
   { value: 'URGENT_NEED', label: 'Besoin urgent' },
-  { value: 'VIDEO_PROGRESS', label: 'Progres' },
+  { value: 'VIDEO_PROGRESS', label: 'Progrès' },
   { value: 'THANKS', label: 'Remerciement' },
   { value: 'SPONSORSHIP_CALL', label: 'Appel au parrainage' },
 ];
@@ -63,7 +63,7 @@ export function Composer({ onPublished }: { onPublished: () => void }) {
   async function pickPhoto() {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
-      setError('Autorisation refusee pour acceder aux photos.');
+      setError('Autorisation refusée pour accéder aux photos.');
       return;
     }
     const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8 });
@@ -101,7 +101,7 @@ export function Composer({ onPublished }: { onPublished: () => void }) {
     <>
       <Pressable onPress={() => setOpen(true)} style={s.trigger} accessibilityRole="button">
         <Avatar uri={user.avatarUrl} firstName={user.firstName} lastName={user.lastName} size={34} />
-        <Text style={s.triggerText}>Partager une nouvelle...</Text>
+        <Text style={s.triggerText}>Partager une nouvelle…</Text>
         <View style={s.triggerBtn}>
           <Text style={s.triggerBtnText}>Publier</Text>
         </View>
@@ -150,7 +150,7 @@ export function Composer({ onPublished }: { onPublished: () => void }) {
             <TextInput
               value={content}
               onChangeText={check}
-              placeholder="Racontez la nouvelle. Le nom de famille, l’adresse exacte et les donnees medicales sont bloques automatiquement."
+              placeholder="Racontez la nouvelle. Le nom de famille, l’adresse exacte et les données médicales sont bloquées automatiquement."
               placeholderTextColor={colors.ink[400]}
               multiline
               style={s.textarea}

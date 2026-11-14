@@ -31,6 +31,9 @@ export const colors = {
     900: '#263746',
     950: '#172430',
   },
+  // Jaune d'action du site web : bouton principal, avec texte bleu nuit (contraste 8:1).
+  sun: { 300: '#f0cd4e', 400: '#e7b92c', 500: '#d1a11a' },
+  navy: '#172430',
   white: '#ffffff',
   mint: '#23965a',
   mintSoft: '#e9f6ef',

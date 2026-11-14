@@ -157,7 +157,7 @@ export default function MessagesScreen() {
           <TextInput
             value={draft}
             onChangeText={setDraft}
-            placeholder={active?.canWrite === false ? 'Canal en lecture seule' : 'Votre message...'}
+            placeholder={active?.canWrite === false ? 'Canal en lecture seule' : 'Votre message…'}
             placeholderTextColor={colors.ink[400]}
             editable={active?.canWrite !== false}
             style={s.chatInput}
