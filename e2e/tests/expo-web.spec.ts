@@ -41,7 +41,7 @@ async function shot(page: Page, role: string, name: string) {
 for (const r of ROLES) {
   test(`EXPO ${r.role} : connexion et onglets`, async ({ page }, info) => {
     const f = watch(page);
-    await page.goto(`${EXPO}/connexion`);
+    await page.goto(`${EXPO}/connexion`, { waitUntil: 'domcontentloaded' });
     await page.getByPlaceholder('vous@exemple.org').fill(r.email);
     await page.getByPlaceholder('........').fill(PASSWORD);
     await shot(page, r.role, '00-connexion');
@@ -65,7 +65,7 @@ for (const r of ROLES) {
 
     for (const [name, route] of screens) {
       const before = f.pageErrors.length + f.serverErrors.length;
-      await page.goto(`${EXPO}${route}`);
+      await page.goto(`${EXPO}${route}`, { waitUntil: 'domcontentloaded' });
       await settle(page);
       await shot(page, r.role, name);
       info.annotations.push({

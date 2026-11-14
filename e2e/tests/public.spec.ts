@@ -50,7 +50,7 @@ for (const p of PUBLIC) {
       target = p.route.replace(':id', id!);
     }
     const f = watch(page);
-    await page.goto(target);
+    await page.goto(target, { waitUntil: 'domcontentloaded' });
     await settle(page);
     await shoot(page, info, 'VISITEUR', p.route);
     await assertHealthy(page, info, f, target.split('?')[0]);

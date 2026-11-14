@@ -2,8 +2,12 @@
 // Usage : node build-report.mjs > results/tables.md
 import fs from 'fs';
 
-const files = ['results/results.json', 'results/expo.json'].filter((f) => fs.existsSync(f));
-const rows = [];
+// Ordre = priorité croissante : une relance (results.json) remplace la passe 1 pour le même test.
+const files = ['results/results-pass1.json', 'results/results.json', 'results/expo.json'].filter((f) => fs.existsSync(f));
+const byKey = new Map();
+const rows = {
+  push: (x) => byKey.set(`${x.project}|${x.title}`, x),
+};
 for (const f of files) {
   const r = JSON.parse(fs.readFileSync(f, 'utf8'));
   const walk = (s) => {
@@ -23,6 +27,8 @@ for (const f of files) {
           api4xx: [...new Set(get('apiClientErrors'))],
           s5xx: [...new Set(get('serverErrors'))],
           pageErr: [...new Set(get('pageErrors'))],
+          ext: [...new Set(get('externalFailures'))],
+          guard: get('guard')[0],
           error: (res.errors ?? []).map((e) => (e.message ?? '').replace(/\u001b\[[0-9;]*m/g, '').split('\n')[0]).join(' | '),
         });
       }
@@ -30,6 +36,7 @@ for (const f of files) {
   };
   r.suites.forEach(walk);
 }
+const all = [...byKey.values()].filter((x) => x.project !== 'setup' || true);
 
 const icon = { passed: '✅', failed: '❌', skipped: '⏭️', timedOut: '⏱️', interrupted: '⛔' };
 const roleOf = (t) => {
@@ -39,11 +46,11 @@ const roleOf = (t) => {
   return w[0];
 };
 const byRole = {};
-for (const x of rows) (byRole[roleOf(x.title)] ??= []).push(x);
+for (const x of all) (byRole[roleOf(x.title)] ??= []).push(x);
 
 const out = [];
-const total = rows.reduce((a, x) => ((a[x.status] = (a[x.status] ?? 0) + 1), a), {});
-out.push(`Total : ${rows.length} tests — ${Object.entries(total).map(([k, v]) => `${icon[k] ?? k} ${v} ${k}`).join(', ')}\n`);
+const total = all.reduce((a, x) => ((a[x.status] = (a[x.status] ?? 0) + 1), a), {});
+out.push(`Total : ${all.length} tests — ${Object.entries(total).map(([k, v]) => `${icon[k] ?? k} ${v} ${k}`).join(', ')}\n`);
 for (const [role, list] of Object.entries(byRole)) {
   out.push(`\n#### ${role}\n`);
   out.push('| Projet | Page / écran | Résultat | Capture | Remarques |');
@@ -51,6 +58,8 @@ for (const [role, list] of Object.entries(byRole)) {
   for (const x of list) {
     const notes = [
       x.skip && `ignoré : ${x.skip}`,
+      x.guard && x.guard,
+      x.ext?.length && `ressource externe indisponible : ${x.ext.join(' ; ')}`,
       x.s5xx.length && `5xx : ${x.s5xx.join(' ; ')}`,
       x.pageErr.length && `exception : ${x.pageErr.join(' ; ')}`,
       x.api4xx.length && `API 4xx : ${x.api4xx.join(' ; ')}`,

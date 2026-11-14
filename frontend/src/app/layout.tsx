@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { IBM_Plex_Mono, IBM_Plex_Sans } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/lib/auth-context';
 
@@ -17,9 +18,24 @@ export const viewport: Viewport = {
   themeColor: '#174a70',
 };
 
+// Police téléchargée au build et servie par le site : aucun appel à Google Fonts au chargement,
+// qui bloquait le rendu (et l'événement « load ») sur les connexions lentes.
+const plexSans = IBM_Plex_Sans({
+  subsets: ['latin', 'latin-ext'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+  variable: '--font-plex-sans',
+});
+const plexMono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  display: 'swap',
+  variable: '--font-plex-mono',
+});
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" suppressHydrationWarning>
+    <html lang="fr" suppressHydrationWarning className={`${plexSans.variable} ${plexMono.variable}`}>
       <head>
         {/* Applique le thème choisi avant le premier affichage : pas de flash blanc en mode sombre. */}
         <script
@@ -27,12 +43,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html:
               "try{var t=localStorage.getItem('risac.theme');var d=t?t==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.classList.toggle('dark',d);document.documentElement.style.colorScheme=d?'dark':'light'}catch(e){}",
           }}
-        />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
-          rel="stylesheet"
         />
       </head>
       <body suppressHydrationWarning>

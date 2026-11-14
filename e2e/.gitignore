@@ -3,3 +3,5 @@ node_modules/
 .auth/
 test-results/
 results/
+# Captures générées par les tests (80 Mo) : régénérées par `npx playwright test`
+screenshots/

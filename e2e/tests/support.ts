@@ -100,15 +100,28 @@ export interface PageFindings {
   pageErrors: string[];
   serverErrors: string[];
   apiClientErrors: string[];
+  /** Ressources tierces (Google Fonts, flagcdn) injoignables : avertissement, pas un défaut de la page. */
+  externalFailures: string[];
 }
+
+const LOCAL_HOSTS = ['localhost', '127.0.0.1'];
 
 /** Branche les écouteurs avant la navigation : console, exceptions, réponses HTTP. */
 export function watch(page: Page): PageFindings {
-  const f: PageFindings = { consoleErrors: [], pageErrors: [], serverErrors: [], apiClientErrors: [] };
+  const f: PageFindings = { consoleErrors: [], pageErrors: [], serverErrors: [], apiClientErrors: [], externalFailures: [] };
   page.on('console', (m) => {
     if (m.type() === 'error') f.consoleErrors.push(m.text().slice(0, 400));
   });
   page.on('pageerror', (e) => f.pageErrors.push(String(e?.message ?? e).slice(0, 400)));
+  // La console ne donne pas l'URL d'une requête échouée : on la note pour le rapport.
+  page.on('requestfailed', (r) => {
+    const err = r.failure()?.errorText ?? '';
+    if (/ERR_ABORTED/.test(err)) return; // navigation ou socket fermé volontairement
+    const host = new URL(r.url()).hostname;
+    const line = `${err} ${r.url().slice(0, 160)}`;
+    if (LOCAL_HOSTS.includes(host)) f.apiClientErrors.push(`échec réseau ${line}`);
+    else f.externalFailures.push(line);
+  });
   page.on('response', (r) => {
     const s = r.status();
     const u = r.url();
@@ -147,9 +160,22 @@ export async function assertHealthy(page: Page, info: TestInfo, f: PageFindings,
   for (const [type, list] of Object.entries(f)) {
     for (const d of list as string[]) info.annotations.push({ type, description: d });
   }
-  expect.soft(url.pathname, 'redirigé hors de la page (connexion ou tableau de bord)').toBe(expectedPath);
+  // Une page de création refusée à ce rôle renvoie vers sa liste : c'est la garde voulue.
+  const creationGuard = expectedPath.endsWith('/nouveau') && url.pathname === expectedPath.replace(/\/nouveau$/, '');
+  if (creationGuard) info.annotations.push({ type: 'guard', description: `création non autorisée : renvoyé vers ${url.pathname}` });
+  else expect.soft(url.pathname, 'redirigé hors de la page (connexion ou tableau de bord)').toBe(expectedPath);
   expect.soft(body, 'page d’erreur affichée').not.toMatch(BROKEN_TEXT);
   expect.soft(f.serverErrors, 'réponses HTTP 5xx').toEqual([]);
   expect.soft(f.pageErrors, 'exceptions JavaScript').toEqual([]);
-  expect.soft(f.consoleErrors, 'erreurs console').toEqual([]);
+  // Chaque requête tierce échouée produit une ligne « Failed to load resource: net::… » en console :
+  // on retire autant de ces lignes qu'il y a d'échecs tiers, le reste compte comme erreur réelle.
+  let external = f.externalFailures.length;
+  const realConsole = f.consoleErrors.filter((c) => {
+    if (external > 0 && /^Failed to load resource: net::ERR_/.test(c)) {
+      external--;
+      return false;
+    }
+    return true;
+  });
+  expect.soft(realConsole, 'erreurs console').toEqual([]);
 }
