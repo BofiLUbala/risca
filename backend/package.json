@@ -11,6 +11,7 @@
     "prisma:push": "prisma db push",
     "prisma:migrate": "prisma migrate dev",
     "seed": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" prisma/seed.ts",
+    "simulate:full": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" prisma/simulate-full.ts",
     "simulate": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" prisma/simulate.ts",
     "test": "jest",
     "test:e2e": "jest --config ./test/jest-e2e.json --runInBand"

@@ -551,6 +551,12 @@ async function main() {
   console.log('Seed RISAC ...');
   await seedGeography();
   await seedTemplates();
+  // Base de départ pour la simulation « Super Admin → hiérarchie » (npm run simulate:full) :
+  // seulement la géographie et les modèles de dossier. Aucun compte, aucune structure.
+  if (process.env.SEED_MINIMAL === 'true') {
+    console.log('Seed minimal termine (geographie + modeles de dossier).');
+    return;
+  }
   await seedOrphanages();
   const users = await seedUsers();
   await seedChildren(users);

@@ -17,6 +17,8 @@
  * pour que chaque tableau de bord des 12 rôles montre du travail à faire.
  */
 
+export {};
+
 const API = (process.env.SIM_API_URL ?? 'http://localhost:4000/api').replace(/\/$/, '');
 const PWD = 'Risac2026!';
 

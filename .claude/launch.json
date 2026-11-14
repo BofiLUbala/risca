@@ -18,6 +18,16 @@
       }
     },
     {
+      "name": "risac-api-sim",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "backend", "run", "dev"],
+      "port": 4000,
+      "env": {
+        "DATABASE_URL": "postgresql://risac:risac_dev_pwd@localhost:5444/risac_sim?schema=public",
+        "MAIL_ECHO_OTP": "true"
+      }
+    },
+    {
       "name": "risac-web",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "frontend", "run", "dev"],
