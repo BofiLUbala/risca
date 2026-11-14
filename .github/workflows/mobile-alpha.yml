@@ -112,3 +112,24 @@ jobs:
       - name: Effacer la cle
         if: ${{ always() && needs.verifier.outputs.submit == 'true' }}
         run: rm -f google-play-service-account.json
+
+      # Sans la cle Google Play, le bundle est construit mais n'arrive jamais sur le
+      # Play Store : un run vert laissait croire que la version etait publiee. Le job
+      # echoue donc ici, apres le build, pour que le .aab reste disponible a l'envoi
+      # manuel depuis EAS.
+      - name: Exiger l'envoi sur le Play Store
+        if: ${{ needs.verifier.outputs.submit != 'true' }}
+        run: |
+          {
+            echo "## Version construite, mais NON publiee sur le Play Store"
+            echo ""
+            echo "Le secret \`GOOGLE_PLAY_SERVICE_ACCOUNT\` est absent : l'App Bundle a ete construit sur EAS"
+            echo "mais n'a pas ete envoye sur le canal alpha. Les telephones des testeurs ne recevront rien."
+            echo ""
+            echo "- Envoi manuel : telecharger le .aab depuis EAS (lien dans l'etape « Construire l'App Bundle »),"
+            echo "  puis Play Console > Tests > Test ferme (alpha) > Creer une version."
+            echo "- Envoi automatique : ajouter le JSON du compte de service Google Play dans le secret"
+            echo "  \`GOOGLE_PLAY_SERVICE_ACCOUNT\` (voir docs/CI-CD.md)."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::error title=Play Store non publie::Secret GOOGLE_PLAY_SERVICE_ACCOUNT absent : le bundle est construit sur EAS mais n'a pas ete envoye sur le canal alpha."
+          exit 1
