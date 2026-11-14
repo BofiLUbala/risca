@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { canAccessPath } from '@/lib/nav';
+import { saveLastPath } from '@/lib/remember';
 import clsx from 'clsx';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
@@ -37,6 +38,11 @@ function AppShellInner({ title, children }: { title?: string; children: React.Re
   useEffect(() => {
     if (!loading && !user) router.replace('/connexion');
   }, [loading, user, router]);
+
+  // Dernière page visitée : on y revient à la réouverture du site ou à la reconnexion.
+  useEffect(() => {
+    if (user && !denied) saveLastPath(user.id, pathname + (typeof window !== 'undefined' ? window.location.search : ''));
+  }, [user?.id, pathname, denied]);
 
   // Un rôle qui ouvre une page hors de son périmètre revient à son tableau de bord.
   useEffect(() => {

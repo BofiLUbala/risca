@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View,
+  KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../src/lib/auth';
 import { Button } from '../../src/components/ui';
 import { Logo } from '../../src/components/Logo';
+import { CheckIcon, EyeIcon } from '../../src/components/icons';
+import { getRememberedEmail, setRememberedEmail } from '../../src/lib/remember';
 import { colors, radius, shadow, spacing, typography } from '../../src/theme';
 
 export default function LoginScreen() {
@@ -15,10 +17,22 @@ export default function LoginScreen() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [remember, setRemember] = useState(false);
   const [totp, setTotp] = useState('');
   const [needsTotp, setNeedsTotp] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  // Adresse retenue lors d'une connexion précédente : la case est cochée et le champ prérempli.
+  useEffect(() => {
+    void getRememberedEmail().then((saved) => {
+      if (saved) {
+        setEmail(saved);
+        setRemember(true);
+      }
+    });
+  }, []);
 
   async function submit() {
     setError(null);
@@ -35,6 +49,7 @@ export default function LoginScreen() {
         setBusy(false);
         return;
       }
+      await setRememberedEmail(remember ? email.trim() : null);
       router.replace('/(tabs)');
     } catch (e: any) {
       setError(e?.message ?? 'Connexion impossible');
@@ -85,16 +100,40 @@ export default function LoginScreen() {
 
           <View style={s.field}>
             <Text style={s.label}>Mot de passe</Text>
-            <TextInput
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              autoComplete="current-password"
-              textContentType="password"
-              accessibilityLabel="Mot de passe"
-              style={s.input}
-            />
+            <View style={s.passwordWrap}>
+              <TextInput
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                autoCapitalize="none"
+                autoCorrect={false}
+                autoComplete="current-password"
+                textContentType="password"
+                accessibilityLabel="Mot de passe"
+                style={[s.input, s.passwordInput]}
+              />
+              <Pressable
+                onPress={() => setShowPassword((v) => !v)}
+                accessibilityRole="button"
+                accessibilityLabel={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                hitSlop={8}
+                style={s.eye}
+              >
+                <EyeIcon off={showPassword} color={colors.ink[500]} />
+              </Pressable>
+            </View>
           </View>
+
+          <Pressable
+            onPress={() => setRemember((v) => !v)}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: remember }}
+            accessibilityLabel="Se souvenir de moi"
+            style={s.remember}
+          >
+            <View style={[s.box, remember && s.boxOn]}>{remember ? <CheckIcon color={colors.white} /> : null}</View>
+            <Text style={s.rememberText}>Se souvenir de moi</Text>
+          </Pressable>
 
           {needsTotp ? (
             <View style={s.field}>
@@ -157,6 +196,13 @@ const s = StyleSheet.create({
   divider: { height: 1, backgroundColor: colors.ink[100], marginTop: spacing.xs },
   footnote: { ...typography.caption, fontWeight: '400', color: colors.ink[500], textAlign: 'center' },
   field: { gap: 6 },
+  passwordWrap: { position: 'relative', justifyContent: 'center' },
+  passwordInput: { paddingRight: 48 },
+  eye: { position: 'absolute', right: 0, top: 0, bottom: 0, width: 48, alignItems: 'center', justifyContent: 'center' },
+  remember: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: 44 },
+  box: { width: 22, height: 22, borderRadius: 6, borderWidth: 1.5, borderColor: colors.ink[300], backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center' },
+  boxOn: { backgroundColor: colors.risac[700], borderColor: colors.risac[700] },
+  rememberText: { ...typography.small, color: colors.ink[700] },
   label: { ...typography.small, fontWeight: '500', color: colors.ink[700] },
   input: {
     borderWidth: 1,

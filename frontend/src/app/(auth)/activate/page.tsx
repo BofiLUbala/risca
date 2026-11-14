@@ -6,6 +6,7 @@ import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { api, setTokens } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { Spinner } from '@/components/ui/Loading';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 
 function ActivateForm() {
   const params = useSearchParams();
@@ -126,9 +127,8 @@ function ActivateForm() {
         <label htmlFor="password" className="label">
           Choisir un mot de passe
         </label>
-        <input
+        <PasswordInput
           id="password"
-          type="password"
           required
           minLength={8}
           autoComplete="new-password"
@@ -142,9 +142,8 @@ function ActivateForm() {
         <label htmlFor="confirm" className="label">
           Confirmer le mot de passe
         </label>
-        <input
+        <PasswordInput
           id="confirm"
-          type="password"
           required
           minLength={8}
           autoComplete="new-password"

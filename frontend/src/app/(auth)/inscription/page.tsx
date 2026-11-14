@@ -8,6 +8,7 @@ import { AlertCircle } from 'lucide-react';
 import { api, fetcher, setTokens } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { Spinner } from '@/components/ui/Loading';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 
 interface Country {
   id: string;
@@ -211,9 +212,8 @@ export default function RegisterPage() {
           <label htmlFor="password" className="label">
             Mot de passe
           </label>
-          <input
+          <PasswordInput
             id="password"
-            type="password"
             required
             minLength={8}
             autoComplete="new-password"

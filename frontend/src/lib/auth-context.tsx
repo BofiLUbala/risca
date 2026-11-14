@@ -33,7 +33,7 @@ interface AuthState {
     password: string,
     totp?: string,
     adminKey?: string,
-  ) => Promise<{ twoFactorRequired?: boolean; adminKeyRequired?: boolean }>;
+  ) => Promise<{ twoFactorRequired?: boolean; adminKeyRequired?: boolean; user?: Me }>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 }
@@ -94,7 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (res.twoFactorRequired) return { twoFactorRequired: true };
     setTokens(res.accessToken, res.refreshToken);
     setUser(res.user);
-    return {};
+    return { user: res.user as Me };
   }
 
   async function logout() {

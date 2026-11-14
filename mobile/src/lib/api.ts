@@ -28,7 +28,7 @@ const ACCESS = 'risac_access';
 const REFRESH = 'risac_refresh';
 
 /** SecureStore n existe pas sur le web : on retombe sur localStorage. */
-const store = {
+export const store = {
   async get(key: string): Promise<string | null> {
     if (Platform.OS === 'web') {
       try {

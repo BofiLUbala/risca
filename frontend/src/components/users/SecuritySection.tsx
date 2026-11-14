@@ -4,6 +4,7 @@ import { confirmDialog } from '@/lib/dialog';
 import { useState } from 'react';
 import { KeyRound, ShieldCheck } from 'lucide-react';
 import { api } from '@/lib/api';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 
 export function SecuritySection({
   twoFactorEnabled,
@@ -82,9 +83,8 @@ export function SecuritySection({
             <label htmlFor="cp" className="label">
               Mot de passe actuel
             </label>
-            <input
+            <PasswordInput
               id="cp"
-              type="password"
               required
               value={pwd.current}
               onChange={(e) => setPwd({ ...pwd, current: e.target.value })}
@@ -95,9 +95,8 @@ export function SecuritySection({
             <label htmlFor="np" className="label">
               Nouveau mot de passe
             </label>
-            <input
+            <PasswordInput
               id="np"
-              type="password"
               required
               minLength={8}
               value={pwd.next}

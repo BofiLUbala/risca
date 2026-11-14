@@ -8,6 +8,8 @@ import { AlertCircle, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { api, fetcher, setTokens } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { Spinner } from '@/components/ui/Loading';
+import { postLoginPath } from '@/lib/remember';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 
 // Rôles autorisés à entrer par cette porte : les comptes d'administration.
 const ADMIN_ROLES = ['SUPER_ADMIN', 'ADMIN_FINANCE', 'MODERATOR', 'ETHICS_AUDITOR'];
@@ -117,7 +119,7 @@ export default function AdminPage() {
         setBusy(false);
         return;
       }
-      router.push('/tableau-de-bord');
+      router.push(res.user ? postLoginPath(res.user) : '/tableau-de-bord');
     } catch (err: any) {
       setError(err?.message ?? 'Connexion impossible');
       setBusy(false);
@@ -256,9 +258,8 @@ export default function AdminPage() {
               <label htmlFor="a-password" className="label">
                 Mot de passe
               </label>
-              <input
+              <PasswordInput
                 id="a-password"
-                type="password"
                 required
                 autoComplete="current-password"
                 value={password}
@@ -271,9 +272,8 @@ export default function AdminPage() {
                 <label htmlFor="a-key" className="label">
                   Clé administrateur
                 </label>
-                <input
+                <PasswordInput
                   id="a-key"
-                  type="password"
                   required
                   autoComplete="off"
                   autoFocus
@@ -356,9 +356,8 @@ export default function AdminPage() {
                 <label htmlFor="c-pass" className="label">
                   Mot de passe
                 </label>
-                <input
+                <PasswordInput
                   id="c-pass"
-                  type="password"
                   required
                   minLength={12}
                   autoComplete="new-password"
@@ -372,9 +371,8 @@ export default function AdminPage() {
                 <label htmlFor="c-confirm" className="label">
                   Confirmer
                 </label>
-                <input
+                <PasswordInput
                   id="c-confirm"
-                  type="password"
                   required
                   autoComplete="new-password"
                   value={confirm}
@@ -448,9 +446,8 @@ export default function AdminPage() {
                 <label htmlFor="c-key" className="label">
                   Clé d’installation
                 </label>
-                <input
+                <PasswordInput
                   id="c-key"
-                  type="password"
                   required
                   autoComplete="off"
                   value={setupKey}

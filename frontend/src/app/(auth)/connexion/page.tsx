@@ -1,22 +1,39 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AlertCircle, KeyRound, Mail } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { Spinner } from '@/components/ui/Loading';
+import { getRememberedEmail, postLoginPath, setRememberedEmail } from '@/lib/remember';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, user, loading } = useAuth();
   const router = useRouter();
 
   const [email, setEmail] = useState('');
+  const [remember, setRemember] = useState(false);
   const [password, setPassword] = useState('');
   const [totp, setTotp] = useState('');
   const [needsTotp, setNeedsTotp] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  // Adresse retenue lors d'une connexion précédente : la case est cochée et le champ prérempli.
+  useEffect(() => {
+    const saved = getRememberedEmail();
+    if (saved) {
+      setEmail(saved);
+      setRemember(true);
+    }
+  }, []);
+
+  // Déjà connecté (session encore valable) : retour direct à la dernière page, sans repasser par ici.
+  useEffect(() => {
+    if (!loading && user) router.replace(postLoginPath(user));
+  }, [loading, user, router]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -34,7 +51,8 @@ export default function LoginPage() {
         setBusy(false);
         return;
       }
-      router.push('/tableau-de-bord');
+      setRememberedEmail(remember ? email.trim() : null);
+      router.push(res.user ? postLoginPath(res.user) : '/tableau-de-bord');
     } catch (err: any) {
       setError(err?.message ?? 'Connexion impossible');
       setBusy(false);
@@ -93,13 +111,12 @@ export default function LoginPage() {
           </label>
           <div className="relative">
             <KeyRound
-              className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400"
+              className="pointer-events-none absolute left-3.5 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-ink-400"
               aria-hidden="true"
             />
-            <input
+            <PasswordInput
               id="password"
               name="password"
-              type="password"
               required
               autoComplete="current-password"
               value={password}
@@ -131,6 +148,17 @@ export default function LoginPage() {
             </p>
           </div>
         )}
+
+        <label className="flex min-h-[44px] cursor-pointer items-center gap-2.5 text-sm text-ink-700">
+          <input
+            type="checkbox"
+            name="remember"
+            checked={remember}
+            onChange={(e) => setRemember(e.target.checked)}
+            className="h-4 w-4 rounded border-ink-300 accent-[#174a70] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sun-200"
+          />
+          Se souvenir de moi
+        </label>
 
         <button type="submit" disabled={busy} className="btn-primary w-full">
           {busy ? <Spinner className="h-4 w-4" /> : null}
