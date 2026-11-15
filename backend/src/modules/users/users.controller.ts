@@ -51,6 +51,8 @@ export class UsersController {
     return this.users.updateProfile(user, dto);
   }
 
+  // Toujours en dernier : déclarée plus haut, cette route capterait `by-country`,
+  // `my-children` ou `ambassadors` comme s'il s'agissait d'un identifiant.
   @Get(':id')
   get(@Param('id') id: string, @CurrentUser() user: AuthUser) {
     return this.users.get(id, user);
