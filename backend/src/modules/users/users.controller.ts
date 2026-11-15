@@ -30,6 +30,12 @@ export class UsersController {
     return this.users.list(user, { role, status, countryId, provinceId, orphanageId, q });
   }
 
+  /** Nombre d'utilisateurs par pays dans mon périmètre : alimente la vue « continent → pays → liste ». */
+  @Get('by-country')
+  byCountry(@CurrentUser() user: AuthUser, @Query('role') role?: Role) {
+    return this.users.byCountry(user, role);
+  }
+
   @Get('my-children')
   myChildren(@CurrentUser() user: AuthUser) {
     return this.users.myChildren(user);

@@ -106,6 +106,24 @@ export class UsersService {
     return rows.map((r) => ({ ...r, invitedBy: r.invitedById ? (byId.get(r.invitedById) ?? null) : null }));
   }
 
+  /** Effectifs par pays (comptes sans pays regroupés à part), dans le périmètre de la personne connectée. */
+  async byCountry(user: AuthUser, role?: Role) {
+    const where = { AND: [this.scope.userWhere(user), role ? { role } : {}] };
+    const groups = await this.prisma.user.groupBy({ by: ['countryId'], where, _count: { _all: true } });
+    const ids = groups.map((g) => g.countryId).filter((id): id is string => !!id);
+    const countries = ids.length
+      ? await this.prisma.country.findMany({ where: { id: { in: ids } }, select: { id: true, iso2: true, nameFr: true } })
+      : [];
+    const byId = new Map(countries.map((c) => [c.id, c]));
+    return {
+      countries: groups
+        .filter((g) => g.countryId && byId.has(g.countryId))
+        .map((g) => ({ ...byId.get(g.countryId as string)!, count: g._count._all }))
+        .sort((a, b) => a.nameFr.localeCompare(b.nameFr, 'fr')),
+      withoutCountry: groups.find((g) => !g.countryId)?._count._all ?? 0,
+    };
+  }
+
   async get(id: string, user: AuthUser) {
     const found = await this.prisma.user.findFirst({
       where: { AND: [{ id }, this.scope.userWhere(user)] },

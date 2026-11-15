@@ -14,6 +14,7 @@ import { ROLE_LABEL, type Role } from '@/lib/roles';
 import { dateTime } from '@/lib/format';
 import { InviteForm } from '@/components/users/InviteForm';
 import { UserActions } from '@/components/users/UserActions';
+import { CountryTree, type UsersByCountry } from '@/components/users/CountryTree';
 
 export default function UsersPage() {
   const { user } = useAuth();
@@ -21,11 +22,26 @@ export default function UsersPage() {
   const [role, setRole] = useState('');
   const [invite, setInvite] = useState(false);
 
+  // Super Admin : les comptes sont regroupés par continent, puis par pays ; une recherche reste globale.
+  const isAdmin = user?.role === 'SUPER_ADMIN';
+  const [openCountry, setOpenCountry] = useState<{ id: string; label: string } | null>(null);
+  const grouped = isAdmin && !q.trim();
+  const showTree = grouped && !openCountry;
+
   const params = new URLSearchParams();
   if (q) params.set('q', q);
   if (role) params.set('role', role);
+  if (grouped && openCountry && openCountry.id !== 'none') params.set('countryId', openCountry.id);
 
-  const { data, isLoading, mutate } = useSWR<any[]>(`/users?${params.toString()}`, fetcher);
+  const summaryKey = showTree ? `/users/by-country${role ? `?role=${role}` : ''}` : null;
+  const { data: summary, isLoading: summaryLoading, mutate: mutateSummary } = useSWR<UsersByCountry>(summaryKey, fetcher);
+  const { data: fetched, isLoading, mutate: mutateList } = useSWR<any[]>(showTree ? null : `/users?${params.toString()}`, fetcher);
+  // « Administration » : les comptes sans pays (le serveur n'a pas de filtre « sans pays », on le fait ici).
+  const data = openCountry?.id === 'none' && grouped ? fetched?.filter((u) => !u.country) : fetched;
+  const mutate = () => {
+    void mutateList();
+    void mutateSummary();
+  };
 
   const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -60,7 +76,13 @@ export default function UsersPage() {
         <div>
           <h1 className="page-title">Utilisateurs</h1>
           <p className="mt-1 text-sm text-ink-500">
-            {data ? `${data.length} compte(s) dans votre périmètre` : 'Chargement…'}
+            {showTree
+              ? summary
+                ? `${summary.countries.reduce((n, c) => n + c.count, 0) + summary.withoutCountry} compte(s) dans ${summary.countries.length} pays`
+                : 'Chargement…'
+              : data
+                ? `${data.length} compte(s)${openCountry && grouped ? ` · ${openCountry.label}` : ' dans votre périmètre'}`
+                : 'Chargement…'}
           </p>
         </div>
         {canInvite && (
@@ -105,7 +127,24 @@ export default function UsersPage() {
         </select>
       </div>
 
-      {isLoading ? (
+      {grouped && openCountry && (
+        <div className="flex flex-wrap items-center gap-2 text-sm">
+          <button type="button" onClick={() => setOpenCountry(null)} className="btn-outline px-3 text-xs">
+            ← Continents
+          </button>
+          <span className="font-medium text-ink-900">{openCountry.label}</span>
+        </div>
+      )}
+
+      {showTree ? (
+        summaryLoading || !summary ? (
+          <SkeletonList rows={5} />
+        ) : !summary.countries.length && !summary.withoutCountry ? (
+          <Empty icon={<UserCog className="h-6 w-6" />} title="Aucun utilisateur" />
+        ) : (
+          <CountryTree summary={summary} onOpen={(id, label) => setOpenCountry({ id, label })} />
+        )
+      ) : isLoading ? (
         <SkeletonList rows={5} />
       ) : !data?.length ? (
         <Empty icon={<UserCog className="h-6 w-6" />} title="Aucun utilisateur" />
