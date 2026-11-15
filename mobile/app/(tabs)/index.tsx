@@ -15,7 +15,7 @@ export default function HomeScreen() {
   const { data, isLoading, mutate, isValidating } = useSWR<any>('/dashboard', fetcher);
 
   return (
-    <SafeAreaView style={s.safe} edges={['top']}>
+    <SafeAreaView style={s.safe} edges={[]}>
       <ScrollView
         contentContainerStyle={s.scroll}
         refreshControl={

@@ -17,7 +17,7 @@ export default function ProfileScreen() {
   if (!user) return null;
 
   return (
-    <SafeAreaView style={s.safe} edges={['top']}>
+    <SafeAreaView style={s.safe} edges={[]}>
       <ScrollView contentContainerStyle={s.scroll}>
         <Card>
           <View style={s.head}>

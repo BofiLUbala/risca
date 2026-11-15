@@ -41,7 +41,7 @@ export default function ValidationsScreen() {
   }
 
   return (
-    <SafeAreaView style={s.safe} edges={['top']}>
+    <SafeAreaView style={s.safe} edges={[]}>
       <ScreenHeader
         title="Ma file de validation"
         subtitle={data ? `${data.length} élément(s) attendent votre décision` : 'Chargement…'}

@@ -25,7 +25,7 @@ function PublicChildren() {
   );
 
   return (
-    <SafeAreaView style={s.safe} edges={['top']}>
+    <SafeAreaView style={s.safe} edges={[]}>
       <ScreenHeader title="Enfants à soutenir" subtitle="Choisissez un enfant à parrainer ou à aider." />
       <FlatList
         data={data ?? []}
@@ -85,7 +85,7 @@ function ScopedChildren() {
   const { data, isLoading, mutate, isValidating } = useSWR<any>('/children?take=60', fetcher);
 
   return (
-    <SafeAreaView style={s.safe} edges={['top']}>
+    <SafeAreaView style={s.safe} edges={[]}>
       <ScreenHeader
         title="Enfants"
         subtitle={data ? `${data.total} dossier(s) dans votre périmètre` : 'Chargement…'}

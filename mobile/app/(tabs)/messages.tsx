@@ -72,7 +72,7 @@ export default function MessagesScreen() {
 
   if (!activeId) {
     return (
-      <SafeAreaView style={s.safe} edges={['top']}>
+      <SafeAreaView style={s.safe} edges={[]}>
         <ScreenHeader title="Messagerie" subtitle="Vos canaux d’échange avec le réseau." />
         <FlatList
           data={channels ?? []}
@@ -107,7 +107,7 @@ export default function MessagesScreen() {
   }
 
   return (
-    <SafeAreaView style={s.safe} edges={['top']}>
+    <SafeAreaView style={s.safe} edges={[]}>
       <View style={s.chatHeader}>
         <Pressable onPress={() => setActiveId(null)} hitSlop={10} accessibilityRole="button">
           <BackIcon color={colors.ink[700]} />

@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../src/lib/auth';
 import { View, type ColorValue } from 'react-native';
 import { TabIcon } from '../../src/components/TabIcon';
+import { AppTopBar } from '../../src/components/AppMenu';
 import { colors } from '../../src/theme';
 
 /** Icône d'onglet avec un repère jaune au-dessus de l'onglet actif. */
@@ -36,7 +37,9 @@ export default function TabsLayout() {
   return (
     <Tabs id="tabs"
       screenOptions={{
-        headerShown: false,
+        // Barre du haut commune : bouton menu (trois traits) qui ouvre toutes les fonctionnalités.
+        headerShown: true,
+        header: () => <AppTopBar />,
         tabBarActiveTintColor: colors.risac[700],
         tabBarInactiveTintColor: colors.ink[500],
         tabBarStyle: {

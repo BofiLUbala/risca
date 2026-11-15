@@ -22,7 +22,7 @@ export default function FeedScreen() {
   );
 
   return (
-    <SafeAreaView style={s.safe} edges={['top']}>
+    <SafeAreaView style={s.safe} edges={[]}>
       <ScreenHeader title="Communication" subtitle="Les nouvelles du réseau et des enfants." />
       <View style={s.header}>
         {isDonor ? (
