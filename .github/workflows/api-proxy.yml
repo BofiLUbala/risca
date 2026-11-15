@@ -1,0 +1,68 @@
+# Adresse fixe de l'API (Worker Cloudflare `risac-api`, voir infra/api-proxy).
+#
+# Quand le tunnel du serveur change d'adresse, il suffit de lancer :
+#   gh variable set API_TUNNEL_ORIGIN --body https://<nouveau>.trycloudflare.com
+#   gh workflow run api-proxy.yml
+# L'application mobile et le site gardent la même adresse : aucune republication.
+#
+# Secrets déjà utilisés par le déploiement du site : CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID.
+# Variable : API_TUNNEL_ORIGIN = adresse du tunnel du moment, sans /api.
+name: API — Adresse fixe (Cloudflare)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'infra/api-proxy/**'
+      - '.github/workflows/api-proxy.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: api-proxy
+  cancel-in-progress: false
+
+defaults:
+  run:
+    working-directory: infra/api-proxy
+
+jobs:
+  deploiement:
+    name: Déploiement du relais
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Adresse du tunnel renseignée
+        run: |
+          if [ -z "$API_TUNNEL_ORIGIN" ]; then
+            echo "::error::Variable API_TUNNEL_ORIGIN manquante (adresse du tunnel, sans /api)"; exit 1
+          fi
+        env:
+          API_TUNNEL_ORIGIN: ${{ vars.API_TUNNEL_ORIGIN }}
+
+      - name: Déploiement
+        run: npx --yes wrangler@4 deploy --var "UPSTREAM:$API_TUNNEL_ORIGIN" | tee deploy.log
+        env:
+          API_TUNNEL_ORIGIN: ${{ vars.API_TUNNEL_ORIGIN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Vérification de bout en bout
+        run: |
+          URL=$(grep -oE 'https://[a-z0-9.-]+\.workers\.dev' deploy.log | head -1)
+          echo "Adresse fixe : $URL"
+          for i in 1 2 3 4 5 6; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "$URL/api/health" || true)
+            echo "essai $i : $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 10
+          done
+          echo "::error::$URL/api/health ne répond pas : vérifier que le tunnel $API_TUNNEL_ORIGIN est joignable"
+          exit 1
+        env:
+          API_TUNNEL_ORIGIN: ${{ vars.API_TUNNEL_ORIGIN }}

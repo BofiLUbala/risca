@@ -146,8 +146,23 @@ export function clientIp(req: IpRequest): string | null {
   const peer = normalizeIp(req.socket?.remoteAddress);
   const trusted = req.app?.get?.('trust proxy fn') as ((addr: string, i: number) => boolean) | undefined;
   if (peer && trusted?.(peer, 0)) {
+    // Requête relayée par notre Worker « adresse fixe » (infra/api-proxy) : Cloudflare y met l'IP du Worker dans
+    // CF-Connecting-IP et l'en-tête CF-Worker (nom du compte) ; l'IP du client est dans X-Risac-Client-Ip.
+    const worker = header(req.headers, 'cf-worker', 120)?.toLowerCase();
+    if (worker && proxyWorkerZones().includes(worker)) {
+      const relayed = normalizeIp(header(req.headers, 'x-risac-client-ip'));
+      if (relayed) return relayed;
+    }
     const cf = normalizeIp(header(req.headers, 'cf-connecting-ip'));
     if (cf) return cf;
   }
   return normalizeIp(req.ip) ?? peer ?? null;
+}
+
+/** Comptes Cloudflare dont les Workers relaient l'API (PROXY_WORKER_ZONES, séparés par des virgules). */
+function proxyWorkerZones(): string[] {
+  return (process.env.PROXY_WORKER_ZONES || 'bofigauthier3.workers.dev')
+    .split(',')
+    .map((z) => z.trim().toLowerCase())
+    .filter(Boolean);
 }

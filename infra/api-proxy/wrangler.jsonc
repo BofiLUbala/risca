@@ -1,0 +1,9 @@
+{
+  // Adresse fixe de l'API RISAC (voir src/index.js). Déployé par .github/workflows/api-proxy.yml,
+  // qui fournit UPSTREAM (adresse du tunnel du moment, variable GitHub API_TUNNEL_ORIGIN).
+  "name": "risac-api",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": true,
+  "observability": { "enabled": true }
+}

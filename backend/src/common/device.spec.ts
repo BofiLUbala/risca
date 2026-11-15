@@ -95,6 +95,17 @@ describe('clientIp', () => {
     expect(clientIp(req('172.18.0.1', {}, '41.243.12.7'))).toBe('41.243.12.7');
   });
 
+  it('lit l’IP transmise par le Worker « adresse fixe » du compte', () => {
+    expect(
+      clientIp(req('172.18.0.1', { 'cf-worker': 'bofigauthier3.workers.dev', 'cf-connecting-ip': '2a06:98c0:3600::103', 'x-risac-client-ip': '41.243.12.7' })),
+    ).toBe('41.243.12.7');
+  });
+
+  it('ignore X-Risac-Client-Ip venant d’un autre Worker ou d’un client', () => {
+    expect(clientIp(req('172.18.0.1', { 'cf-worker': 'autre.workers.dev', 'cf-connecting-ip': '1.1.1.1', 'x-risac-client-ip': '6.6.6.6' }))).toBe('1.1.1.1');
+    expect(clientIp(req('172.18.0.1', { 'cf-connecting-ip': '1.1.1.1', 'x-risac-client-ip': '6.6.6.6' }))).toBe('1.1.1.1');
+  });
+
   it('refuse une valeur qui n’est pas une adresse IP', () => {
     expect(clientIp(req('172.18.0.1', { 'cf-connecting-ip': '<script>' }, '172.18.0.1'))).toBe('172.18.0.1');
   });
