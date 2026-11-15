@@ -1,0 +1,57 @@
+# Mise à jour automatique de l'application mobile (EAS Update), à chaque push sur `main` touchant `mobile/`.
+#
+# Les téléphones qui ont déjà l'application la reçoivent à l'ouverture suivante, sans passer par le Play Store
+# (voir mobile/src/lib/updates.ts). Le workflow « Mobile — publication alpha » continue de publier une version
+# Play Store : elle reste nécessaire quand une modification touche la partie native (nouveau module), ce que la
+# version d'exécution (runtimeVersion « fingerprint ») détecte d'elle-même — une mise à jour ne s'installe que
+# sur une application compatible.
+name: Mobile — mise à jour automatique
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'mobile/**'
+      - '.github/workflows/mobile-update.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: mobile-update
+  cancel-in-progress: true
+
+jobs:
+  update:
+    name: Publier la mise à jour (canal production)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Installer EAS CLI
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - run: npm ci
+
+      - name: Vérification des types
+        run: npm run typecheck
+
+      # Même adresse d'API que le build Play Store (eas.json, profil production) : la configuration, donc la
+      # version d'exécution, est identique et la mise à jour s'applique aux applications installées.
+      - name: Publier
+        env:
+          EXPO_PUBLIC_API_URL: https://risac-api.bofigauthier3.workers.dev/api
+        run: |
+          eas update --channel production --platform android --environment production \
+            --message "$(git log -1 --format='%h %s')" --non-interactive

@@ -7,6 +7,7 @@ import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { AuthProvider, useAuth } from '../src/lib/auth';
 import { lastRouteFor, saveLastRoute } from '../src/lib/remember';
 import { colors } from '../src/theme';
+import { useAutoUpdates } from '../src/lib/updates';
 
 /** Onglets accessibles directement ; tout autre écran (fiche enfant…) s'ouvre par-dessus l'accueil. */
 const TAB_PATHS = ['/', '/fil', '/enfants', '/validations', '/messages', '/profil'];
@@ -65,6 +66,8 @@ function Gate() {
 }
 
 export default function RootLayout() {
+  // Nouvelle version publiée par GitHub : téléchargée et appliquée à l'ouverture, sans passer par le Play Store.
+  useAutoUpdates();
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>

@@ -7,6 +7,14 @@
     "scheme": "risac",
     "userInterfaceStyle": "light",
     "icon": "./assets/icon.png",
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/a1b6612e-1b63-44d9-9b2f-3f1f40b611eb",
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    },
     "assetBundlePatterns": [
       "**/*"
     ],
