@@ -17,7 +17,7 @@ import { AuditService } from '../../common/services/audit.service';
 import { MailerService } from '../../common/services/mailer.service';
 import { AuthUser } from '../../common/decorators/current-user.decorator';
 import { canInviteRole } from '../../common/hierarchy';
-import { describeDevice } from '../../common/device';
+import { deviceLabel } from '../../common/device';
 import {
   ActivateDto,
   AdminRegisterDto,
@@ -44,6 +44,17 @@ const OTP_RESEND_COOLDOWN_SECONDS = 60;
 
 type OtpTarget = { id: string; email: string; firstName: string };
 type OtpDelivery = { emailSent: boolean; devOtp?: string };
+
+/** Ce que la requête de connexion dit d'elle-même : adresse IP réelle, User-Agent, appareil déclaré. */
+export type LoginMeta = { ip?: string; userAgent?: string; deviceName?: string };
+
+/** Appareil déclaré, gardé dans les métadonnées du journal pour les tentatives échouées. */
+function deviceMeta(meta: LoginMeta): { device?: string } {
+  return meta.deviceName ? { device: meta.deviceName } : {};
+}
+
+/** Une connexion est « en ligne » si elle n'est pas fermée et a donné signe de vie depuis 5 minutes. */
+const ONLINE_MS = 5 * 60000;
 
 /** Roles qui doivent obligatoirement activer la double authentification (section 12). */
 const ADMIN_ROLES: Role[] = [Role.SUPER_ADMIN, Role.ADMIN_FINANCE, Role.MODERATOR, Role.ETHICS_AUDITOR];
@@ -139,12 +150,16 @@ export class AuthService {
   private async issueTokens(
     user: { id: string; email: string; role: Role; tokenVersion: number },
     userAgent?: string,
-    session?: { id?: string; ip?: string },
+    session?: { id?: string; ip?: string; deviceName?: string },
   ) {
     // Une nouvelle connexion ouvre une session ; un renouvellement de jeton reste dans la même.
     const sessionId =
       session?.id ??
-      (await this.prisma.userSession.create({ data: { userId: user.id, ip: session?.ip ?? null, userAgent: userAgent ?? null } })).id;
+      (
+        await this.prisma.userSession.create({
+          data: { userId: user.id, ip: session?.ip ?? null, userAgent: userAgent ?? null, deviceName: session?.deviceName ?? null },
+        })
+      ).id;
     const payload = { sub: user.id, email: user.email, role: user.role, tv: user.tokenVersion, sid: sessionId };
 
     const accessToken = await this.jwt.signAsync(payload, {
@@ -175,20 +190,25 @@ export class AuthService {
    */
   async securityOverview() {
     const now = new Date();
-    const ONLINE_MS = 5 * 60000;
     const person = { select: { id: true, firstName: true, lastName: true, email: true, role: true, adminRank: true } };
+    const clearedBefore = await this.failedAttemptsClearedBefore();
+    const since24h = new Date(now.getTime() - 24 * 3600000);
+    const after = (d: Date) => (clearedBefore && clearedBefore > d ? clearedBefore : d);
 
-    const [online, recent, failures, locked, failures24h] = await Promise.all([
+    const [online, recent, failureRows, locked, failures24hRows] = await Promise.all([
       this.prisma.userSession.findMany({
         where: { endedAt: null, lastSeenAt: { gte: new Date(now.getTime() - ONLINE_MS) } },
         orderBy: { startedAt: 'asc' },
         include: { user: person },
       }),
-      this.prisma.userSession.findMany({ orderBy: { startedAt: 'desc' }, take: 60, include: { user: person } }),
+      this.prisma.userSession.findMany({ where: { hiddenAt: null }, orderBy: { startedAt: 'desc' }, take: 60, include: { user: person } }),
       this.prisma.auditLog.findMany({
-        where: { action: { in: ['LOGIN_FAILED', 'LOGIN_BLOCKED'] } },
+        where: {
+          action: { in: ['LOGIN_FAILED', 'LOGIN_BLOCKED'] },
+          ...(clearedBefore ? { createdAt: { gt: clearedBefore } } : {}),
+        },
         orderBy: { createdAt: 'desc' },
-        take: 100,
+        take: 200,
         include: { actor: person },
       }),
       this.prisma.user.findMany({
@@ -196,8 +216,23 @@ export class AuthService {
         select: { id: true, firstName: true, lastName: true, email: true, role: true, adminRank: true, lockedUntil: true, failedLoginCount: true },
         orderBy: { lockedUntil: 'desc' },
       }),
-      this.prisma.auditLog.count({ where: { action: 'LOGIN_FAILED', createdAt: { gte: new Date(now.getTime() - 24 * 3600000) } } }),
+      this.prisma.auditLog.findMany({
+        where: { action: 'LOGIN_FAILED', createdAt: { gt: after(since24h) } },
+        select: { id: true },
+      }),
     ]);
+
+    // Les lignes retirées une à une ne s'affichent plus et ne comptent plus dans le total des 24 h.
+    const dismissed = new Set(
+      (
+        await this.prisma.securityDismissal.findMany({
+          where: { auditLogId: { in: [...failureRows, ...failures24hRows].map((r) => r.id) } },
+          select: { auditLogId: true },
+        })
+      ).map((d) => d.auditLogId),
+    );
+    const failures = failureRows.filter((r) => !dismissed.has(r.id)).slice(0, 100);
+    const failures24h = failures24hRows.filter((r) => !dismissed.has(r.id)).length;
 
     const name = (u?: { firstName: string; lastName: string } | null) => (u ? `${u.firstName} ${u.lastName}`.trim() : null);
     const session = (x: (typeof online)[number]) => {
@@ -205,7 +240,7 @@ export class AuthService {
       return {
         id: x.id,
         user: { id: x.user.id, name: name(x.user), email: x.user.email, role: x.user.role, adminRank: x.user.adminRank },
-        device: describeDevice(x.userAgent),
+        device: deviceLabel(x.deviceName, x.userAgent),
         ip: x.ip,
         startedAt: x.startedAt,
         lastSeenAt: x.lastSeenAt,
@@ -220,7 +255,7 @@ export class AuthService {
       onlineNow: online.map(session),
       recentSessions: recent.map(session),
       failedAttempts: failures.map((a) => {
-        const meta = (a.metadata ?? {}) as { email?: string; attempt?: number; reason?: string; locked?: boolean };
+        const meta = (a.metadata ?? {}) as { email?: string; attempt?: number; reason?: string; locked?: boolean; device?: string };
         return {
           id: a.id,
           at: a.createdAt,
@@ -230,7 +265,7 @@ export class AuthService {
           attempt: meta.attempt ?? null,
           reason: meta.reason ?? null,
           lockedAfter: !!meta.locked,
-          device: describeDevice(a.userAgent),
+          device: deviceLabel(meta.device, a.userAgent),
           ip: a.ip,
         };
       }),
@@ -248,6 +283,99 @@ export class AuthService {
     };
   }
 
+  /** Date avant laquelle toutes les tentatives échouées ont été retirées de la page, s'il y en a une. */
+  private async failedAttemptsClearedBefore(): Promise<Date | null> {
+    const last = await this.prisma.securityDismissal.findFirst({
+      where: { clearedBefore: { not: null } },
+      orderBy: { clearedBefore: 'desc' },
+      select: { clearedBefore: true },
+    });
+    return last?.clearedBefore ?? null;
+  }
+
+  /**
+   * Retire de la page toutes les tentatives échouées enregistrées jusqu'ici. Le journal d'audit reste intact :
+   * on note seulement la date de remise à zéro. Les comptes bloqués le restent.
+   */
+  async clearFailedAttempts(actor: AuthUser) {
+    const now = new Date();
+    const previous = await this.failedAttemptsClearedBefore();
+    const count = await this.prisma.auditLog.count({
+      where: { action: { in: ['LOGIN_FAILED', 'LOGIN_BLOCKED'] }, createdAt: { lte: now, ...(previous ? { gt: previous } : {}) } },
+    });
+    await this.prisma.securityDismissal.create({ data: { clearedBefore: now, createdById: actor.id } });
+    await this.audit.log({
+      actorId: actor.id,
+      actorRole: actor.role,
+      action: 'SECURITY_FAILED_ATTEMPTS_CLEARED',
+      entityType: 'Security',
+      metadata: { count, clearedBefore: now },
+    });
+    return { cleared: count };
+  }
+
+  /** Retire une seule tentative échouée de la page. */
+  async dismissFailedAttempt(id: string, actor: AuthUser) {
+    const row = await this.prisma.auditLog.findUnique({ where: { id }, select: { id: true, action: true, metadata: true, actorId: true } });
+    if (!row || !['LOGIN_FAILED', 'LOGIN_BLOCKED'].includes(row.action)) throw new NotFoundException('Tentative introuvable');
+    await this.prisma.securityDismissal.upsert({
+      where: { auditLogId: id },
+      create: { auditLogId: id, createdById: actor.id },
+      update: {},
+    });
+    const meta = (row.metadata ?? {}) as { email?: string; reason?: string };
+    await this.audit.log({
+      actorId: actor.id,
+      actorRole: actor.role,
+      action: 'SECURITY_FAILED_ATTEMPT_DISMISSED',
+      entityType: 'AuditLog',
+      entityId: id,
+      metadata: { userId: row.actorId, email: meta.email ?? null, reason: meta.reason ?? null },
+    });
+    return { success: true };
+  }
+
+  /**
+   * Vide « Dernières connexions » : seules les connexions terminées ou inactives sont retirées de la liste.
+   * Les connexions en cours restent affichées et personne n'est déconnecté (aucune session n'est fermée ni supprimée).
+   */
+  async clearSessionHistory(actor: AuthUser) {
+    const now = new Date();
+    const { count } = await this.prisma.userSession.updateMany({
+      where: {
+        hiddenAt: null,
+        OR: [{ endedAt: { not: null } }, { lastSeenAt: { lt: new Date(now.getTime() - ONLINE_MS) } }],
+      },
+      data: { hiddenAt: now },
+    });
+    await this.audit.log({
+      actorId: actor.id,
+      actorRole: actor.role,
+      action: 'SECURITY_SESSIONS_CLEARED',
+      entityType: 'Security',
+      metadata: { count },
+    });
+    return { cleared: count };
+  }
+
+  /** Retire une connexion terminée de « Dernières connexions ». Une connexion en cours ne peut pas l'être. */
+  async hideSession(id: string, actor: AuthUser) {
+    const s = await this.prisma.userSession.findUnique({ where: { id }, select: { id: true, userId: true, endedAt: true, lastSeenAt: true, hiddenAt: true } });
+    if (!s) throw new NotFoundException('Connexion introuvable');
+    const online = !s.endedAt && Date.now() - s.lastSeenAt.getTime() <= ONLINE_MS;
+    if (online) throw new BadRequestException('Cette connexion est en cours : elle ne peut pas être retirée');
+    if (!s.hiddenAt) await this.prisma.userSession.update({ where: { id }, data: { hiddenAt: new Date() } });
+    await this.audit.log({
+      actorId: actor.id,
+      actorRole: actor.role,
+      action: 'SECURITY_SESSION_HIDDEN',
+      entityType: 'UserSession',
+      entityId: id,
+      metadata: { userId: s.userId },
+    });
+    return { success: true };
+  }
+
   /** Délai restant avant la fin d'un blocage, en toutes lettres. */
   private lockRemaining(until: Date): string {
     const min = Math.max(1, Math.ceil((until.getTime() - Date.now()) / 60000));
@@ -261,7 +389,7 @@ export class AuthService {
   private async registerFailure(
     user: { id: string; role: Role; failedLoginCount: number; lockedUntil: Date | null },
     reason: string,
-    meta: { ip?: string; userAgent?: string },
+    meta: LoginMeta,
     message = 'Identifiants invalides',
   ): Promise<never> {
     const expired = !!user.lockedUntil && user.lockedUntil <= new Date();
@@ -275,7 +403,7 @@ export class AuthService {
       action: 'LOGIN_FAILED',
       entityType: 'User',
       entityId: user.id,
-      metadata: { attempt: failed, reason, locked },
+      metadata: { attempt: failed, reason, locked, ...deviceMeta(meta) },
       ip: meta.ip,
       userAgent: meta.userAgent,
     });
@@ -295,14 +423,14 @@ export class AuthService {
     throw new UnauthorizedException(message);
   }
 
-  async login(dto: LoginDto, meta: { ip?: string; userAgent?: string } = {}) {
+  async login(dto: LoginDto, meta: LoginMeta = {}) {
     const user = await this.prisma.user.findUnique({ where: { email: dto.email.toLowerCase() } });
 
     if (!user || !user.passwordHash) {
       await this.audit.log({
         action: 'LOGIN_FAILED',
         entityType: 'User',
-        metadata: { email: dto.email, reason: 'UNKNOWN_ACCOUNT' },
+        metadata: { email: dto.email, reason: 'UNKNOWN_ACCOUNT', ...deviceMeta(meta) },
         ip: meta.ip,
         userAgent: meta.userAgent,
       });
@@ -316,7 +444,7 @@ export class AuthService {
         action: 'LOGIN_BLOCKED',
         entityType: 'User',
         entityId: user.id,
-        metadata: { reason: 'ACCOUNT_LOCKED', lockedUntil: user.lockedUntil },
+        metadata: { reason: 'ACCOUNT_LOCKED', lockedUntil: user.lockedUntil, ...deviceMeta(meta) },
         ip: meta.ip,
         userAgent: meta.userAgent,
       });
@@ -359,7 +487,7 @@ export class AuthService {
       data: { failedLoginCount: 0, lockedUntil: null, lastLoginAt: new Date() },
     });
 
-    const tokens = await this.issueTokens(user, meta.userAgent, { ip: meta.ip });
+    const tokens = await this.issueTokens(user, meta.userAgent, { ip: meta.ip, deviceName: meta.deviceName });
 
     await this.audit.log({
       actorId: user.id,

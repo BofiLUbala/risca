@@ -1,8 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import useSWR from 'swr';
-import { Activity, Lock, ShieldAlert, Smartphone } from 'lucide-react';
-import { fetcher } from '@/lib/api';
+import { Activity, Lock, ShieldAlert, Smartphone, Trash2, X } from 'lucide-react';
+import { api, fetcher } from '@/lib/api';
+import { confirmDialog } from '@/lib/dialog';
 import { Empty } from '@/components/ui/Empty';
 import { SkeletonList } from '@/components/ui/Loading';
 import { dateTime } from '@/lib/format';
@@ -77,7 +79,54 @@ function Stat({ icon, label, value, tone }: { icon: React.ReactNode; label: stri
   );
 }
 
-function SessionList({ rows, empty }: { rows: Session[]; empty: string }) {
+/** Bouton « Retirer » d'une ligne. */
+function RemoveButton({ label, onClick, disabled }: { label: string; onClick: () => void; disabled?: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="-my-1 ml-auto grid h-9 w-9 shrink-0 place-items-center rounded-lg text-ink-400 transition hover:bg-rose-50 hover:text-rose-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-600 disabled:opacity-40"
+      aria-label={label}
+      title={label}
+    >
+      <X className="h-4 w-4" aria-hidden="true" />
+    </button>
+  );
+}
+
+/** En-tête de section avec, à droite, le bouton qui la vide. */
+function SectionHeader({ id, title, action }: { id: string; title: string; action?: React.ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2">
+      <h2 id={id} className="text-sm font-semibold text-ink-900">
+        {title}
+      </h2>
+      {action}
+    </div>
+  );
+}
+
+function ClearButton({ onClick, disabled, children }: { onClick: () => void; disabled?: boolean; children: React.ReactNode }) {
+  return (
+    <button type="button" onClick={onClick} disabled={disabled} className="btn-outline h-9 gap-1.5 px-3 text-xs text-rose-700 disabled:opacity-50">
+      <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+      {children}
+    </button>
+  );
+}
+
+function SessionList({
+  rows,
+  empty,
+  onRemove,
+  busy,
+}: {
+  rows: Session[];
+  empty: string;
+  onRemove?: (s: Session) => void;
+  busy?: string | null;
+}) {
   if (!rows.length) return <Empty icon={<Activity className="h-6 w-6" />} title={empty} />;
   return (
     <div className="card divide-y divide-ink-100 overflow-hidden">
@@ -108,6 +157,14 @@ function SessionList({ rows, empty }: { rows: Session[]; empty: string }) {
               </p>
             </div>
             <p className="text-xs tabular-nums text-ink-400 sm:w-28">{s.ip ?? ''}</p>
+            {onRemove ? (
+              <div className="ml-auto w-9 shrink-0">
+                {/* Une connexion en cours ne se retire pas : personne n'est déconnecté depuis cette page. */}
+                {!s.online ? (
+                  <RemoveButton label={`Retirer la connexion de ${w.name} du ${dateTime(s.startedAt)}`} onClick={() => onRemove(s)} disabled={!!busy} />
+                ) : null}
+              </div>
+            ) : null}
           </div>
         );
       })}
@@ -116,7 +173,60 @@ function SessionList({ rows, empty }: { rows: Session[]; empty: string }) {
 }
 
 export default function SecuriteAccesPage() {
-  const { data, isLoading } = useSWR<Overview>('/auth/admin/security', fetcher, { refreshInterval: 15000 });
+  const { data, isLoading, mutate } = useSWR<Overview>('/auth/admin/security', fetcher, { refreshInterval: 15000 });
+  const [busy, setBusy] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{ ok: boolean; text: string } | null>(null);
+
+  /** Toute remise à zéro est confirmée, puis tracée au journal d'audit par l'API. */
+  async function run(key: string, question: string, path: string, done: (res: { cleared?: number }) => string) {
+    if (!(await confirmDialog(question))) return;
+    setBusy(key);
+    setNotice(null);
+    try {
+      const res = await api.del<{ cleared?: number }>(path);
+      setNotice({ ok: true, text: done(res ?? {}) });
+      await mutate();
+    } catch (e: any) {
+      setNotice({ ok: false, text: e?.message ?? 'L’opération a échoué.' });
+    }
+    setBusy(null);
+  }
+
+  const plural = (n: number, one: string, many: string) => `${n} ${n > 1 ? many : one}`;
+
+  const clearFailures = () =>
+    run(
+      'failures',
+      'Effacer toutes les tentatives de connexion échouées de cette page ?\n\nElles restent dans le journal d’audit. Les comptes bloqués le restent jusqu’à la fin de leur blocage.',
+      '/auth/admin/security/failed-attempts',
+      (r) => `${plural(r.cleared ?? 0, 'tentative échouée effacée', 'tentatives échouées effacées')} de la page.`,
+    );
+
+  const dismissFailure = (f: Failure) =>
+    run(
+      `failure:${f.id}`,
+      `Retirer cette tentative échouée (${who(f.user, f.email).name}, ${dateTime(f.at)}) de la page ?`,
+      `/auth/admin/security/failed-attempts/${f.id}`,
+      () => 'Tentative retirée de la page.',
+    );
+
+  const clearHistory = () =>
+    run(
+      'sessions',
+      'Effacer l’historique des connexions terminées ?\n\nLes connexions en cours restent affichées et personne n’est déconnecté.',
+      '/auth/admin/security/sessions',
+      (r) => `${plural(r.cleared ?? 0, 'connexion retirée', 'connexions retirées')} de l’historique.`,
+    );
+
+  const hideSession = (s: Session) =>
+    run(
+      `session:${s.id}`,
+      `Retirer la connexion de ${who(s.user, null).name} du ${dateTime(s.startedAt)} de l’historique ?`,
+      `/auth/admin/security/sessions/${s.id}`,
+      () => 'Connexion retirée de l’historique.',
+    );
+
+  const finishedSessions = data?.recentSessions.filter((s) => !s.online).length ?? 0;
 
   return (
     <div className="space-y-6">
@@ -129,6 +239,15 @@ export default function SecuriteAccesPage() {
             : ''}
         </p>
       </div>
+
+      {notice ? (
+        <p
+          role={notice.ok ? 'status' : 'alert'}
+          className={`rounded-xl px-4 py-3 text-sm ${notice.ok ? 'bg-emerald-50 text-emerald-800' : 'bg-rose-50 text-rose-800'}`}
+        >
+          {notice.text}
+        </p>
+      ) : null}
 
       {isLoading || !data ? (
         <SkeletonList rows={5} />
@@ -174,9 +293,17 @@ export default function SecuriteAccesPage() {
           </section>
 
           <section aria-labelledby="h-fail" className="space-y-3">
-            <h2 id="h-fail" className="text-sm font-semibold text-ink-900">
-              Tentatives de connexion échouées
-            </h2>
+            <SectionHeader
+              id="h-fail"
+              title="Tentatives de connexion échouées"
+              action={
+                data.failedAttempts.length ? (
+                  <ClearButton onClick={clearFailures} disabled={!!busy}>
+                    {busy === 'failures' ? 'Effacement…' : 'Tout effacer'}
+                  </ClearButton>
+                ) : null
+              }
+            />
             {!data.failedAttempts.length ? (
               <Empty icon={<ShieldAlert className="h-6 w-6" />} title="Aucune tentative échouée" />
             ) : (
@@ -206,6 +333,7 @@ export default function SecuriteAccesPage() {
                         <p>{dateTime(f.at)}</p>
                         <p className="tabular-nums text-ink-400">{f.ip ?? ''}</p>
                       </div>
+                      <RemoveButton label={`Retirer la tentative de ${w.name} du ${dateTime(f.at)}`} onClick={() => dismissFailure(f)} disabled={!!busy} />
                     </div>
                   );
                 })}
@@ -214,10 +342,18 @@ export default function SecuriteAccesPage() {
           </section>
 
           <section aria-labelledby="h-recent" className="space-y-3">
-            <h2 id="h-recent" className="text-sm font-semibold text-ink-900">
-              Dernières connexions
-            </h2>
-            <SessionList rows={data.recentSessions} empty="Aucune connexion enregistrée" />
+            <SectionHeader
+              id="h-recent"
+              title="Dernières connexions"
+              action={
+                finishedSessions ? (
+                  <ClearButton onClick={clearHistory} disabled={!!busy}>
+                    {busy === 'sessions' ? 'Effacement…' : 'Effacer l’historique'}
+                  </ClearButton>
+                ) : null
+              }
+            />
+            <SessionList rows={data.recentSessions} empty="Aucune connexion enregistrée" onRemove={hideSession} busy={busy} />
             <p className="text-xs text-ink-400">Actualisation automatique toutes les 15 secondes.</p>
           </section>
         </>

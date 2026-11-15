@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -7,7 +8,16 @@ import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { cors: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { cors: true });
+
+  // L'API est derrière un relais (tunnel Cloudflare → pont Docker, ou Caddy) : on ne fait confiance qu'aux relais
+  // locaux ou privés pour X-Forwarded-For, jamais à une adresse publique (sinon n'importe qui choisirait son IP).
+  // TRUST_PROXY permet d'ajuster (« 1 », « false », liste d'adresses…).
+  const trust = process.env.TRUST_PROXY?.trim();
+  app.set(
+    'trust proxy',
+    !trust ? 'loopback, linklocal, uniquelocal' : /^\d+$/.test(trust) ? Number(trust) : trust === 'true' ? true : trust === 'false' ? false : trust,
+  );
 
   app.use(helmet({ crossOriginResourcePolicy: false }));
   app.use(cookieParser());

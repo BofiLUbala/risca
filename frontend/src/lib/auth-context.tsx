@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { api, ApiError, clearTokens, getToken, setTokens } from './api';
 import type { Role } from './roles';
 import { unregisterWebPush } from './push';
+import { deviceHeaders } from './device';
 
 export interface Me {
   id: string;
@@ -86,12 +87,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   async function login(email: string, password: string, totp?: string, adminKey?: string) {
-    const res = await api.post<any>('/auth/login', {
-      email,
-      password,
-      ...(totp ? { totp } : {}),
-      ...(adminKey ? { adminKey } : {}),
-    });
+    const res = await api.post<any>(
+      '/auth/login',
+      {
+        email,
+        password,
+        ...(totp ? { totp } : {}),
+        ...(adminKey ? { adminKey } : {}),
+      },
+      await deviceHeaders(),
+    );
     if (res.adminKeyRequired) return { adminKeyRequired: true };
     if (res.twoFactorRequired) return { twoFactorRequired: true };
     setTokens(res.accessToken, res.refreshToken);

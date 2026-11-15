@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { registerPush, unregisterPush } from './push';
 import { api, clearTokens, getToken, setTokens } from './api';
 import { closeSocket } from './socket';
+import { deviceHeaders } from './device';
 
 export type Role =
   | 'SUPER_ADMIN' | 'ADMIN_FINANCE' | 'MODERATOR' | 'ETHICS_AUDITOR'
@@ -84,7 +85,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   async function login(email: string, password: string, totp?: string, adminKey?: string) {
-    const res = await api.post<any>('/auth/login', { email, password, ...(totp ? { totp } : {}), ...(adminKey ? { adminKey } : {}) });
+    const res = await api.post<any>(
+      '/auth/login',
+      { email, password, ...(totp ? { totp } : {}), ...(adminKey ? { adminKey } : {}) },
+      deviceHeaders(),
+    );
     if (res.adminKeyRequired) return { adminKeyRequired: true };
     if (res.twoFactorRequired) return { twoFactorRequired: true };
     closeSocket();

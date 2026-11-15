@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { Request } from 'express';
 import { AuthService } from './auth.service';
@@ -6,6 +6,7 @@ import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser, AuthUser } from '../../common/decorators/current-user.decorator';
 import { RolesGuard } from '../../common/guards/roles.guard';
+import { clientIp, deviceNameFromHeaders } from '../../common/device';
 import {
   ActivateDto,
   AdminRegisterDto,
@@ -31,7 +32,11 @@ export class AuthController {
   @Public()
   @Post('login')
   login(@Body() dto: LoginDto, @Req() req: Request) {
-    return this.auth.login(dto, { ip: req.ip, userAgent: req.headers['user-agent'] as string });
+    return this.auth.login(dto, {
+      ip: clientIp(req) ?? undefined,
+      userAgent: req.headers['user-agent'] as string,
+      deviceName: deviceNameFromHeaders(req.headers) ?? undefined,
+    });
   }
 
   @Public()
@@ -136,6 +141,31 @@ export class AuthController {
   @Get('admin/security')
   securityOverview() {
     return this.auth.securityOverview();
+  }
+
+  /** Remises à zéro de la page « Sécurité des accès » : rien n'est effacé du journal d'audit, personne n'est déconnecté. */
+  @Roles(Role.SUPER_ADMIN)
+  @Delete('admin/security/failed-attempts')
+  clearFailedAttempts(@CurrentUser() user: AuthUser) {
+    return this.auth.clearFailedAttempts(user);
+  }
+
+  @Roles(Role.SUPER_ADMIN)
+  @Delete('admin/security/failed-attempts/:id')
+  dismissFailedAttempt(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.auth.dismissFailedAttempt(id, user);
+  }
+
+  @Roles(Role.SUPER_ADMIN)
+  @Delete('admin/security/sessions')
+  clearSessionHistory(@CurrentUser() user: AuthUser) {
+    return this.auth.clearSessionHistory(user);
+  }
+
+  @Roles(Role.SUPER_ADMIN)
+  @Delete('admin/security/sessions/:id')
+  hideSession(@Param('id') id: string, @CurrentUser() user: AuthUser) {
+    return this.auth.hideSession(id, user);
   }
 
   @Roles(Role.SUPER_ADMIN, Role.NATIONAL_MANAGER, Role.REGIONAL_MANAGER, Role.ORPHANAGE_DIRECTOR)

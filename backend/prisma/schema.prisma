@@ -517,12 +517,29 @@ model UserSession {
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   ip         String?
   userAgent  String?
+  /// Appareil réel déclaré à la connexion (« Samsung SM-S911B · Android 14 · Application RISAC », « Chrome 131 · Windows 11 »).
+  deviceName String?
   startedAt  DateTime  @default(now())
   lastSeenAt DateTime  @default(now())
   endedAt    DateTime?
+  /// Retirée de « Dernières connexions » par un Super Admin (la session elle-même n'est pas fermée).
+  hiddenAt   DateTime?
 
   @@index([userId, endedAt])
   @@index([lastSeenAt])
+}
+
+/// Tentatives de connexion échouées retirées de la page « Sécurité des accès ».
+/// Le journal d'audit n'est jamais modifié : on note ici ce qui est masqué, une ligne (auditLogId) ou tout ce qui
+/// précède une date (clearedBefore).
+model SecurityDismissal {
+  id            String    @id @default(cuid())
+  auditLogId    String?   @unique
+  clearedBefore DateTime?
+  createdById   String?
+  createdAt     DateTime  @default(now())
+
+  @@index([clearedBefore])
 }
 
 // ─────────────────────────── ORPHELINATS ───────────────────────────
