@@ -236,7 +236,9 @@ function LetterView({
         <div>
           <dt className="text-xs text-ink-500">Promotion demandée</dt>
           <dd className="font-medium text-ink-900">
-            {ROLE_LABEL[letter.candidate.role]} → {ROLE_LABEL[letter.requestedRole]}
+            {letter.status === 'EXECUTED'
+              ? `Promu : ${ROLE_LABEL[letter.requestedRole]}`
+              : `${ROLE_LABEL[letter.candidate.role]} → ${ROLE_LABEL[letter.requestedRole]}`}
           </dd>
         </div>
       </dl>

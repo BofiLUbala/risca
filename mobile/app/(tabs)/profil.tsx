@@ -1,6 +1,7 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { confirmAction } from '../../src/lib/dialog';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import useSWR from 'swr';
 import { fetcher } from '../../src/lib/api';
 import { ROLE_LABEL, useAuth } from '../../src/lib/auth';
@@ -10,6 +11,7 @@ import { colors, spacing, typography } from '../../src/theme';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
+  const router = useRouter();
   const { data: notifications } = useSWR<any[]>('/notifications', fetcher);
 
   if (!user) return null;
@@ -40,6 +42,18 @@ export default function ProfileScreen() {
             <Row label="Double authentification" value={user.twoFactorEnabled ? 'Activée' : 'Désactivée'} />
           </View>
         </Card>
+
+        {['NATIONAL_MANAGER', 'REGIONAL_MANAGER', 'FIELD_AGENT', 'AMBASSADOR', 'ORPHANAGE_DIRECTOR'].includes(user.role) ? (
+          <Card>
+            <SectionTitle>Mon espace</SectionTitle>
+            <View style={{ gap: spacing.sm }}>
+              <Button title="Orphelinats" variant="outline" onPress={() => router.push('/orphelinats' as never)} />
+              {user.role === 'REGIONAL_MANAGER' ? (
+                <Button title="Lettres de promotion" variant="outline" onPress={() => router.push('/lettres' as never)} />
+              ) : null}
+            </View>
+          </Card>
+        ) : null}
 
         <Card>
           <SectionTitle>Notifications</SectionTitle>
