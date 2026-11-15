@@ -5,66 +5,112 @@ import { BellRing, LifeBuoy, RefreshCw, ShieldAlert } from 'lucide-react';
 import { Logo } from '@/components/ui/Logo';
 import { isPushConfigured, isPushSupported, pushPermission, registerWebPush } from '@/lib/push';
 
-type State = 'checking' | 'granted' | 'refused' | 'blocked' | 'unavailable';
+type State = 'granted' | 'refused' | 'blocked' | 'unavailable';
+
+/** Dernier enregistrement réussi de l'appareil : on ne le refait qu'une fois par jour. */
+const LAST_REGISTER_KEY = 'risac_push_registered_at';
+const REGISTER_EVERY_MS = 24 * 60 * 60 * 1000;
+/** Un seul enregistrement en arrière-plan par onglet, quel que soit le nombre de pages ouvertes. */
+let registering: Promise<boolean> | null = null;
+
+/** État lu tout de suite, sans attendre le réseau : aucun écran d'attente. */
+function readState(exempt?: boolean): State {
+  if (exempt || !isPushConfigured()) return 'granted';
+  if (!isPushSupported()) return 'unavailable';
+  const permission = pushPermission();
+  if (permission === 'granted') return 'granted';
+  return permission === 'denied' ? 'blocked' : 'refused';
+}
+
+function registeredRecently(): boolean {
+  try {
+    const at = Number(window.localStorage.getItem(LAST_REGISTER_KEY) || 0);
+    return Date.now() - at < REGISTER_EVERY_MS;
+  } catch {
+    return false;
+  }
+}
+
+/** Enregistre l'appareil en arrière-plan, sans jamais bloquer l'affichage. */
+function registerInBackground(force = false) {
+  if (!force && (registering || registeredRecently())) return;
+  registering = registerWebPush(false)
+    .then((ok) => {
+      if (ok) {
+        try {
+          window.localStorage.setItem(LAST_REGISTER_KEY, String(Date.now()));
+        } catch {
+          /* stockage indisponible : on réessaiera au prochain chargement */
+        }
+      }
+      return ok;
+    })
+    .finally(() => {
+      registering = null;
+    });
+}
 
 /**
  * Accès conditionné à l'activation des notifications.
  *
- * Les alertes de validation, de décaissement et de protection de l'enfance
- * doivent atteindre leur destinataire : l'accès est donc refusé tant que
- * l'appareil n'est pas enregistré.
+ * - Notifications déjà autorisées : la page s'affiche immédiatement ; l'appareil est
+ *   enregistré en arrière-plan, une fois par jour au plus.
+ * - Pas encore autorisées, ou refusées : l'espace reste bloqué sur cet écran, à chaque
+ *   page et après un rechargement, jusqu'à l'autorisation. Le déblocage est automatique
+ *   dès que le navigateur signale le changement.
  *
- * Deux garde-fous indispensables :
- * - si les notifications ne sont pas configurées sur l'installation, rien n'est
- *   bloqué, sans quoi un déploiement sans Firebase mettrait tout le monde dehors ;
- * - un refus définitif du navigateur n'enferme personne : l'écran explique
- *   comment le lever, et le Super Admin peut dispenser un compte.
+ * Garde-fous : sans configuration Firebase, rien n'est bloqué ; un compte dispensé par
+ * le Super Admin passe toujours.
  */
 export function PushGate({ exempt, children }: { exempt?: boolean; children: React.ReactNode }) {
-  const [state, setState] = useState<State>('checking');
+  // PushGate n'est rendu qu'après le chargement du compte, donc côté navigateur :
+  // l'état peut être lu dès le premier rendu, sans écran « vérification… ».
+  const [state, setState] = useState<State>(() => readState(exempt));
   const [busy, setBusy] = useState(false);
 
-  const attempt = useCallback(async (ask: boolean) => {
-    // Sans configuration Firebase, aucun blocage possible : on laisse passer.
-    if (!isPushConfigured()) {
-      setState('granted');
-      return;
-    }
-    if (!isPushSupported()) {
-      setState('unavailable');
-      return;
-    }
-    const ok = await registerWebPush(ask);
-    if (ok) {
-      setState('granted');
-      return;
-    }
-    setState(pushPermission() === 'denied' ? 'blocked' : 'refused');
-  }, []);
-
+  // Autorisé : enregistrement discret en arrière-plan.
   useEffect(() => {
-    if (exempt) {
-      setState('granted');
-      return;
-    }
-    void attempt(true);
-  }, [exempt, attempt]);
+    if (state === 'granted' && !exempt && isPushConfigured() && isPushSupported()) registerInBackground();
+  }, [state, exempt]);
 
-  async function retry() {
+  // Bloqué : on suit l'autorisation du navigateur pour débloquer sans rechargement.
+  useEffect(() => {
+    if (state === 'granted' || state === 'unavailable') return;
+    const recheck = () => setState(readState(exempt));
+    let status: PermissionStatus | null = null;
+    navigator.permissions
+      ?.query({ name: 'notifications' as PermissionName })
+      .then((s) => {
+        status = s;
+        s.onchange = recheck;
+      })
+      .catch(() => undefined);
+    window.addEventListener('focus', recheck);
+    document.addEventListener('visibilitychange', recheck);
+    return () => {
+      if (status) status.onchange = null;
+      window.removeEventListener('focus', recheck);
+      document.removeEventListener('visibilitychange', recheck);
+    };
+  }, [state, exempt]);
+
+  const allow = useCallback(async () => {
     setBusy(true);
-    await attempt(true);
+    // La fenêtre du navigateur n'est demandée qu'au clic, jamais au chargement de la page.
+    if (pushPermission() === 'default') {
+      try {
+        await Notification.requestPermission();
+      } catch {
+        /* navigateur ancien : l'état ci-dessous reste « refusé » */
+      }
+    }
+    const next = readState(exempt);
+    setState(next);
+    if (next === 'granted') registerInBackground(true);
     setBusy(false);
-  }
+  }, [exempt]);
 
-  if (exempt || state === 'granted') return <>{children}</>;
-
-  if (state === 'checking') {
-    return (
-      <div className="grid min-h-screen place-items-center bg-ink-50 px-4">
-        <p className="text-sm text-ink-500">Vérification des notifications…</p>
-      </div>
-    );
-  }
+  if (state === 'granted') return <>{children}</>;
 
   const definitive = state === 'blocked' || state === 'unavailable';
 
@@ -87,8 +133,9 @@ export function PushGate({ exempt, children }: { exempt?: boolean; children: Rea
         {state === 'refused' && (
           <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50/70 p-4">
             <p className="text-sm text-amber-900">
-              Votre navigateur attend votre réponse. Cliquez ci-dessous, puis choisissez
-              <strong className="font-medium"> Autoriser</strong> dans la fenêtre qu&apos;il affiche.
+              Cliquez ci-dessous, puis choisissez
+              <strong className="font-medium"> Autoriser</strong> dans la fenêtre que votre
+              navigateur affiche.
             </p>
           </div>
         )}
@@ -106,7 +153,7 @@ export function PushGate({ exempt, children }: { exempt?: boolean; children: Rea
               <li>Cliquez sur l&apos;icône à gauche de l&apos;adresse du site</li>
               <li>Ouvrez les paramètres du site</li>
               <li>Passez « Notifications » sur « Autoriser »</li>
-              <li>Revenez ici et cliquez sur Réessayer</li>
+              <li>Revenez sur cette page : elle se débloque toute seule</li>
             </ol>
           </div>
         )}
@@ -121,7 +168,7 @@ export function PushGate({ exempt, children }: { exempt?: boolean; children: Rea
         )}
 
         <div className="mt-6 flex flex-wrap gap-2">
-          <button onClick={retry} disabled={busy} aria-busy={busy} className="btn-primary">
+          <button onClick={allow} disabled={busy} aria-busy={busy} className="btn-primary">
             {busy ? (
               'Vérification…'
             ) : definitive ? (
