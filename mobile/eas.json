@@ -14,7 +14,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://childrens-soonest-mar-spoke.trycloudflare.com/api"
+        "EXPO_PUBLIC_API_URL": "https://risac-api.bofigauthier3.workers.dev/api"
       }
     },
     "production": {
@@ -23,7 +23,7 @@
         "buildType": "app-bundle"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://childrens-soonest-mar-spoke.trycloudflare.com/api"
+        "EXPO_PUBLIC_API_URL": "https://risac-api.bofigauthier3.workers.dev/api"
       }
     }
   },

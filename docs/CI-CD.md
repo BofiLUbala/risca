@@ -209,3 +209,24 @@ on:
 
 Les publications se font alors sur commande (`git tag mobile-v1.0.1 && git push
 --tags`) plutot qu'a chaque modification.
+
+## 8. Adresse fixe de l'API (tunnel qui change)
+
+L'API tourne sur le serveur derrière un tunnel Cloudflare « rapide » (`xxx.trycloudflare.com`) dont l'adresse
+change à chaque redémarrage du tunnel ou du serveur. Le site et l'application mobile n'utilisent donc jamais
+cette adresse directement : ils appellent **`https://risac-api.bofigauthier3.workers.dev`**, un Worker Cloudflare
+(`infra/api-proxy`) qui relaie tout (API, fichiers, temps réel) vers le tunnel du moment.
+
+Quand le tunnel change d'adresse :
+
+```bash
+gh variable set API_TUNNEL_ORIGIN --body https://<nouvelle-adresse>.trycloudflare.com
+gh workflow run api-proxy.yml
+```
+
+Le workflow « API — Adresse fixe » redéploie le relais puis vérifie `…/api/health`. Rien à republier : ni le site,
+ni l'application. Vérification à la main : `https://risac-api.bofigauthier3.workers.dev/__proxy/health` indique
+le tunnel visé.
+
+L'adresse IP réelle des personnes connectées passe par l'en-tête `X-Risac-Client-Ip`, que l'API n'accepte que des
+Workers du compte (`PROXY_WORKER_ZONES`, par défaut `bofigauthier3.workers.dev`).
