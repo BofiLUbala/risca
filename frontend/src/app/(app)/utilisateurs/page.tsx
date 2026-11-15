@@ -26,7 +26,9 @@ export default function UsersPage() {
   const isAdmin = user?.role === 'SUPER_ADMIN';
   const [openCountry, setOpenCountry] = useState<{ id: string; label: string } | null>(null);
   const grouped = isAdmin && !q.trim();
-  const showTree = grouped && !openCountry;
+  // Si le serveur ne sait pas encore regrouper par pays, on retombe sur la liste simple.
+  const [treeFailed, setTreeFailed] = useState(false);
+  const showTree = grouped && !openCountry && !treeFailed;
 
   const params = new URLSearchParams();
   if (q) params.set('q', q);
@@ -34,8 +36,10 @@ export default function UsersPage() {
   if (grouped && openCountry && openCountry.id !== 'none') params.set('countryId', openCountry.id);
 
   const summaryKey = showTree ? `/users/by-country${role ? `?role=${role}` : ''}` : null;
-  const { data: summary, isLoading: summaryLoading, mutate: mutateSummary } = useSWR<UsersByCountry>(summaryKey, fetcher);
-  const { data: fetched, isLoading, mutate: mutateList } = useSWR<any[]>(showTree ? null : `/users?${params.toString()}`, fetcher);
+  const { data: summary, isLoading: summaryLoading, mutate: mutateSummary } = useSWR<UsersByCountry>(summaryKey, fetcher, {
+    onError: () => setTreeFailed(true),
+  });
+  const { data: fetched, isLoading, error: listError, mutate: mutateList } = useSWR<any[]>(showTree ? null : `/users?${params.toString()}`, fetcher);
   // « Administration » : les comptes sans pays (le serveur n'a pas de filtre « sans pays », on le fait ici).
   const data = openCountry?.id === 'none' && grouped ? fetched?.filter((u) => !u.country) : fetched;
   const mutate = () => {
@@ -80,7 +84,9 @@ export default function UsersPage() {
               ? summary
                 ? `${summary.countries.reduce((n, c) => n + c.count, 0) + summary.withoutCountry} compte(s) dans ${summary.countries.length} pays`
                 : 'Chargement…'
-              : data
+              : listError
+                ? 'Erreur de chargement'
+                : data
                 ? `${data.length} compte(s)${openCountry && grouped ? ` · ${openCountry.label}` : ' dans votre périmètre'}`
                 : 'Chargement…'}
           </p>
@@ -144,6 +150,13 @@ export default function UsersPage() {
         ) : (
           <CountryTree summary={summary} onOpen={(id, label) => setOpenCountry({ id, label })} />
         )
+      ) : listError ? (
+        <div role="alert" className="card card-pad flex flex-wrap items-center justify-between gap-3 text-sm text-amber-800">
+          <span>Impossible de charger les utilisateurs{listError?.message ? ` : ${listError.message}` : ''}.</span>
+          <button type="button" onClick={() => mutate()} className="btn-outline px-3 text-xs">
+            Réessayer
+          </button>
+        </div>
       ) : isLoading ? (
         <SkeletonList rows={5} />
       ) : !data?.length ? (
