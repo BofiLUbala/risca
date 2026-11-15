@@ -98,14 +98,28 @@ jobs:
           node -e "JSON.parse(require('fs').readFileSync('google-play-service-account.json','utf8'))" \
             || { echo "::error::Le secret n'est pas un JSON valide."; exit 1; }
 
-      # --wait : le job ne rend la main qu'une fois le bundle construit, pour
-      # que l'etape d'envoi trouve bien un artefact.
+      # Le bundle est compile ici, sur la machine GitHub (`--local`), et non sur
+      # les serveurs EAS : le quota mensuel de builds gratuits d'Expo ne limite
+      # plus les publications. La cle de signature reste celle stockee chez Expo
+      # (credentials distants), donc le Play Store accepte la mise a jour.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
       - name: Construire l'App Bundle
-        run: eas build --platform android --profile production --non-interactive --wait
+        run: eas build --platform android --profile production --non-interactive --local --output app.aab
+
+      - name: Garder l'App Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: risac-android-aab
+          path: mobile/app.aab
+          retention-days: 14
 
       - name: Publier sur le canal alpha
         if: ${{ needs.verifier.outputs.submit == 'true' }}
-        run: eas submit --platform android --profile production --non-interactive --latest
+        run: eas submit --platform android --profile production --non-interactive --path app.aab
 
       # Le fichier disparait avec la machine virtuelle, mais on ne compte pas
       # sur ce detail : il est efface explicitement, meme si une etape a echoue.
