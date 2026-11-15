@@ -193,6 +193,8 @@ export class PromotionsService {
       this.prisma.user.update({ where: { id: candidate.id }, data: { role: letter.requestedRole, tokenVersion: { increment: 1 } } }),
       this.prisma.refreshToken.updateMany({ where: { userId: candidate.id, revokedAt: null }, data: { revokedAt: new Date() } }),
       this.prisma.promotionLetter.update({ where: { id }, data: { status: PromotionStatus.EXECUTED, executedAt: new Date() } }),
+      // Ouvre la reprise de l'ancien espace : le chef régional ou national donne ensuite son accord (module transitions).
+      this.prisma.roleTransition.create({ data: { userId: candidate.id, fromRole: from, toRole: letter.requestedRole, letterId: id } }),
     ]);
     await this.log(user, 'USER_PROMOTED', id, { candidateId: candidate.id, from, to: letter.requestedRole });
     await this.notifications.notify({

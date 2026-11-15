@@ -547,6 +547,43 @@ async function main() {
   if (!auditText.includes('USER_PROMOTED')) throw new ApiFailure('la promotion n’est pas dans le journal d’audit');
   ok('chaque étape est dans le journal d’audit');
 
+  step('Reprise de l’ancien espace', 'accord du chef régional, clonage des données, transfert à un autre agent');
+  // La promotion ferme les sessions de l'agent promu : il se reconnecte avec son nouveau rôle.
+  S['agent.promu'] = await login(`agent.promu@${DOMAIN}`, 'Ambassadeur promu');
+  const mineT = await call(S['agent.promu'], 'GET', '/transitions/mine');
+  if (!mineT || mineT.state !== 'WAITING' || mineT.fromRole !== 'FIELD_AGENT' || mineT.toRole !== 'AMBASSADOR') throw new ApiFailure('la promotion doit ouvrir une transition en attente d’accord');
+  ok('l’agent promu voit sa reprise : en attente de l’accord de son chef régional');
+  await expectStatus('sans accord, l’agent promu ne peut pas cloner', 403, () => call(S['agent.promu'], 'POST', `/transitions/${mineT.id}/clone`));
+  await expectStatus('l’agent promu ne s’accorde pas lui-même l’accès', 403, () => call(S['agent.promu'], 'POST', `/transitions/${mineT.id}/grant`));
+  await expectStatus('le chef régional du Sud-Kivu ne peut pas donner l’accord', 403, () => call(S['regional.sudkivu'], 'POST', `/transitions/${mineT.id}/grant`));
+  const listR = rows(await call(S['regional.nordkivu'], 'GET', '/transitions')) as any[];
+  if (!listR.some((t) => t.id === mineT.id)) throw new ApiFailure('le chef régional du Nord-Kivu doit voir la reprise dans sa liste');
+  const listS = rows(await call(S['regional.sudkivu'], 'GET', '/transitions')) as any[];
+  if (listS.some((t) => t.id === mineT.id)) throw new ApiFailure('le chef régional du Sud-Kivu ne doit pas voir cette reprise');
+  ok('la reprise n’est visible que du chef régional de la province');
+  const granted = await call(S['regional.nordkivu'], 'POST', `/transitions/${mineT.id}/grant`);
+  if (granted.state !== 'GRANTED') throw new ApiFailure('l’accord devrait ouvrir le clonage');
+  ok('le chef régional donne son accord : le clonage s’ouvre chez l’agent promu');
+  await expectStatus('l’accord ne se donne qu’une fois', 400, () => call(S['regional.nordkivu'], 'POST', `/transitions/${mineT.id}/grant`));
+  await expectStatus('l’ancien espace n’est pas consultable avant le clonage', 404, () => call(S['agent.promu'], 'GET', `/transitions/${mineT.id}/archive`));
+  const cloned = await call(S['agent.promu'], 'POST', `/transitions/${mineT.id}/clone`);
+  if (cloned.state !== 'CLONED') throw new ApiFailure('le clonage devrait être fait');
+  const arch = await call(S['agent.promu'], 'GET', `/transitions/${mineT.id}/archive`);
+  if (!arch.snapshot?.counts || arch.snapshot.fromRole !== 'FIELD_AGENT') throw new ApiFailure('l’archive de l’ancien espace est vide ou incomplète');
+  ok(`l’agent promu clone son ancien espace (lecture seule) : ${arch.snapshot.counts.childrenRecorded} dossier(s) saisi(s), ${arch.snapshot.counts.visits} visite(s), ${arch.snapshot.counts.posts} publication(s)`);
+  await call(S['regional.nordkivu'], 'GET', `/transitions/${mineT.id}/archive`);
+  await expectStatus('le chef régional du Sud-Kivu ne lit pas l’archive', 403, () => call(S['regional.sudkivu'], 'GET', `/transitions/${mineT.id}/archive`));
+  const again = await call(S['agent.promu'], 'POST', `/transitions/${mineT.id}/clone`);
+  if (again.clonedAt !== cloned.clonedAt) throw new ApiFailure('un second clonage ne doit pas refaire la copie');
+
+  await join(S['regional.nordkivu'], 'agent.relais', 'Agent de relais', { firstName: 'Fiston', lastName: 'Safari', role: 'FIELD_AGENT', countryId: natMe.country.id, provinceId: regMe.province.id });
+  await expectStatus('le transfert exige un agent du même rôle que l’ancien rôle', 400, () => call(S['regional.nordkivu'], 'POST', `/transitions/${mineT.id}/handover`, { toUserId: U.ambassadeur1 }));
+  await expectStatus('l’agent promu ne transfère pas lui-même ses responsabilités', 403, () => call(S['agent.promu'], 'POST', `/transitions/${mineT.id}/handover`, { toUserId: U['agent.relais'] }));
+  const moved = await call(S['regional.nordkivu'], 'POST', `/transitions/${mineT.id}/handover`, { toUserId: U['agent.relais'] });
+  if (moved.handedOverTo?.id !== U['agent.relais'] || !moved.handoverSummary) throw new ApiFailure('le transfert doit être enregistré avec son résumé');
+  ok(`le chef régional confie les responsabilités à un autre agent (${JSON.stringify(moved.handoverSummary)})`);
+  await expectStatus('le transfert ne se fait qu’une fois', 400, () => call(S['regional.nordkivu'], 'POST', `/transitions/${mineT.id}/handover`, { toUserId: U['agent.relais'] }));
+
   step('Traçabilité des invitations', 'le Super Admin voit qui a invité chaque compte, et quand');
   const allUsers = rows(await call(admin, 'GET', '/users')) as any[];
   const promu = allUsers.find((u) => u.id === U['agent.promu']);

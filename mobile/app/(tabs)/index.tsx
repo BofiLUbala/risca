@@ -7,6 +7,7 @@ import { Loading, ScreenHeader } from '../../src/components/ui';
 import { Logo } from '../../src/components/Logo';
 import { FadeIn } from '../../src/components/motion';
 import { Board } from '../../src/components/boards';
+import { TransitionBanner } from '../../src/components/TransitionBanner';
 import { colors, spacing, typography } from '../../src/theme';
 
 export default function HomeScreen() {
@@ -30,6 +31,10 @@ export default function HomeScreen() {
           ].filter(Boolean).join(' · ')}
           right={<Logo size={30} showText={false} />}
         />
+
+        <View style={s.boardWrap}>
+          <TransitionBanner />
+        </View>
 
         {isLoading || !data ? <Loading /> : <FadeIn style={s.boardWrap}><Board data={data} /></FadeIn>}
       </ScrollView>

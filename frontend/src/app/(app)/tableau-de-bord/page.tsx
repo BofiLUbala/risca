@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/auth-context';
 import { ROLE_LABEL } from '@/lib/roles';
 import { PageLoading } from '@/components/ui/Loading';
 import { RoleActions } from '@/components/dashboard/RoleActions';
+import { TransitionCard } from '@/components/dashboard/TransitionCard';
 import { SuperAdminBoard } from '@/components/dashboard/boards/SuperAdmin';
 import { FinanceBoard } from '@/components/dashboard/boards/Finance';
 import { ModeratorBoard } from '@/components/dashboard/boards/Moderator';
@@ -77,6 +78,8 @@ export default function DashboardPage() {
           </button>
         </div>
       </header>
+
+      <TransitionCard />
 
       {Board ? <Board data={data} /> : null}
 

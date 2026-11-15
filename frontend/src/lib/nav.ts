@@ -33,6 +33,7 @@ export const NAV: NavItem[] = [
   { href: '/journal-audit', label: 'Journal d’audit', icon: 'ScrollText', group: 'Gouvernance', roles: ['SUPER_ADMIN', 'ETHICS_AUDITOR'] },
   { href: '/securite-acces', label: 'Sécurité des accès', icon: 'MonitorSmartphone', group: 'Gouvernance', roles: ['SUPER_ADMIN'] },
 
+  { href: '/reprises', label: 'Reprises après promotion', icon: 'Repeat', group: 'Administration', roles: ['SUPER_ADMIN', 'NATIONAL_MANAGER', 'REGIONAL_MANAGER'] },
   { href: '/lettres', label: 'Lettres de promotion', icon: 'Mail', group: 'Administration', roles: ['SUPER_ADMIN', 'REGIONAL_MANAGER'] },
   { href: '/utilisateurs', label: 'Utilisateurs', icon: 'UserCog', group: 'Administration', roles: ['SUPER_ADMIN', 'MODERATOR', 'NATIONAL_MANAGER', 'REGIONAL_MANAGER', 'ORPHANAGE_DIRECTOR'] },
   { href: '/modeles-dossier', label: 'Modèles de dossier', icon: 'FileCog', group: 'Administration', roles: ['SUPER_ADMIN', 'NATIONAL_MANAGER'] },

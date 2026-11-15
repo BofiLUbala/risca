@@ -413,6 +413,10 @@ model User {
   refreshTokens        RefreshToken[]
   sessions             UserSession[]
   orphanagesProposed        Orphanage[]       @relation("OrphanageProposer")
+  transitions               RoleTransition[]  @relation("TransitionUser")
+  transitionsGranted        RoleTransition[]  @relation("TransitionGranter")
+  transitionsReceived       RoleTransition[]  @relation("TransitionHandoverTo")
+  transitionsHandedOver     RoleTransition[]  @relation("TransitionHandoverBy")
   promotionLettersWritten   PromotionLetter[] @relation("PromotionAuthor")
   promotionLettersAbout     PromotionLetter[] @relation("PromotionCandidate")
   promotionLettersAssigned  PromotionLetter[] @relation("PromotionAssignee")
@@ -438,6 +442,32 @@ model RefreshToken {
   userAgent String?
   sessionId String?
   createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+/// Passage d'un rôle à un autre (promotion). Une fois que le chef régional ou national a donné son accord (grantedAt),
+/// la personne promue peut cloner les données de son ancien espace (clonedAt, snapshot en lecture seule) ; le chef
+/// régional ou national peut aussi confier les responsabilités de l'ancien rôle à un autre agent (handedOver*).
+model RoleTransition {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation("TransitionUser", fields: [userId], references: [id])
+  fromRole        Role
+  toRole          Role
+  letterId        String?
+  promotedAt      DateTime  @default(now())
+  grantedById     String?
+  grantedBy       User?     @relation("TransitionGranter", fields: [grantedById], references: [id])
+  grantedAt       DateTime?
+  clonedAt        DateTime?
+  snapshot        Json?
+  handedOverToId  String?
+  handedOverTo    User?     @relation("TransitionHandoverTo", fields: [handedOverToId], references: [id])
+  handedOverById  String?
+  handedOverBy    User?     @relation("TransitionHandoverBy", fields: [handedOverById], references: [id])
+  handedOverAt    DateTime?
+  handoverSummary Json?
 
   @@index([userId])
 }

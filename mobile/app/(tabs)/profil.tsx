@@ -51,6 +51,9 @@ export default function ProfileScreen() {
               {user.role === 'REGIONAL_MANAGER' ? (
                 <Button title="Lettres de promotion" variant="outline" onPress={() => router.push('/lettres' as never)} />
               ) : null}
+              {user.role === 'REGIONAL_MANAGER' || user.role === 'NATIONAL_MANAGER' ? (
+                <Button title="Reprises après promotion" variant="outline" onPress={() => router.push('/reprises' as never)} />
+              ) : null}
             </View>
           </Card>
         ) : null}
