@@ -2,6 +2,7 @@
 
 import { uploadFile } from '@/lib/api';
 import { useState } from 'react';
+import { t } from '@/lib/i18n';
 
 /** Rend un champ du modele de dossier du pays (section 5.2). */
 export function DynamicField({
@@ -45,7 +46,7 @@ export function DynamicField({
         />
       ) : field.type === 'SELECT' ? (
         <select id={id} value={value ?? ''} onChange={(e) => onChange(e.target.value)} className="input">
-          <option value="">Choisir</option>
+          <option value="">{t("Choisir")}</option>
           {field.options.map((o: string) => (
             <option key={o} value={o}>
               {o}
@@ -82,12 +83,12 @@ export function DynamicField({
             onChange={(e) => onChange(e.target.checked)}
             className="h-4 w-4 rounded border-ink-300 text-risac-600"
           />
-          Oui
+          {t("Oui")}
         </label>
       ) : field.type === 'FILE' || field.type === 'PHOTO' ? (
         <div className="flex items-center gap-3">
           <label className="btn-outline cursor-pointer">
-            {uploading ? 'Téléversement...' : value ? 'Remplacer' : 'Choisir un fichier'}
+            {uploading ? t("Téléversement...") : value ? t("Remplacer") : t("Choisir un fichier")}
             <input
               id={id}
               type="file"
@@ -96,7 +97,7 @@ export function DynamicField({
               className="sr-only"
             />
           </label>
-          {value && <span className="truncate text-xs text-emerald-600">Document joint</span>}
+          {value && <span className="truncate text-xs text-emerald-600">{t("Document joint")}</span>}
         </div>
       ) : (
         <input

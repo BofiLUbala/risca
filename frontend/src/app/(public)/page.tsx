@@ -9,12 +9,13 @@ import { ChildCard, type PublicChild } from '@/components/ChildCard';
 import { ProjectCard, type PublicProject } from '@/components/ProjectCard';
 import { SkeletonList } from '@/components/ui/Loading';
 import { AXES, CIRCUIT } from './home-data';
+import { t, localized } from '@/lib/i18n';
 
-const PROMISES = [
+const PROMISES = localized([
   { value: '150', label: 'structures auditées', hint: 'Objectif du réseau' },
   { value: '26', label: 'provinces de la RDC', hint: 'Couverture' },
   { value: '100 %', label: 'des dépenses justifiées', hint: 'Traçabilité' },
-];
+]);
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return <p className="brand-tick text-sm font-semibold text-ink-700">{children}</p>;
@@ -40,25 +41,22 @@ export default function HomePage() {
         />
         <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1.15fr_1fr] lg:px-8 lg:py-24">
           <div>
-            <span className="chip bg-sun-400 text-navy">ONG Congo Meilleur ASBL &middot; RISAC</span>
+            <span className="chip bg-sun-400 text-navy">{t("ONG Congo Meilleur ASBL · RISAC")}</span>
             <h1 className="mt-5 text-3xl font-semibold leading-tight tracking-tight text-white sm:text-4xl lg:text-5xl">
-              B&acirc;tir un &eacute;cosyst&egrave;me d&apos;excellence, de r&eacute;silience, de
-              r&eacute;paration et d&apos;inclusion pour{' '}
-              <span className="text-sun-400">l&apos;enfance vuln&eacute;rable</span>
+              {t("Bâtir un écosystème d'excellence, de résilience, de réparation et d'inclusion pour")}{' '}
+              <span className="text-sun-400">{t("l'enfance vulnérable")}</span>
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-relaxed text-onband sm:text-lg">
-              RISAC relie les orphelinats, les ambassadeurs, les responsables r&eacute;gionaux et
-              nationaux, les bailleurs et les partenaires. Chaque enfant est suivi individuellement,
-              chaque franc est trac&eacute; jusqu&apos;&agrave; sa preuve de d&eacute;pense.
+              {t("RISAC relie les orphelinats, les ambassadeurs, les responsables régionaux et nationaux, les bailleurs et les partenaires. Chaque enfant est suivi individuellement, chaque franc est tracé jusqu'à sa preuve de dépense.")}
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link href="/enfants-a-soutenir" className="btn-primary px-6 py-3">
-                Soutenir un enfant
+                {t("Soutenir un enfant")}
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link href="/projets-ouverts" className="btn-on-dark px-6 py-3">
-                Voir les projets en cours
+                {t("Voir les projets en cours")}
               </Link>
             </div>
           </div>
@@ -66,7 +64,7 @@ export default function HomePage() {
           <div className="rounded-3xl bg-surface p-6 shadow-lift sm:p-8">
             <p className="flex items-center gap-2 text-sm font-semibold text-ink-900">
               <ShieldCheck className="h-5 w-5 text-risac-700" strokeWidth={1.75} />
-              Nos engagements
+              {t("Nos engagements")}
             </p>
             <dl className="mt-6 space-y-5">
               {PROMISES.map((p) => (
@@ -80,7 +78,7 @@ export default function HomePage() {
               ))}
             </dl>
             <Link href="/transparence" className="link-action mt-7">
-              Voir le rapport de transparence
+              {t("Voir le rapport de transparence")}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -90,17 +88,16 @@ export default function HomePage() {
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <Eyebrow>Parrainage</Eyebrow>
+            <Eyebrow>{t("Parrainage")}</Eyebrow>
             <h2 className="mt-2 text-2xl font-semibold tracking-tight text-ink-950">
-              Ces enfants attendent un parrain
+              {t("Ces enfants attendent un parrain")}
             </h2>
             <p className="mt-2 text-sm text-ink-500">
-              Pr&eacute;nom, &acirc;ge et r&eacute;gion g&eacute;n&eacute;rale uniquement. Le nom de
-              famille et la localisation pr&eacute;cise ne sont jamais publics.
+              {t("Prénom, âge et région générale uniquement. Le nom de famille et la localisation précise ne sont jamais publics.")}
             </p>
           </div>
           <Link href="/enfants-a-soutenir" className="btn-soft">
-            Tous les enfants
+            {t("Tous les enfants")}
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
@@ -111,11 +108,11 @@ export default function HomePage() {
           ) : !children?.length ? (
             <Empty
               icon={<HeartHandshake className="h-6 w-6" />}
-              title="Tous les enfants présentés ont trouvé un parrain"
-              description="De nouveaux dossiers sont publiés après validation par leur ambassadeur. Le fonds général soutient les enfants en attente."
+              title={t("Tous les enfants présentés ont trouvé un parrain")}
+              description={t("De nouveaux dossiers sont publiés après validation par leur ambassadeur. Le fonds général soutient les enfants en attente.")}
               action={
                 <Link href="/don-fonds-general" className="btn-primary">
-                  Soutenir le fonds général
+                  {t("Soutenir le fonds général")}
                 </Link>
               }
             />
@@ -133,17 +130,16 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <Eyebrow>Collectes</Eyebrow>
+              <Eyebrow>{t("Collectes")}</Eyebrow>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight text-ink-950">
-                Projets ouverts au financement
+                {t("Projets ouverts au financement")}
               </h2>
               <p className="mt-2 text-sm text-ink-600">
-                Chaque projet est valid&eacute; par l&apos;ambassadeur de l&apos;enfant avant
-                publication.
+                {t("Chaque projet est validé par l'ambassadeur de l'enfant avant publication.")}
               </p>
             </div>
             <Link href="/projets-ouverts" className="btn-primary">
-              Tous les projets
+              {t("Tous les projets")}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -154,8 +150,8 @@ export default function HomePage() {
             ) : !projects?.length ? (
               <Empty
                 icon={<Target className="h-6 w-6" />}
-                title="Aucune collecte ouverte en ce moment"
-                description="Les prochains projets apparaîtront ici dès leur validation."
+                title={t("Aucune collecte ouverte en ce moment")}
+                description={t("Les prochains projets apparaîtront ici dès leur validation.")}
               />
             ) : (
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -169,9 +165,9 @@ export default function HomePage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <Eyebrow>Notre action</Eyebrow>
+        <Eyebrow>{t("Notre action")}</Eyebrow>
         <h2 className="mt-2 text-2xl font-semibold tracking-tight text-ink-950">
-          Quatre axes, une seule plateforme
+          {t("Quatre axes, une seule plateforme")}
         </h2>
         <div className="mt-8 grid gap-5 sm:grid-cols-2">
           {AXES.map((axe) => (
@@ -190,11 +186,10 @@ export default function HomePage() {
 
       <section className="brand-band py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <p className="brand-tick text-sm font-semibold text-sun-300">Transparence</p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-tight">Le circuit de votre don</h2>
+          <p className="brand-tick text-sm font-semibold text-sun-300">{t("Transparence")}</p>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight">{t("Le circuit de votre don")}</h2>
           <p className="mt-2 max-w-2xl text-onband">
-            Aucune personne ne saisit, ne re&ccedil;oit et ne d&eacute;pense seule.
-            L&apos;ambassadeur ne touche jamais l&apos;argent.
+            {t("Aucune personne ne saisit, ne reçoit et ne dépense seule. L'ambassadeur ne touche jamais l'argent.")}
           </p>
 
           <ol className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -211,11 +206,11 @@ export default function HomePage() {
 
           <div className="mt-10 flex flex-wrap gap-3">
             <Link href="/inscription" className="btn-primary px-6 py-3">
-              Devenir bailleur
+              {t("Devenir bailleur")}
             </Link>
             <Link href="/don-fonds-general" className="btn-on-dark px-6 py-3">
               <Eye className="h-4 w-4" />
-              Soutenir le fonds g&eacute;n&eacute;ral
+              {t("Soutenir le fonds général")}
             </Link>
           </div>
         </div>

@@ -6,15 +6,16 @@ import { X } from 'lucide-react';
 import { api, fetcher } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { ROLE_LABEL, type Role } from '@/lib/roles';
+import { t as tx, localized } from '@/lib/i18n';
 
-const TYPES: Array<{ value: string; label: string }> = [
+const TYPES: Array<{ value: string; label: string }> = localized([
   { value: 'GENERAL', label: 'Général (tout le réseau)' },
   { value: 'REGIONAL', label: 'Région' },
   { value: 'AMBASSADOR_REGIONAL', label: 'Ambassadeurs de la région' },
   { value: 'AMBASSADOR_NATIONAL', label: 'Ambassadeurs du pays' },
   { value: 'AMBASSADOR_ORPHANAGE', label: 'Orphelinat' },
   { value: 'PARTNERS', label: 'Partenaires' },
-];
+]);
 
 /**
  * Création d'un canal de discussion par un Super Admin, un Modérateur, un Responsable National ou un Chef Régional.
@@ -51,7 +52,7 @@ export function NewChannel({ onCreated, onClose }: { onCreated: (id: string) => 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!name.trim()) return setError('Donnez un nom au canal.');
+    if (!name.trim()) return setError(tx("Donnez un nom au canal."));
     setBusy(true);
     try {
       const ch = await api.post<{ id: string }>('/channels', {
@@ -62,7 +63,7 @@ export function NewChannel({ onCreated, onClose }: { onCreated: (id: string) => 
       });
       onCreated(ch.id);
     } catch (err: any) {
-      setError(err?.message ?? 'Création impossible');
+      setError(err?.message ?? tx("Création impossible"));
       setBusy(false);
     }
   }
@@ -72,9 +73,9 @@ export function NewChannel({ onCreated, onClose }: { onCreated: (id: string) => 
       <form onSubmit={submit} className="card flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden" noValidate>
         <header className="flex items-center justify-between border-b border-ink-100 px-5 py-3.5">
           <h2 id="nc-title" className="text-sm font-semibold text-ink-900">
-            Nouveau canal
+            {tx("Nouveau canal")}
           </h2>
-          <button type="button" onClick={onClose} className="btn-ghost h-8 w-8 p-0" aria-label="Fermer">
+          <button type="button" onClick={onClose} className="btn-ghost h-8 w-8 p-0" aria-label={tx("Fermer")}>
             <X className="h-4 w-4" />
           </button>
         </header>
@@ -87,14 +88,14 @@ export function NewChannel({ onCreated, onClose }: { onCreated: (id: string) => 
           )}
           <div>
             <label htmlFor="nc-name" className="label">
-              Nom du canal
+              {tx("Nom du canal")}
             </label>
             <input id="nc-name" className="input" value={name} onChange={(e) => setName(e.target.value)} maxLength={80} autoFocus />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="nc-type" className="label">
-                Type
+                {tx("Type")}
               </label>
               <select id="nc-type" className="input" value={type} onChange={(e) => setType(e.target.value)}>
                 {TYPES.map((t) => (
@@ -106,7 +107,7 @@ export function NewChannel({ onCreated, onClose }: { onCreated: (id: string) => 
             </div>
             <div>
               <label htmlFor="nc-desc" className="label">
-                Description (facultatif)
+                {tx("Description (facultatif)")}
               </label>
               <input id="nc-desc" className="input" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={160} />
             </div>
@@ -114,14 +115,14 @@ export function NewChannel({ onCreated, onClose }: { onCreated: (id: string) => 
 
           <div>
             <label htmlFor="nc-search" className="label">
-              Membres ({picked.size} choisi{picked.size > 1 ? 's' : ''}) · vous en faites partie
+              {tx("Membres (")}{picked.size}{' '}{tx("choisi")}{picked.size > 1 ? 's' : ''}{tx(") · vous en faites partie")}
             </label>
-            <input id="nc-search" className="input" placeholder="Rechercher un nom ou un e-mail" value={q} onChange={(e) => setQ(e.target.value)} />
+            <input id="nc-search" className="input" placeholder={tx("Rechercher un nom ou un e-mail")} value={q} onChange={(e) => setQ(e.target.value)} />
             <ul className="mt-2 max-h-56 divide-y divide-ink-100 overflow-y-auto rounded-xl border border-ink-100">
               {!people ? (
-                <li className="px-3.5 py-3 text-sm text-ink-500">Chargement…</li>
+                <li className="px-3.5 py-3 text-sm text-ink-500">{tx("Chargement…")}</li>
               ) : !list.length ? (
-                <li className="px-3.5 py-3 text-sm text-ink-500">Aucun compte à ajouter.</li>
+                <li className="px-3.5 py-3 text-sm text-ink-500">{tx("Aucun compte à ajouter.")}</li>
               ) : (
                 list.map((p) => (
                   <li key={p.id}>
@@ -143,10 +144,10 @@ export function NewChannel({ onCreated, onClose }: { onCreated: (id: string) => 
 
         <footer className="flex justify-end gap-2 border-t border-ink-100 px-5 py-3.5">
           <button type="button" onClick={onClose} className="btn-ghost">
-            Annuler
+            {tx("Annuler")}
           </button>
           <button type="submit" disabled={busy} className="btn-primary">
-            {busy ? 'Création…' : 'Créer le canal'}
+            {busy ? tx("Création…") : tx("Créer le canal")}
           </button>
         </footer>
       </form>

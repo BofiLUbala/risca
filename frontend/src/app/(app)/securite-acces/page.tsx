@@ -9,6 +9,7 @@ import { Empty } from '@/components/ui/Empty';
 import { SkeletonList } from '@/components/ui/Loading';
 import { dateTime } from '@/lib/format';
 import { ROLE_LABEL, type Role } from '@/lib/roles';
+import { t, localized } from '@/lib/i18n';
 
 type Person = { id: string; name: string | null; email: string; role: Role; adminRank: number | null };
 type Session = {
@@ -44,13 +45,13 @@ type Overview = {
   policy: { maxAttempts: number; lockMinutes: number };
 };
 
-const REASON: Record<string, string> = {
+const REASON: Record<string, string> = localized({
   BAD_PASSWORD: 'Mot de passe incorrect',
   BAD_ADMIN_KEY: 'Clé administrateur incorrecte',
   BAD_TOTP: 'Code de double authentification incorrect',
   UNKNOWN_ACCOUNT: 'Adresse inconnue',
   ACCOUNT_LOCKED: 'Compte déjà bloqué',
-};
+});
 
 /** « 2 h 05 min », « 12 min », « 40 s ». */
 function duration(seconds: number): string {
@@ -58,11 +59,11 @@ function duration(seconds: number): string {
   const min = Math.floor(seconds / 60);
   if (min < 60) return `${min} min`;
   const h = Math.floor(min / 60);
-  return `${h} h ${String(min % 60).padStart(2, '0')} min`;
+  return t("{h} h {v1} min", { h, v1: String(min % 60).padStart(2, '0') });
 }
 
 function who(p: Person | null, email: string | null) {
-  if (!p) return { name: email ?? 'Inconnu', sub: 'Aucun compte à cette adresse' };
+  if (!p) return { name: email ?? t("Inconnu"), sub: t("Aucun compte à cette adresse") };
   const rank = p.role === 'SUPER_ADMIN' && p.adminRank ? ` n°${p.adminRank}` : '';
   return { name: p.name || p.email, sub: `${p.email} · ${ROLE_LABEL[p.role]}${rank}` };
 }
@@ -139,7 +140,7 @@ function SessionList({
                 <span
                   className={`h-2 w-2 shrink-0 rounded-full ${s.online ? 'bg-emerald-500' : 'bg-ink-300'}`}
                   role="img"
-                  aria-label={s.online ? 'En ligne' : 'Hors ligne'}
+                  aria-label={s.online ? t("En ligne") : t("Hors ligne")}
                 />
                 <span className="truncate">{w.name}</span>
               </p>
@@ -150,9 +151,9 @@ function SessionList({
               {s.device}
             </div>
             <div className="text-xs text-ink-500 sm:w-44">
-              <p>Connecté {dateTime(s.startedAt)}</p>
+              <p>{t("Connecté")}{' '}{dateTime(s.startedAt)}</p>
               <p>
-                {s.online ? 'En ligne depuis ' : 'Resté connecté '}
+                {s.online ? t("En ligne depuis ") : t("Resté connecté ")}
                 <strong className="font-semibold text-ink-700">{duration(s.durationSeconds)}</strong>
               </p>
             </div>
@@ -161,7 +162,7 @@ function SessionList({
               <div className="ml-auto w-9 shrink-0">
                 {/* Une connexion en cours ne se retire pas : personne n'est déconnecté depuis cette page. */}
                 {!s.online ? (
-                  <RemoveButton label={`Retirer la connexion de ${w.name} du ${dateTime(s.startedAt)}`} onClick={() => onRemove(s)} disabled={!!busy} />
+                  <RemoveButton label={t("Retirer la connexion de {name} du {v1}", { name: w.name, v1: dateTime(s.startedAt) })} onClick={() => onRemove(s)} disabled={!!busy} />
                 ) : null}
               </div>
             ) : null}
@@ -187,7 +188,7 @@ export default function SecuriteAccesPage() {
       setNotice({ ok: true, text: done(res ?? {}) });
       await mutate();
     } catch (e: any) {
-      setNotice({ ok: false, text: e?.message ?? 'L’opération a échoué.' });
+      setNotice({ ok: false, text: e?.message ?? t("L’opération a échoué.") });
     }
     setBusy(null);
   }
@@ -197,33 +198,33 @@ export default function SecuriteAccesPage() {
   const clearFailures = () =>
     run(
       'failures',
-      'Effacer toutes les tentatives de connexion échouées de cette page ?\n\nElles restent dans le journal d’audit. Les comptes bloqués le restent jusqu’à la fin de leur blocage.',
+      t("Effacer toutes les tentatives de connexion échouées de cette page ?\n\nElles restent dans le journal d’audit. Les comptes bloqués le restent jusqu’à la fin de leur blocage."),
       '/auth/admin/security/failed-attempts',
-      (r) => `${plural(r.cleared ?? 0, 'tentative échouée effacée', 'tentatives échouées effacées')} de la page.`,
+      (r) => t("{v0} de la page.", { v0: plural(r.cleared ?? 0, t("tentative échouée effacée"), t("tentatives échouées effacées")) }),
     );
 
   const dismissFailure = (f: Failure) =>
     run(
       `failure:${f.id}`,
-      `Retirer cette tentative échouée (${who(f.user, f.email).name}, ${dateTime(f.at)}) de la page ?`,
+      t("Retirer cette tentative échouée ({name}, {v1}) de la page ?", { name: who(f.user, f.email).name, v1: dateTime(f.at) }),
       `/auth/admin/security/failed-attempts/${f.id}`,
-      () => 'Tentative retirée de la page.',
+      () => t("Tentative retirée de la page."),
     );
 
   const clearHistory = () =>
     run(
       'sessions',
-      'Effacer l’historique des connexions terminées ?\n\nLes connexions en cours restent affichées et personne n’est déconnecté.',
+      t("Effacer l’historique des connexions terminées ?\n\nLes connexions en cours restent affichées et personne n’est déconnecté."),
       '/auth/admin/security/sessions',
-      (r) => `${plural(r.cleared ?? 0, 'connexion retirée', 'connexions retirées')} de l’historique.`,
+      (r) => t("{v0} de l’historique.", { v0: plural(r.cleared ?? 0, t("connexion retirée"), t("connexions retirées")) }),
     );
 
   const hideSession = (s: Session) =>
     run(
       `session:${s.id}`,
-      `Retirer la connexion de ${who(s.user, null).name} du ${dateTime(s.startedAt)} de l’historique ?`,
+      t("Retirer la connexion de {name} du {v1} de l’historique ?", { name: who(s.user, null).name, v1: dateTime(s.startedAt) }),
       `/auth/admin/security/sessions/${s.id}`,
-      () => 'Connexion retirée de l’historique.',
+      () => t("Connexion retirée de l’historique."),
     );
 
   const finishedSessions = data?.recentSessions.filter((s) => !s.online).length ?? 0;
@@ -231,11 +232,11 @@ export default function SecuriteAccesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="page-title">Sécurité des accès</h1>
+        <h1 className="page-title">{t("Sécurité des accès")}</h1>
         <p className="mt-1 text-sm text-ink-500">
-          Qui est connecté, depuis quel appareil et pendant combien de temps, qui a essayé de se connecter sans y arriver.
+          {t("Qui est connecté, depuis quel appareil et pendant combien de temps, qui a essayé de se connecter sans y arriver.")}
           {data
-            ? ` Au-delà de ${data.policy.maxAttempts} tentatives échouées, le compte est bloqué ${data.policy.lockMinutes / 60} h, puis la personne peut réessayer.`
+            ? t(" Au-delà de {maxAttempts} tentatives échouées, le compte est bloqué {v1} h, puis la personne peut réessayer.", { maxAttempts: data.policy.maxAttempts, v1: data.policy.lockMinutes / 60 })
             : ''}
         </p>
       </div>
@@ -254,24 +255,24 @@ export default function SecuriteAccesPage() {
       ) : (
         <>
           <div className="grid gap-4 sm:grid-cols-3">
-            <Stat icon={<Activity className="h-5 w-5" />} label="Connectés maintenant" value={data.summary.online} tone="bg-emerald-50 text-emerald-700" />
-            <Stat icon={<ShieldAlert className="h-5 w-5" />} label="Échecs de connexion (24 h)" value={data.summary.failedLast24h} tone="bg-amber-50 text-amber-700" />
-            <Stat icon={<Lock className="h-5 w-5" />} label="Comptes bloqués" value={data.summary.locked} tone="bg-rose-50 text-rose-700" />
+            <Stat icon={<Activity className="h-5 w-5" />} label={t("Connectés maintenant")} value={data.summary.online} tone="bg-emerald-50 text-emerald-700" />
+            <Stat icon={<ShieldAlert className="h-5 w-5" />} label={t("Échecs de connexion (24 h)")} value={data.summary.failedLast24h} tone="bg-amber-50 text-amber-700" />
+            <Stat icon={<Lock className="h-5 w-5" />} label={t("Comptes bloqués")} value={data.summary.locked} tone="bg-rose-50 text-rose-700" />
           </div>
 
           <section aria-labelledby="h-online" className="space-y-3">
             <h2 id="h-online" className="text-sm font-semibold text-ink-900">
-              Connectés maintenant
+              {t("Connectés maintenant")}
             </h2>
-            <SessionList rows={data.onlineNow} empty="Personne n’est connecté en ce moment" />
+            <SessionList rows={data.onlineNow} empty={t("Personne n’est connecté en ce moment")} />
           </section>
 
           <section aria-labelledby="h-locked" className="space-y-3">
             <h2 id="h-locked" className="text-sm font-semibold text-ink-900">
-              Comptes bloqués
+              {t("Comptes bloqués")}
             </h2>
             {!data.lockedAccounts.length ? (
-              <Empty icon={<Lock className="h-6 w-6" />} title="Aucun compte bloqué" />
+              <Empty icon={<Lock className="h-6 w-6" />} title={t("Aucun compte bloqué")} />
             ) : (
               <div className="card divide-y divide-ink-100 overflow-hidden">
                 {data.lockedAccounts.map((a) => {
@@ -283,7 +284,7 @@ export default function SecuriteAccesPage() {
                         <p className="break-words text-xs text-ink-500">{w.sub}</p>
                       </div>
                       <p className="text-xs text-rose-700">
-                        {a.failedLoginCount} échecs · bloqué jusqu’au {dateTime(a.lockedUntil)}
+                        {a.failedLoginCount}{' '}{t("échecs · bloqué jusqu’au")}{' '}{dateTime(a.lockedUntil)}
                       </p>
                     </div>
                   );
@@ -295,17 +296,17 @@ export default function SecuriteAccesPage() {
           <section aria-labelledby="h-fail" className="space-y-3">
             <SectionHeader
               id="h-fail"
-              title="Tentatives de connexion échouées"
+              title={t("Tentatives de connexion échouées")}
               action={
                 data.failedAttempts.length ? (
                   <ClearButton onClick={clearFailures} disabled={!!busy}>
-                    {busy === 'failures' ? 'Effacement…' : 'Tout effacer'}
+                    {busy === 'failures' ? t("Effacement…") : t("Tout effacer")}
                   </ClearButton>
                 ) : null
               }
             />
             {!data.failedAttempts.length ? (
-              <Empty icon={<ShieldAlert className="h-6 w-6" />} title="Aucune tentative échouée" />
+              <Empty icon={<ShieldAlert className="h-6 w-6" />} title={t("Aucune tentative échouée")} />
             ) : (
               <div className="card divide-y divide-ink-100 overflow-hidden">
                 {data.failedAttempts.map((f) => {
@@ -317,11 +318,11 @@ export default function SecuriteAccesPage() {
                         <p className="break-words text-xs text-ink-500">{w.sub}</p>
                       </div>
                       <div className="text-sm text-ink-700">
-                        <p>{f.type === 'BLOCKED' ? 'Refusée : compte bloqué' : REASON[f.reason ?? ''] ?? 'Échec'}</p>
+                        <p>{f.type === 'BLOCKED' ? t("Refusée : compte bloqué") : REASON[f.reason ?? ''] ?? t("Échec")}</p>
                         {f.type === 'FAILED' && f.attempt ? (
                           <p className={`text-xs ${f.lockedAfter ? 'font-semibold text-rose-700' : 'text-ink-500'}`}>
-                            Tentative n°{f.attempt}
-                            {f.lockedAfter ? ' : compte bloqué' : ''}
+                            {t("Tentative n°")}{f.attempt}
+                            {f.lockedAfter ? t(" : compte bloqué") : ''}
                           </p>
                         ) : null}
                       </div>
@@ -333,7 +334,7 @@ export default function SecuriteAccesPage() {
                         <p>{dateTime(f.at)}</p>
                         <p className="tabular-nums text-ink-400">{f.ip ?? ''}</p>
                       </div>
-                      <RemoveButton label={`Retirer la tentative de ${w.name} du ${dateTime(f.at)}`} onClick={() => dismissFailure(f)} disabled={!!busy} />
+                      <RemoveButton label={t("Retirer la tentative de {name} du {v1}", { name: w.name, v1: dateTime(f.at) })} onClick={() => dismissFailure(f)} disabled={!!busy} />
                     </div>
                   );
                 })}
@@ -344,17 +345,17 @@ export default function SecuriteAccesPage() {
           <section aria-labelledby="h-recent" className="space-y-3">
             <SectionHeader
               id="h-recent"
-              title="Dernières connexions"
+              title={t("Dernières connexions")}
               action={
                 finishedSessions ? (
                   <ClearButton onClick={clearHistory} disabled={!!busy}>
-                    {busy === 'sessions' ? 'Effacement…' : 'Effacer l’historique'}
+                    {busy === 'sessions' ? t("Effacement…") : t("Effacer l’historique")}
                   </ClearButton>
                 ) : null
               }
             />
-            <SessionList rows={data.recentSessions} empty="Aucune connexion enregistrée" onRemove={hideSession} busy={busy} />
-            <p className="text-xs text-ink-400">Actualisation automatique toutes les 15 secondes.</p>
+            <SessionList rows={data.recentSessions} empty={t("Aucune connexion enregistrée")} onRemove={hideSession} busy={busy} />
+            <p className="text-xs text-ink-400">{t("Actualisation automatique toutes les 15 secondes.")}</p>
           </section>
         </>
       )}

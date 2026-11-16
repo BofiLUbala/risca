@@ -1,4 +1,6 @@
 import type { Role } from './roles';
+import { localized } from '@/lib/i18n';
+
 
 export interface NavItem {
   href: string;
@@ -12,7 +14,7 @@ export interface NavItem {
  * Navigation des fonctionnalites, a gauche du tableau de bord.
  * Chaque entree est filtree par role (section 11 du plan).
  */
-export const NAV: NavItem[] = [
+export const NAV: NavItem[] = localized([
   { href: '/tableau-de-bord', label: 'Vue d’ensemble', icon: 'LayoutDashboard', group: 'Pilotage', roles: ['SUPER_ADMIN', 'ADMIN_FINANCE', 'MODERATOR', 'ETHICS_AUDITOR', 'NATIONAL_MANAGER', 'REGIONAL_MANAGER', 'AMBASSADOR', 'FIELD_AGENT', 'ORPHANAGE_DIRECTOR', 'ORPHANAGE_STAFF', 'DONOR', 'PARTNER'] },
 
   { href: '/enfants', label: 'Enfants', icon: 'Users', group: 'Suivi', roles: ['SUPER_ADMIN', 'ETHICS_AUDITOR', 'NATIONAL_MANAGER', 'REGIONAL_MANAGER', 'AMBASSADOR', 'FIELD_AGENT', 'ORPHANAGE_DIRECTOR', 'ORPHANAGE_STAFF'] },
@@ -38,9 +40,9 @@ export const NAV: NavItem[] = [
   { href: '/utilisateurs', label: 'Utilisateurs', icon: 'UserCog', group: 'Administration', roles: ['SUPER_ADMIN', 'MODERATOR', 'NATIONAL_MANAGER', 'REGIONAL_MANAGER', 'ORPHANAGE_DIRECTOR'] },
   { href: '/modeles-dossier', label: 'Modèles de dossier', icon: 'FileCog', group: 'Administration', roles: ['SUPER_ADMIN', 'NATIONAL_MANAGER'] },
   { href: '/parametres', label: 'Paramètres', icon: 'Settings', group: 'Administration', roles: ['SUPER_ADMIN'] },
-];
+]);
 
-export const GROUP_ORDER = ['Pilotage', 'Suivi', 'Réseau', 'Argent', 'Gouvernance', 'Administration'];
+export const GROUP_ORDER = localized(['Pilotage', 'Suivi', 'Réseau', 'Argent', 'Gouvernance', 'Administration']);
 
 /**
  * Garde de route côté interface : une page rattachée à une entrée de navigation

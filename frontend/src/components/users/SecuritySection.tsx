@@ -5,6 +5,8 @@ import { useState } from 'react';
 import { KeyRound, ShieldCheck } from 'lucide-react';
 import { api } from '@/lib/api';
 import { PasswordInput } from '@/components/ui/PasswordInput';
+import { t } from '@/lib/i18n';
+
 
 export function SecuritySection({
   twoFactorEnabled,
@@ -31,8 +33,8 @@ export function SecuritySection({
   async function changeKey(e: React.FormEvent) {
     e.preventDefault();
     setKeyMsg(null);
-    if (keyForm.next.trim().length < 16) return setKeyMsg({ ok: false, text: 'La nouvelle clé doit contenir au moins 16 caractères.' });
-    if (keyForm.next !== keyForm.confirm) return setKeyMsg({ ok: false, text: 'Les deux clés ne correspondent pas.' });
+    if (keyForm.next.trim().length < 16) return setKeyMsg({ ok: false, text: t("La nouvelle clé doit contenir au moins 16 caractères.") });
+    if (keyForm.next !== keyForm.confirm) return setKeyMsg({ ok: false, text: t("Les deux clés ne correspondent pas.") });
     try {
       await api.post('/auth/admin/change-key', {
         currentPassword: keyForm.password,
@@ -44,10 +46,10 @@ export function SecuritySection({
       } catch {
         /* stockage indisponible */
       }
-      setKeyMsg({ ok: true, text: 'Clé administrateur modifiée. Utilisez la nouvelle clé à la prochaine connexion.' });
+      setKeyMsg({ ok: true, text: t("Clé administrateur modifiée. Utilisez la nouvelle clé à la prochaine connexion.") });
       setKeyForm({ password: '', current: '', next: '', confirm: '' });
     } catch (err: any) {
-      setKeyMsg({ ok: false, text: err?.message ?? 'Modification impossible' });
+      setKeyMsg({ ok: false, text: err?.message ?? t("Modification impossible") });
     }
   }
 
@@ -56,15 +58,15 @@ export function SecuritySection({
   const mandatory = ['SUPER_ADMIN', 'ADMIN_FINANCE', 'MODERATOR', 'ETHICS_AUDITOR'].includes(role ?? '');
 
   async function disable2fa() {
-    if (!await confirmDialog('Désactiver la double authentification sur votre compte ?')) return;
+    if (!await confirmDialog(t("Désactiver la double authentification sur votre compte ?"))) return;
     setDisabling(true);
     setTwoFaMsg(null);
     try {
       await api.post('/auth/2fa/disable', {});
-      setTwoFaMsg('Double authentification désactivée.');
+      setTwoFaMsg(t("Double authentification désactivée."));
       onChanged();
     } catch (e: any) {
-      setTwoFaMsg(e?.message ?? 'La désactivation a échoué.');
+      setTwoFaMsg(e?.message ?? t("La désactivation a échoué."));
     }
     setDisabling(false);
   }
@@ -74,10 +76,10 @@ export function SecuritySection({
     setPwdMsg(null);
     try {
       await api.post('/auth/password', { currentPassword: pwd.current, newPassword: pwd.next });
-      setPwdMsg('Mot de passe modifie.');
+      setPwdMsg(t("Mot de passe modifie."));
       setPwd({ current: '', next: '' });
     } catch (err: any) {
-      setPwdMsg(err?.message ?? 'Modification impossible');
+      setPwdMsg(err?.message ?? t("Modification impossible"));
     }
   }
 
@@ -90,12 +92,12 @@ export function SecuritySection({
     setTwoFaMsg(null);
     try {
       await api.post('/auth/2fa/enable', { totp });
-      setTwoFaMsg('Double authentification activée.');
+      setTwoFaMsg(t("Double authentification activée."));
       setTwoFa(null);
       setTotp('');
       await onChanged();
     } catch (err: any) {
-      setTwoFaMsg(err?.message ?? 'Code invalide');
+      setTwoFaMsg(err?.message ?? t("Code invalide"));
     }
   }
 
@@ -105,30 +107,30 @@ export function SecuritySection({
         <section className="card card-pad">
           <h2 className="mb-1 flex items-center gap-2 text-sm font-semibold text-ink-900">
             <KeyRound className="h-4 w-4" />
-            Clé administrateur
+            {t("Clé administrateur")}
           </h2>
           <p className="mb-4 text-xs text-ink-500">
-            Demandée à chaque connexion. Si vous la perdez : Super Admin n°2 ou n°3, écrivez au Super Admin n°1 ; Super Admin n°1, utilisez la récupération de la page de connexion administrateur.
+            {t("Demandée à chaque connexion. Si vous la perdez : Super Admin n°2 ou n°3, écrivez au Super Admin n°1 ; Super Admin n°1, utilisez la récupération de la page de connexion administrateur.")}
           </p>
           <form onSubmit={changeKey} className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="ck-pass" className="label">Mot de passe actuel</label>
+              <label htmlFor="ck-pass" className="label">{t("Mot de passe actuel")}</label>
               <PasswordInput id="ck-pass" required value={keyForm.password} onChange={(e) => setKeyForm({ ...keyForm, password: e.target.value })} className="input" />
             </div>
             <div>
-              <label htmlFor="ck-cur" className="label">Clé actuelle</label>
+              <label htmlFor="ck-cur" className="label">{t("Clé actuelle")}</label>
               <PasswordInput id="ck-cur" required autoComplete="off" value={keyForm.current} onChange={(e) => setKeyForm({ ...keyForm, current: e.target.value })} className="input font-mono" />
             </div>
             <div>
-              <label htmlFor="ck-new" className="label">Nouvelle clé (16 caractères au moins)</label>
+              <label htmlFor="ck-new" className="label">{t("Nouvelle clé (16 caractères au moins)")}</label>
               <PasswordInput id="ck-new" required minLength={16} autoComplete="off" value={keyForm.next} onChange={(e) => setKeyForm({ ...keyForm, next: e.target.value })} className="input font-mono" />
             </div>
             <div>
-              <label htmlFor="ck-conf" className="label">Confirmer la nouvelle clé</label>
+              <label htmlFor="ck-conf" className="label">{t("Confirmer la nouvelle clé")}</label>
               <PasswordInput id="ck-conf" required autoComplete="off" value={keyForm.confirm} onChange={(e) => setKeyForm({ ...keyForm, confirm: e.target.value })} className="input font-mono" />
             </div>
             <div className="sm:col-span-2">
-              <button type="submit" className="btn-outline">Changer ma clé administrateur</button>
+              <button type="submit" className="btn-outline">{t("Changer ma clé administrateur")}</button>
               {keyMsg && <p role="status" className={`mt-3 text-sm ${keyMsg.ok ? 'text-emerald-700' : 'text-rose-700'}`}>{keyMsg.text}</p>}
             </div>
           </form>
@@ -138,12 +140,12 @@ export function SecuritySection({
       <section className="card card-pad">
         <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-ink-900">
           <KeyRound className="h-4 w-4" />
-          Mot de passe
+          {t("Mot de passe")}
         </h2>
         <form onSubmit={changePassword} className="grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="cp" className="label">
-              Mot de passe actuel
+              {t("Mot de passe actuel")}
             </label>
             <PasswordInput
               id="cp"
@@ -155,7 +157,7 @@ export function SecuritySection({
           </div>
           <div>
             <label htmlFor="np" className="label">
-              Nouveau mot de passe
+              {t("Nouveau mot de passe")}
             </label>
             <PasswordInput
               id="np"
@@ -168,7 +170,7 @@ export function SecuritySection({
           </div>
           <div className="sm:col-span-2">
             <button type="submit" className="btn-outline">
-              Modifier le mot de passe
+              {t("Modifier le mot de passe")}
             </button>
             {pwdMsg && <p className="mt-2 text-sm text-ink-600">{pwdMsg}</p>}
           </div>
@@ -178,24 +180,24 @@ export function SecuritySection({
       <section className="card card-pad">
         <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold text-ink-900">
           <ShieldCheck className="h-4 w-4" />
-          Double authentification
+          {t("Double authentification")}
         </h2>
         <p className="mb-4 text-sm text-ink-500">
           {twoFactorEnabled
-            ? 'Activée sur votre compte.'
-            : 'Obligatoire pour les rôles administrateurs.'}
+            ? t("Activée sur votre compte.")
+            : t("Obligatoire pour les rôles administrateurs.")}
         </p>
 
         {!twoFactorEnabled && !twoFa && (
           <button onClick={start2fa} className="btn-primary">
-            Activer la double authentification
+            {t("Activer la double authentification")}
           </button>
         )}
 
         {twoFactorEnabled &&
           (mandatory ? (
             <p className="text-sm text-ink-500">
-              Obligatoire pour votre rôle : elle ne peut pas être désactivée.
+              {t("Obligatoire pour votre rôle : elle ne peut pas être désactivée.")}
             </p>
           ) : (
             <button
@@ -204,14 +206,14 @@ export function SecuritySection({
               aria-busy={disabling}
               className="btn-outline"
             >
-              {disabling ? 'Désactivation…' : 'Désactiver la double authentification'}
+              {disabling ? t("Désactivation…") : t("Désactiver la double authentification")}
             </button>
           ))}
 
         {twoFa && (
           <form onSubmit={enable2fa} className="space-y-3">
             <p className="text-sm text-ink-600">
-              Ajoutez ce secret dans votre application d’authentification :
+              {t("Ajoutez ce secret dans votre application d’authentification :")}
             </p>
             <code className="block break-all rounded-xl bg-ink-50 px-4 py-3 text-sm">
               {twoFa.secret}
@@ -223,10 +225,10 @@ export function SecuritySection({
               inputMode="numeric"
               placeholder="000000"
               className="input max-w-[200px] text-center tracking-[0.4em]"
-              aria-label="Code a six chiffres"
+              aria-label={t("Code a six chiffres")}
             />
             <button type="submit" className="btn-primary">
-              Valider le code
+              {t("Valider le code")}
             </button>
           </form>
         )}

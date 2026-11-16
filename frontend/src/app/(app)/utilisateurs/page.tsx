@@ -15,6 +15,8 @@ import { dateTime } from '@/lib/format';
 import { InviteForm } from '@/components/users/InviteForm';
 import { UserActions } from '@/components/users/UserActions';
 import { CountryTree, type UsersByCountry } from '@/components/users/CountryTree';
+import { t, geoName } from '@/lib/i18n';
+
 
 export default function UsersPage() {
   const { user } = useAuth();
@@ -55,17 +57,17 @@ export default function UsersPage() {
       const r = await api.post<any>(`/auth/invite/${u.id}/resend`, {});
       setNotice(
         r.emailSent !== false
-          ? { ok: true, text: `Un nouveau code et un nouveau lien ont été envoyés à ${u.email}.` }
-          : { ok: false, text: `L’e-mail n’a pas pu être envoyé à ${u.email}. Vérifiez l’adresse.` },
+          ? { ok: true, text: t("Un nouveau code et un nouveau lien ont été envoyés à {email}.", { email: u.email }) }
+          : { ok: false, text: t("L’e-mail n’a pas pu être envoyé à {email}. Vérifiez l’adresse.", { email: u.email }) },
       );
       mutate();
     } catch (e: any) {
-      setNotice({ ok: false, text: e?.message ?? 'Le renvoi a échoué.' });
+      setNotice({ ok: false, text: e?.message ?? t("Le renvoi a échoué.") });
     }
   }
 
   async function setStatus(id: string, status: string) {
-    const reason = await promptDialog('Motif ?') ?? undefined;
+    const reason = await promptDialog(t("Motif ?")) ?? undefined;
     await api.patch(`/users/${id}/status`, { status, reason });
     mutate();
   }
@@ -78,23 +80,23 @@ export default function UsersPage() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="page-title">Utilisateurs</h1>
+          <h1 className="page-title">{t("Utilisateurs")}</h1>
           <p className="mt-1 text-sm text-ink-500">
             {showTree
               ? summary
-                ? `${summary.countries.reduce((n, c) => n + c.count, 0) + summary.withoutCountry} compte(s) dans ${summary.countries.length} pays`
-                : 'Chargement…'
+                ? t("{v0} compte(s) dans {length} pays", { v0: summary.countries.reduce((n, c) => n + c.count, 0) + summary.withoutCountry, length: summary.countries.length })
+                : t("Chargement…")
               : listError
-                ? 'Erreur de chargement'
+                ? t("Erreur de chargement")
                 : data
-                ? `${data.length} compte(s)${openCountry && grouped ? ` · ${openCountry.label}` : ' dans votre périmètre'}`
-                : 'Chargement…'}
+                ? `${data.length} compte(s)${openCountry && grouped ? ` · ${openCountry.label}` : t(" dans votre périmètre")}`
+                : t("Chargement…")}
           </p>
         </div>
         {canInvite && (
           <button onClick={() => setInvite((s) => !s)} className="btn-primary">
             <UserPlus className="h-4 w-4" />
-            Inviter
+            {t("Inviter")}
           </button>
         )}
       </div>
@@ -118,13 +120,13 @@ export default function UsersPage() {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Nom ou e-mail"
+            placeholder={t("Nom ou e-mail")}
             className="input pl-10"
-            aria-label="Rechercher"
+            aria-label={t("Rechercher")}
           />
         </div>
-        <select value={role} onChange={(e) => setRole(e.target.value)} className="input sm:w-60" aria-label="Rôle">
-          <option value="">Tous les rôles</option>
+        <select value={role} onChange={(e) => setRole(e.target.value)} className="input sm:w-60" aria-label={t("Rôle")}>
+          <option value="">{t("Tous les rôles")}</option>
           {Object.entries(ROLE_LABEL).map(([k, v]) => (
             <option key={k} value={k}>
               {v}
@@ -136,7 +138,7 @@ export default function UsersPage() {
       {grouped && openCountry && (
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <button type="button" onClick={() => setOpenCountry(null)} className="btn-outline px-3 text-xs">
-            ← Continents
+            {t("← Continents")}
           </button>
           <span className="font-medium text-ink-900">{openCountry.label}</span>
         </div>
@@ -146,21 +148,21 @@ export default function UsersPage() {
         summaryLoading || !summary ? (
           <SkeletonList rows={5} />
         ) : !summary.countries.length && !summary.withoutCountry ? (
-          <Empty icon={<UserCog className="h-6 w-6" />} title="Aucun utilisateur" />
+          <Empty icon={<UserCog className="h-6 w-6" />} title={t("Aucun utilisateur")} />
         ) : (
           <CountryTree summary={summary} onOpen={(id, label) => setOpenCountry({ id, label })} />
         )
       ) : listError ? (
         <div role="alert" className="card card-pad flex flex-wrap items-center justify-between gap-3 text-sm text-amber-800">
-          <span>Impossible de charger les utilisateurs{listError?.message ? ` : ${listError.message}` : ''}.</span>
+          <span>{t("Impossible de charger les utilisateurs")}{listError?.message ? ` : ${listError.message}` : ''}.</span>
           <button type="button" onClick={() => mutate()} className="btn-outline px-3 text-xs">
-            Réessayer
+            {t("Réessayer")}
           </button>
         </div>
       ) : isLoading ? (
         <SkeletonList rows={5} />
       ) : !data?.length ? (
-        <Empty icon={<UserCog className="h-6 w-6" />} title="Aucun utilisateur" />
+        <Empty icon={<UserCog className="h-6 w-6" />} title={t("Aucun utilisateur")} />
       ) : (
         <div className="card divide-y divide-ink-100 overflow-hidden">
           {data.map((u) => (
@@ -175,26 +177,24 @@ export default function UsersPage() {
                   {u.email} &middot; {ROLE_LABEL[u.role as Role]}
                   {u.role === 'SUPER_ADMIN' && u.adminRank ? ` n°${u.adminRank}` : ''}
                   {u.orphanage ? ` - ${u.orphanage.name}` : ''}
-                  {u.province ? ` - ${u.province.nameFr}` : ''}
+                  {u.province ? ` - ${geoName(u.province)}` : ''}
                 </p>
                 {user?.role === 'SUPER_ADMIN' && (
                   <p className="break-words text-xs text-ink-400">
                     {u.invitedBy
-                      ? `Invité par ${u.invitedBy.firstName} ${u.invitedBy.lastName} (${ROLE_LABEL[u.invitedBy.role as Role]}${
-                          u.invitedBy.role === 'SUPER_ADMIN' && u.invitedBy.adminRank ? ` n°${u.invitedBy.adminRank}` : ''
-                        }) le ${dateTime(u.createdAt)}`
-                      : `Compte créé le ${dateTime(u.createdAt)} (inscription libre ou installation)`}
+                      ? t("Invité par {firstName} {lastName} ({v2}{v3}) le {v4}", { firstName: u.invitedBy.firstName, lastName: u.invitedBy.lastName, v2: ROLE_LABEL[u.invitedBy.role as Role], v3: u.invitedBy.role === 'SUPER_ADMIN' && u.invitedBy.adminRank ? ` n°${u.invitedBy.adminRank}` : '', v4: dateTime(u.createdAt) })
+                      : t("Compte créé le {v0} (inscription libre ou installation)", { v0: dateTime(u.createdAt) })}
                   </p>
                 )}
               </div>
               <span className="hidden text-xs text-ink-500 sm:block">
-                {u.lastLoginAt ? dateTime(u.lastLoginAt) : 'jamais connecté'}
+                {u.lastLoginAt ? dateTime(u.lastLoginAt) : t("jamais connecté")}
               </span>
               <div className="flex w-full flex-wrap items-center gap-2 pl-11 sm:w-auto sm:pl-0">
                 <Badge status={u.status} />
                 {canInvite && u.status === 'INVITED' && u.role !== 'DONOR' && (
                   <button type="button" onClick={() => resend(u)} className="btn-outline px-3 text-xs">
-                    Renvoyer le code
+                    {t("Renvoyer le code")}
                   </button>
                 )}
                 {['SUPER_ADMIN', 'MODERATOR', 'NATIONAL_MANAGER'].includes(user?.role ?? '') &&
@@ -204,12 +204,12 @@ export default function UsersPage() {
                       onChange={(e) => e.target.value && setStatus(u.id, e.target.value)}
                       value=""
                       className="input w-36 py-0 text-xs"
-                      aria-label={`Changer le statut de ${u.firstName} ${u.lastName}`}
+                      aria-label={t("Changer le statut de {firstName} {lastName}", { firstName: u.firstName, lastName: u.lastName })}
                     >
-                      <option value="">Action</option>
-                      <option value="ACTIVE">Réactiver</option>
-                      <option value="SUSPENDED">Suspendre</option>
-                      <option value="BLOCKED">Bloquer</option>
+                      <option value="">{t("Action")}</option>
+                      <option value="ACTIVE">{t("Réactiver")}</option>
+                      <option value="SUSPENDED">{t("Suspendre")}</option>
+                      <option value="BLOCKED">{t("Bloquer")}</option>
                     </select>
                   )}
                 <UserActions target={u} onDone={() => mutate()} />

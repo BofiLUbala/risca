@@ -5,46 +5,47 @@ import { Eye, FileWarning, Lock, ScrollText } from 'lucide-react';
 import { Stat } from '@/components/ui/Stat';
 import { CountRow, MoneyRow, SectionTitle } from '../widgets';
 import { dateTime, money, num } from '@/lib/format';
+import { t } from '@/lib/i18n';
+
 
 export function AuditorBoard({ data }: { data: any }) {
   return (
     <>
       <div className="rounded-2xl border border-risac-200 bg-risac-50/70 px-5 py-4 text-sm text-risac-800">
-        Acces en lecture seule sur l’ensemble du réseau. Vous pouvez geler un projet ou un compte en
-        attendant la décision du Super Admin.
+        {t("Acces en lecture seule sur l’ensemble du réseau. Vous pouvez geler un projet ou un compte en attendant la décision du Super Admin.")}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Stat label="Signalements graves" value={num(data.governance.seriousReports)} tone="coral" icon={<FileWarning className="h-5 w-5" />} />
-        <Stat label="Projets geles" value={num(data.governance.frozenProjects)} tone="amber" icon={<Lock className="h-5 w-5" />} />
-        <Stat label="Comptes geles" value={num(data.governance.frozenUsers)} tone="amber" icon={<Lock className="h-5 w-5" />} />
-        <Stat label="Entrées d’audit" value={num(data.auditTrail.total)} tone="primary" icon={<ScrollText className="h-5 w-5" />} />
+        <Stat label={t("Signalements graves")} value={num(data.governance.seriousReports)} tone="coral" icon={<FileWarning className="h-5 w-5" />} />
+        <Stat label={t("Projets geles")} value={num(data.governance.frozenProjects)} tone="amber" icon={<Lock className="h-5 w-5" />} />
+        <Stat label={t("Comptes geles")} value={num(data.governance.frozenUsers)} tone="amber" icon={<Lock className="h-5 w-5" />} />
+        <Stat label={t("Entrées d’audit")} value={num(data.auditTrail.total)} tone="primary" icon={<ScrollText className="h-5 w-5" />} />
       </div>
 
       <div className="grid gap-5 lg:grid-cols-3">
         <section className="card card-pad">
-          <SectionTitle>Conformité</SectionTitle>
-          <CountRow label="Enfants sans consentement photo" value={data.compliance.childrenWithoutConsent} />
-          <CountRow label="Acces psychotrauma (30 j)" value={data.compliance.psychoAccessLast30Days} />
+          <SectionTitle>{t("Conformité")}</SectionTitle>
+          <CountRow label={t("Enfants sans consentement photo")} value={data.compliance.childrenWithoutConsent} />
+          <CountRow label={t("Acces psychotrauma (30 j)")} value={data.compliance.psychoAccessLast30Days} />
         </section>
 
         <section className="card card-pad">
-          <SectionTitle>Flux financiers</SectionTitle>
-          <MoneyRow label="Compte central" value={data.money.centralBalance} />
-          <MoneyRow label="Fonds général" value={data.money.generalFundBalance} />
-          <MoneyRow label="Total collecté" value={data.money.totalDonated} />
-          <MoneyRow label="Total décaissé" value={data.money.totalDisbursed} strong />
+          <SectionTitle>{t("Flux financiers")}</SectionTitle>
+          <MoneyRow label={t("Compte central")} value={data.money.centralBalance} />
+          <MoneyRow label={t("Fonds général")} value={data.money.generalFundBalance} />
+          <MoneyRow label={t("Total collecté")} value={data.money.totalDonated} />
+          <MoneyRow label={t("Total décaissé")} value={data.money.totalDisbursed} strong />
         </section>
 
         <section className="card card-pad">
-          <SectionTitle>Rapprochement</SectionTitle>
+          <SectionTitle>{t("Rapprochement")}</SectionTitle>
           <div
             className={`rounded-xl px-4 py-3 text-sm ${
               data.reconciliation.balanced ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
             }`}
           >
             {data.reconciliation.balanced
-              ? `Comptes equilibres (${data.reconciliation.accountsChecked} verifies)`
+              ? t("Comptes equilibres ({accountsChecked} verifies)", { accountsChecked: data.reconciliation.accountsChecked })
               : `${data.reconciliation.discrepancies.length} ecart(s)`}
           </div>
         </section>
@@ -54,11 +55,11 @@ export function AuditorBoard({ data }: { data: any }) {
         <SectionTitle
           action={
             <Link href="/journal-audit" className="link-action">
-              Journal complet
+              {t("Journal complet")}
             </Link>
           }
         >
-          Activite recente
+          {t("Activite recente")}
         </SectionTitle>
         <div className="divide-y divide-ink-100">
           {data.auditTrail.recent.map((a: any) => (

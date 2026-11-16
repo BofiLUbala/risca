@@ -9,13 +9,14 @@ import { Badge } from '@/components/ui/Badge';
 import { PageLoading } from '@/components/ui/Loading';
 import { Field } from '@/components/child/Tabs';
 import { date, dateTime, money } from '@/lib/format';
+import { t, localized } from '@/lib/i18n';
 
-const STEPS = [
+const STEPS = localized([
   { key: 'REQUESTED', label: '1. Demande du chef d’orphelinat' },
   { key: 'AMBASSADOR_CONFIRMED', label: '2. Besoin confirmé par l’ambassadeur' },
   { key: 'AWAITING_RECEIPTS', label: '3. Paiement par l’Admin Finance' },
   { key: 'SETTLED', label: '4. Justificatifs reçus, dépense soldée' },
-];
+]);
 
 const ORDER = ['REQUESTED', 'AMBASSADOR_CONFIRMED', 'AWAITING_RECEIPTS', 'SETTLED'];
 
@@ -33,7 +34,7 @@ export default function DisbursementDetailPage({ params }: { params: Promise<{ i
         className="inline-flex min-h-[44px] items-center gap-1.5 text-sm text-ink-500 hover:text-ink-800 sm:min-h-0"
       >
         <ArrowLeft className="h-4 w-4" />
-        Retour aux décaissements
+        {t("Retour aux décaissements")}
       </Link>
 
       <header className="card card-pad">
@@ -55,7 +56,7 @@ export default function DisbursementDetailPage({ params }: { params: Promise<{ i
 
       <section className="card card-pad">
         <h2 className="mb-4 card-title">
-          Circuit de l’argent - séparation des pouvoirs
+          {t("Circuit de l’argent - séparation des pouvoirs")}
         </h2>
         <ol className="space-y-3">
           {STEPS.map((s, i) => (
@@ -76,26 +77,26 @@ export default function DisbursementDetailPage({ params }: { params: Promise<{ i
       </section>
 
       <section className="card card-pad">
-        <h2 className="mb-3 card-title">Détail</h2>
+        <h2 className="mb-3 card-title">{t("Détail")}</h2>
         <dl>
           <Field
-            label="Demande par"
+            label={t("Demande par")}
             value={`${d.requestedBy.firstName} ${d.requestedBy.lastName} - ${date(d.createdAt)}`}
           />
-          <Field label="Confirme le" value={d.confirmedAt ? dateTime(d.confirmedAt) : null} />
-          <Field label="Paye le" value={d.paidAt ? dateTime(d.paidAt) : null} />
-          <Field label="Moyen de paiement" value={d.payoutMethod} />
-          <Field label="Référence du paiement" value={d.payoutRef} />
-          <Field label="Projet" value={d.project?.title} />
-          {d.rejectionReason ? <Field label="Motif du refus" value={d.rejectionReason} /> : null}
+          <Field label={t("Confirme le")} value={d.confirmedAt ? dateTime(d.confirmedAt) : null} />
+          <Field label={t("Paye le")} value={d.paidAt ? dateTime(d.paidAt) : null} />
+          <Field label={t("Moyen de paiement")} value={d.payoutMethod} />
+          <Field label={t("Référence du paiement")} value={d.payoutRef} />
+          <Field label={t("Projet")} value={d.project?.title} />
+          {d.rejectionReason ? <Field label={t("Motif du refus")} value={d.rejectionReason} /> : null}
         </dl>
       </section>
 
       <section className="card card-pad">
-        <h2 className="mb-3 card-title">Justificatifs</h2>
+        <h2 className="mb-3 card-title">{t("Justificatifs")}</h2>
         {!d.receipts?.length ? (
           <p className="text-sm text-ink-400">
-            Aucun justificatif. Les factures, photos ou videos sont obligatoires.
+            {t("Aucun justificatif. Les factures, photos ou videos sont obligatoires.")}
           </p>
         ) : (
           <ul className="space-y-2">

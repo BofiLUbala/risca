@@ -1,4 +1,5 @@
 'use client';
+import { t } from '@/lib/i18n';
 
 /**
  * Boîtes de dialogue à la place de window.prompt / window.confirm.
@@ -46,11 +47,11 @@ function open(message: string, kind: 'prompt' | 'confirm', opts: Options): Promi
     const cancel = document.createElement('button');
     cancel.type = 'button';
     cancel.className = 'btn-outline';
-    cancel.textContent = 'Annuler';
+    cancel.textContent = t('Annuler');
     const ok = document.createElement('button');
     ok.type = 'button';
     ok.className = 'btn-primary';
-    ok.textContent = opts.confirmLabel ?? 'Valider';
+    ok.textContent = opts.confirmLabel ?? t('Valider');
     actions.append(cancel, ok);
     box.appendChild(actions);
     overlay.appendChild(box);

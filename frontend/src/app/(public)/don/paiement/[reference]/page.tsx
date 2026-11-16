@@ -7,6 +7,7 @@ import { CheckCircle2, Lock, XCircle } from 'lucide-react';
 import { API_URL } from '@/lib/api';
 import { Logo } from '@/components/ui/Logo';
 import { Spinner } from '@/components/ui/Loading';
+import { t } from '@/lib/i18n';
 
 /**
  * Page de paiement web lancee depuis l application (section 10.2).
@@ -49,41 +50,41 @@ export default function CheckoutPage({ params }: { params: Promise<{ reference: 
           <Logo />
           <span className="chip bg-emerald-50 text-emerald-700">
             <Lock className="h-3 w-3" />
-            Page sécurisée
+            {t("Page sécurisée")}
           </span>
         </div>
 
         {state === 'done' ? (
           <div className="mt-8 text-center">
             <CheckCircle2 className="mx-auto h-12 w-12 text-emerald-500" />
-            <h1 className="mt-4 text-lg font-semibold text-ink-950">Paiement confirmé</h1>
+            <h1 className="mt-4 text-lg font-semibold text-ink-950">{t("Paiement confirmé")}</h1>
             <p className="mt-2 text-sm text-ink-500">
-              Merci. Votre reçu est disponible dans votre espace, et votre don est deja affecte.
+              {t("Merci. Votre reçu est disponible dans votre espace, et votre don est deja affecte.")}
             </p>
             <Link href="/mes-dons" className="btn-primary mt-6 w-full py-3">
-              Voir mes dons
+              {t("Voir mes dons")}
             </Link>
           </div>
         ) : state === 'failed' ? (
           <div className="mt-8 text-center">
             <XCircle className="mx-auto h-12 w-12 text-rose-500" />
-            <h1 className="mt-4 text-lg font-semibold text-ink-950">Paiement refuse</h1>
+            <h1 className="mt-4 text-lg font-semibold text-ink-950">{t("Paiement refuse")}</h1>
             <p className="mt-2 text-sm text-ink-500">
-              Aucun montant n a ete preleve. Vous pouvez reessayer depuis votre espace.
+              {t("Aucun montant n a ete preleve. Vous pouvez reessayer depuis votre espace.")}
             </p>
             <Link href="/mes-dons" className="btn-outline mt-6 w-full py-3">
-              Retour à mes dons
+              {t("Retour à mes dons")}
             </Link>
           </div>
         ) : state === 'error' ? (
           <div className="mt-8 text-center" role="alert">
             <XCircle className="mx-auto h-12 w-12 text-amber-500" />
-            <h1 className="mt-4 text-lg font-semibold text-ink-950">Confirmation impossible</h1>
+            <h1 className="mt-4 text-lg font-semibold text-ink-950">{t("Confirmation impossible")}</h1>
             <p className="mt-2 text-sm text-ink-500">
-              Le serveur n a pas pu enregistrer ce paiement. Rien n a ete confirme : reessayez dans un instant.
+              {t("Le serveur n a pas pu enregistrer ce paiement. Rien n a ete confirme : reessayez dans un instant.")}
             </p>
             <button onClick={() => setState('idle')} className="btn-outline mt-6 w-full py-3">
-              Reessayer
+              {t("Reessayer")}
             </button>
           </div>
         ) : (
@@ -118,19 +119,19 @@ function CheckoutForm({
 }) {
   return (
     <>
-      <h1 className="mt-8 text-lg font-semibold text-ink-950">Confirmer votre paiement</h1>
+      <h1 className="mt-8 text-lg font-semibold text-ink-950">{t("Confirmer votre paiement")}</h1>
       <dl className="mt-4 space-y-2 rounded-xl bg-ink-50 px-4 py-3 text-sm">
         <div className="flex justify-between">
-          <dt className="text-ink-500">Référence</dt>
+          <dt className="text-ink-500">{t("Référence")}</dt>
           <dd className="font-mono text-xs text-ink-800">{reference}</dd>
         </div>
         <div className="flex justify-between">
-          <dt className="text-ink-500">Fournisseur</dt>
+          <dt className="text-ink-500">{t("Fournisseur")}</dt>
           <dd className="text-ink-800">{provider}</dd>
         </div>
         {amount && (
           <div className="flex justify-between border-t border-ink-200 pt-2 font-medium">
-            <dt className="text-ink-700">Montant</dt>
+            <dt className="text-ink-700">{t("Montant")}</dt>
             <dd className="text-ink-900">
               {amount} {currency}
             </dd>
@@ -139,17 +140,16 @@ function CheckoutForm({
       </dl>
 
       <p className="mt-4 rounded-xl bg-amber-50 px-4 py-3 text-xs text-amber-800">
-        Mode bac à sable : aucune clé de fournisseur n’est configurée. Les boutons ci-dessous
-        simulent la confirmation envoyee par le fournisseur de paiement.
+        {t("Mode bac à sable : aucune clé de fournisseur n’est configurée. Les boutons ci-dessous simulent la confirmation envoyee par le fournisseur de paiement.")}
       </p>
 
       <div className="mt-6 space-y-2">
         <button onClick={() => onConfirm('SUCCESS')} disabled={busy} className="btn-primary w-full py-3">
           {busy ? <Spinner className="h-4 w-4" /> : null}
-          Payer maintenant
+          {t("Payer maintenant")}
         </button>
         <button onClick={() => onConfirm('FAILED')} disabled={busy} className="btn-ghost w-full py-3">
-          Simuler un échec
+          {t("Simuler un échec")}
         </button>
       </div>
     </>

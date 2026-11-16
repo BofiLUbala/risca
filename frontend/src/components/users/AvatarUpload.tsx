@@ -7,6 +7,7 @@ import { api, mediaUrl, uploadFile } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { Avatar } from '@/components/ui/Avatar';
 import { Spinner } from '@/components/ui/Loading';
+import { t } from '@/lib/i18n';
 
 const TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_MB = 5;
@@ -44,13 +45,13 @@ export function AvatarUpload() {
     if (!TYPES.includes(file.type)) {
       setError(
         file.type
-          ? `Format non accepté (${file.type.replace('image/', '').toUpperCase()}). Choisissez une image JPEG, PNG ou WebP.`
-          : 'Format non reconnu. Choisissez une image JPEG, PNG ou WebP.',
+          ? t("Format non accepté ({v0}). Choisissez une image JPEG, PNG ou WebP.", { v0: file.type.replace('image/', '').toUpperCase() })
+          : t("Format non reconnu. Choisissez une image JPEG, PNG ou WebP."),
       );
       return;
     }
     if (file.size > MAX_MB * 1024 * 1024) {
-      setError(`Image trop lourde (${(file.size / 1024 / 1024).toFixed(1)} Mo). Maximum : ${MAX_MB} Mo.`);
+      setError(t("Image trop lourde ({v0} Mo). Maximum : {MAX_MB} Mo.", { v0: (file.size / 1024 / 1024).toFixed(1), MAX_MB }));
       return;
     }
     const local = URL.createObjectURL(file);
@@ -62,15 +63,15 @@ export function AvatarUpload() {
       const shown = mediaUrl(url);
       if (shown && !(await canLoad(shown))) {
         setError(
-          `La photo est enregistrée, mais le navigateur n'arrive pas à la charger depuis ${new URL(shown).host}. Vérifiez que le serveur est joignable, puis réessayez.`,
+          t("La photo est enregistrée, mais le navigateur n'arrive pas à la charger depuis {host}. Vérifiez que le serveur est joignable, puis réessayez.", { host: new URL(shown).host }),
         );
       } else {
-        setDone('Photo enregistrée.');
+        setDone(t("Photo enregistrée."));
       }
       await refresh();
     } catch (e: any) {
       const detail = typeof e?.message === 'string' && e.message ? ` (${e.message})` : '';
-      setError(`Le téléversement a échoué${detail}. Réessayez dans un instant.`);
+      setError(t("Le téléversement a échoué{detail}. Réessayez dans un instant.", { detail }));
     } finally {
       setBusy(false);
       setPreview(null);
@@ -85,9 +86,9 @@ export function AvatarUpload() {
     try {
       await api.patch('/users/profile', { avatarUrl: null });
       await refresh();
-      setDone('Photo retirée.');
+      setDone(t("Photo retirée."));
     } catch {
-      setError('La suppression a échoué. Réessayez dans un instant.');
+      setError(t("La suppression a échoué. Réessayez dans un instant."));
     } finally {
       setBusy(false);
     }
@@ -148,21 +149,21 @@ export function AvatarUpload() {
               }}
             />
             <Camera className="h-4 w-4" aria-hidden="true" />
-            {user.avatarUrl ? 'Changer la photo' : 'Ajouter une photo'}
+            {user.avatarUrl ? t("Changer la photo") : t("Ajouter une photo")}
           </label>
           {user.avatarUrl && (
             <button type="button" className="btn-outline" disabled={busy} onClick={remove}>
               <Trash2 className="h-4 w-4" />
-              Retirer
+              {t("Retirer")}
             </button>
           )}
         </div>
         <p className="meta mt-2">
-          JPEG, PNG ou WebP, {MAX_MB} Mo au plus. Vous pouvez aussi déposer l&apos;image sur la photo.
+          {t("JPEG, PNG ou WebP,")}{' '}{MAX_MB}{' '}{t("Mo au plus. Vous pouvez aussi déposer l'image sur la photo.")}
         </p>
         {busy && (
           <p role="status" className="mt-2 text-sm text-ink-600">
-            Envoi en cours…
+            {t("Envoi en cours…")}
           </p>
         )}
         {done && !busy && (

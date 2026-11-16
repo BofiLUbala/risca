@@ -8,22 +8,24 @@ import { Avatar } from '@/components/ui/Avatar';
 import { SectionTitle } from '../widgets';
 import { money, num, relative } from '@/lib/format';
 import { mediaUrl } from '@/lib/api';
+import { t } from '@/lib/i18n';
+
 
 export function DonorBoard({ data }: { data: any }) {
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Stat label="Total donné" value={money(data.impact.totalDonatedUsd)} tone="mint" icon={<Heart className="h-5 w-5" />} />
-        <Stat label="Enfants soutenus" value={num(data.impact.childrenSupported)} tone="primary" icon={<Users className="h-5 w-5" />} />
+        <Stat label={t("Total donné")} value={money(data.impact.totalDonatedUsd)} tone="mint" icon={<Heart className="h-5 w-5" />} />
+        <Stat label={t("Enfants soutenus")} value={num(data.impact.childrenSupported)} tone="primary" icon={<Users className="h-5 w-5" />} />
         <Stat
-          label="Engagement mensuel"
+          label={t("Engagement mensuel")}
           value={money(data.monthlyCommitment)}
-          hint={`${num(data.sponsorships.length)} parrainages actifs`}
+          hint={t("{v0} parrainages actifs", { v0: num(data.sponsorships.length) })}
           tone="primary"
           icon={<Sparkles className="h-5 w-5" />}
         />
         <Stat
-          label="Preuves de dépense"
+          label={t("Preuves de dépense")}
           value={num(data.impact.proofsAvailable)}
           tone="amber"
           icon={<FileCheck className="h-5 w-5" />}
@@ -34,17 +36,17 @@ export function DonorBoard({ data }: { data: any }) {
         <SectionTitle
           action={
             <Link href="/mes-parrainages" className="link-action">
-              Gérer
+              {t("Gérer")}
             </Link>
           }
         >
-          Mes filleuls
+          {t("Mes filleuls")}
         </SectionTitle>
         {data.sponsorships.length === 0 ? (
           <div className="py-8 text-center">
-            <p className="text-sm text-ink-500">Vous ne parrainez aucun enfant pour le moment.</p>
+            <p className="text-sm text-ink-500">{t("Vous ne parrainez aucun enfant pour le moment.")}</p>
             <Link href="/enfants-a-soutenir" className="btn-primary mt-4">
-              Decouvrir les enfants
+              {t("Decouvrir les enfants")}
             </Link>
           </div>
         ) : (
@@ -61,7 +63,7 @@ export function DonorBoard({ data }: { data: any }) {
                     {s.child.firstName}
                   </span>
                   <span className="block text-xs text-ink-400">
-                    {money(s.monthlyAmount, s.currency)} / mois
+                    {money(s.monthlyAmount, s.currency)}{' '}{t("/ mois")}
                   </span>
                 </span>
               </Link>
@@ -74,15 +76,15 @@ export function DonorBoard({ data }: { data: any }) {
         <SectionTitle
           action={
             <Link href="/communication" className="link-action">
-              Tout le fil
+              {t("Tout le fil")}
             </Link>
           }
         >
-          Le fil de mes enfants
+          {t("Le fil de mes enfants")}
         </SectionTitle>
         {data.feed.length === 0 ? (
           <p className="py-8 text-center text-sm text-ink-400">
-            Les nouvelles de vos filleuls apparaîtront ici.
+            {t("Les nouvelles de vos filleuls apparaîtront ici.")}
           </p>
         ) : (
           <div className="space-y-3">

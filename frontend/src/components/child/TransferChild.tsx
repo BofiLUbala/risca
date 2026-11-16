@@ -6,6 +6,8 @@ import { ArrowRightLeft, Check } from 'lucide-react';
 import { api, fetcher } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { date } from '@/lib/format';
+import { t as tx, geoName } from '@/lib/i18n';
+
 
 const DECIDERS = ['SUPER_ADMIN', 'NATIONAL_MANAGER', 'REGIONAL_MANAGER'];
 const REQUESTERS = [...DECIDERS, 'ORPHANAGE_DIRECTOR', 'FIELD_AGENT', 'AMBASSADOR'];
@@ -57,7 +59,7 @@ export function TransferChild({
       setReason('');
       onDone();
     } catch (e: any) {
-      setError(e?.message ?? 'La demande de transfert a échoué.');
+      setError(e?.message ?? tx("La demande de transfert a échoué."));
     }
     setBusy(false);
   }
@@ -69,7 +71,7 @@ export function TransferChild({
       await api.post(`/children/transfers/${pending.id}/complete`, {});
       onDone();
     } catch (e: any) {
-      setError(e?.message ?? 'La validation du transfert a échoué.');
+      setError(e?.message ?? tx("La validation du transfert a échoué."));
     }
     setBusy(false);
   }
@@ -77,9 +79,9 @@ export function TransferChild({
   if (pending) {
     return (
       <div className="w-full rounded-xl border border-amber-200 bg-amber-50/70 p-4">
-        <p className="text-sm font-medium text-amber-900">Transfert en attente de validation</p>
+        <p className="text-sm font-medium text-amber-900">{tx("Transfert en attente de validation")}</p>
         <p className="mt-1 text-xs text-amber-800">
-          Demandé le {date(pending.createdAt)}
+          {tx("Demandé le")}{' '}{date(pending.createdAt)}
           {pending.reason ? ` · ${pending.reason}` : ''}
         </p>
         {error && (
@@ -90,11 +92,11 @@ export function TransferChild({
         {canDecide ? (
           <button type="button" onClick={complete} disabled={busy} aria-busy={busy} className="btn-primary mt-3">
             <Check className="h-4 w-4" />
-            {busy ? 'Validation…' : 'Valider le transfert'}
+            {busy ? tx("Validation…") : tx("Valider le transfert")}
           </button>
         ) : (
           <p className="mt-2 text-xs text-amber-800">
-            Un chef régional, le responsable national ou le Super Admin doit le valider.
+            {tx("Un chef régional, le responsable national ou le Super Admin doit le valider.")}
           </p>
         )}
       </div>
@@ -105,7 +107,7 @@ export function TransferChild({
     return (
       <button type="button" onClick={() => setOpen(true)} className="btn-outline">
         <ArrowRightLeft className="h-4 w-4" />
-        Transférer
+        {tx("Transférer")}
       </button>
     );
   }
@@ -113,7 +115,7 @@ export function TransferChild({
   return (
     <div className="w-full rounded-xl border border-risac-200 bg-risac-50/60 p-4 sm:w-96">
       <label htmlFor="transfer-to" className="label">
-        Structure d’accueil
+        {tx("Structure d’accueil")}
       </label>
       <select
         id="transfer-to"
@@ -122,19 +124,19 @@ export function TransferChild({
         onChange={(e) => setTo(e.target.value)}
         disabled={isLoading}
       >
-        <option value="">{isLoading ? 'Chargement…' : 'Choisir une structure'}</option>
+        <option value="">{isLoading ? tx("Chargement…") : tx("Choisir une structure")}</option>
         {orphanages
           ?.filter((o) => o.id !== currentOrphanageId)
           .map((o) => (
             <option key={o.id} value={o.id}>
               {o.name}
-              {o.province?.nameFr ? ` · ${o.province.nameFr}` : ''}
+              {geoName(o.province) ? ` · ${geoName(o.province)}` : ''}
             </option>
           ))}
       </select>
 
       <label htmlFor="transfer-reason" className="label mt-3">
-        Motif
+        {tx("Motif")}
       </label>
       <textarea
         id="transfer-reason"
@@ -142,12 +144,11 @@ export function TransferChild({
         className="input"
         value={reason}
         onChange={(e) => setReason(e.target.value)}
-        placeholder="Pourquoi ce transfert ?"
+        placeholder={tx("Pourquoi ce transfert ?")}
       />
 
       <p className="mt-2 text-xs text-ink-500">
-        La demande reste en attente jusqu’à la validation d’un chef régional. L’historique du dossier
-        suit l’enfant.
+        {tx("La demande reste en attente jusqu’à la validation d’un chef régional. L’historique du dossier suit l’enfant.")}
       </p>
       {error && (
         <p role="alert" className="mt-2 text-xs text-rose-700">
@@ -156,10 +157,10 @@ export function TransferChild({
       )}
       <div className="mt-3 flex gap-2">
         <button type="button" onClick={request} disabled={!toOrphanageId || busy} aria-busy={busy} className="btn-primary">
-          {busy ? 'Envoi…' : 'Demander le transfert'}
+          {busy ? tx("Envoi…") : tx("Demander le transfert")}
         </button>
         <button type="button" onClick={() => setOpen(false)} className="btn-ghost">
-          Annuler
+          {tx("Annuler")}
         </button>
       </div>
     </div>

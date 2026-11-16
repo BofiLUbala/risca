@@ -8,6 +8,8 @@ import { useAuth } from '@/lib/auth-context';
 import { ROLE_LABEL } from '@/lib/roles';
 import { Avatar } from '@/components/ui/Avatar';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { LanguageToggle } from '@/components/ui/LanguageToggle';
+import { t as tx, intlLocale, geoName } from '@/lib/i18n';
 
 /** Drapeau du pays : image (les émojis de drapeau ne s'affichent pas sous Windows). */
 function Flag({ iso2, name }: { iso2: string; name: string }) {
@@ -25,7 +27,7 @@ function Flag({ iso2, name }: { iso2: string; name: string }) {
       src={`/flags/${iso2.toLowerCase()}.png`}
       width={24}
       height={18}
-      alt={`Drapeau : ${name}`}
+      alt={tx("Drapeau : {name}", { name })}
       className="h-[18px] w-6 rounded-sm object-cover shadow-[0_0_0_1px_rgba(23,36,48,0.15)]"
       onError={() => setFailed(true)}
     />
@@ -39,8 +41,8 @@ function useToday() {
       const d = new Date();
       const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
       setToday({
-        long: cap(d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })),
-        short: d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+        long: cap(d.toLocaleDateString(intlLocale(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })),
+        short: d.toLocaleDateString(intlLocale(), { day: '2-digit', month: '2-digit', year: 'numeric' }),
       });
     };
     compute();
@@ -77,7 +79,7 @@ export function Topbar({ title, onMenu }: { title?: string; onMenu: () => void }
       <button
         onClick={onMenu}
         className="btn-ghost -ml-1 h-11 w-11 shrink-0 p-0 lg:hidden"
-        aria-label="Ouvrir le menu"
+        aria-label={tx("Ouvrir le menu")}
       >
         <Menu className="h-5 w-5" />
       </button>
@@ -87,12 +89,12 @@ export function Topbar({ title, onMenu }: { title?: string; onMenu: () => void }
         {title && <h1 className="truncate text-base font-semibold text-ink-900 sm:text-lg">{title}</h1>}
         <div className="flex min-w-0 items-center gap-2.5 text-sm text-ink-700">
           {country ? (
-            <Flag iso2={country.iso2} name={country.nameFr} />
+            <Flag iso2={country.iso2} name={geoName(country)} />
           ) : (
             <Globe2 className="h-[18px] w-[18px] shrink-0 text-ink-500" aria-hidden="true" />
           )}
           <span className="hidden truncate font-medium text-ink-900 sm:inline">
-            {country?.nameFr ?? 'Réseau international'}
+            {geoName(country) ?? tx("Réseau international")}
           </span>
           <span className="hidden h-4 w-px bg-ink-200 sm:block" aria-hidden="true" />
           <time className="truncate text-ink-600" suppressHydrationWarning>
@@ -102,16 +104,17 @@ export function Topbar({ title, onMenu }: { title?: string; onMenu: () => void }
         </div>
       </div>
 
+      <LanguageToggle />
       <ThemeToggle />
 
-      <Link href="/communication" className="btn-ghost h-11 w-11 shrink-0 p-0" aria-label="Rechercher">
+      <Link href="/communication" className="btn-ghost h-11 w-11 shrink-0 p-0" aria-label={tx("Rechercher")}>
         <Search className="h-5 w-5" />
       </Link>
 
       <Link
         href="/notifications"
         className="btn-ghost relative h-11 w-11 shrink-0 p-0"
-        aria-label={`Notifications${unread ? ` (${unread} non lues)` : ''}`}
+        aria-label={tx("Notifications{v0}", { v0: unread ? tx(" ({unread} non lues)", { unread }) : '' })}
       >
         <Bell className="h-5 w-5" />
         {unread > 0 && (
@@ -126,7 +129,7 @@ export function Topbar({ title, onMenu }: { title?: string; onMenu: () => void }
         <Link
           href="/profil"
           className="flex min-h-[44px] shrink-0 items-center gap-3 rounded-xl border-l border-ink-100 py-1 pl-3 pr-1 transition-colors hover:bg-ink-50"
-          aria-label={`Mon profil : ${user.firstName} ${user.lastName}, ${ROLE_LABEL[user.role]}`}
+          aria-label={tx("Mon profil : {firstName} {lastName}, {v2}", { firstName: user.firstName, lastName: user.lastName, v2: ROLE_LABEL[user.role] })}
         >
           <Avatar src={user.avatarUrl} firstName={user.firstName} lastName={user.lastName} size="sm" />
           <span className="hidden min-w-0 leading-tight md:block">
@@ -135,7 +138,7 @@ export function Topbar({ title, onMenu }: { title?: string; onMenu: () => void }
             </span>
             <span className="block max-w-[180px] truncate text-xs text-ink-600">
               {ROLE_LABEL[user.role]}
-              {user.orphanage ? ` · ${user.orphanage.name}` : user.province ? ` · ${user.province.nameFr}` : ''}
+              {user.orphanage ? ` · ${user.orphanage.name}` : user.province ? ` · ${geoName(user.province)}` : ''}
             </span>
           </span>
         </Link>

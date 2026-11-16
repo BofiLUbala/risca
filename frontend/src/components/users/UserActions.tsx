@@ -5,6 +5,8 @@ import { useState } from 'react';
 import { BellOff, BellRing, KeyRound, LockOpen, LogOut, ShieldAlert, Snowflake, UserX } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
+import { t } from '@/lib/i18n';
+
 
 type Target = { id: string; firstName: string; lastName: string; pushExempt?: boolean; status?: string; role?: string; adminRank?: number | null };
 
@@ -36,7 +38,7 @@ export function UserActions({ target, onDone }: { target: Target; onDone: () => 
   async function resetCredentials() {
     if (
       !await confirmDialog(
-        `Réinitialiser les identifiants de ${name} ? Son mot de passe, sa clé et sa double authentification seront effacés ; il recevra un lien d’activation et un code pour en choisir de nouveaux.`,
+        t("Réinitialiser les identifiants de {name} ? Son mot de passe, sa clé et sa double authentification seront effacés ; il recevra un lien d’activation et un code pour en choisir de nouveaux.", { name }),
       )
     )
       return;
@@ -48,27 +50,27 @@ export function UserActions({ target, onDone }: { target: Target; onDone: () => 
         ok: r.emailSent !== false,
         text:
           r.emailSent !== false
-            ? `Identifiants de ${name} réinitialisés : un lien d’activation et un code lui ont été envoyés par e-mail.`
-            : `Identifiants réinitialisés, mais l’e-mail n’a pas pu partir. Transmettez-lui ce lien : ${r.activationUrl}`,
+            ? t("Identifiants de {name} réinitialisés : un lien d’activation et un code lui ont été envoyés par e-mail.", { name })
+            : t("Identifiants réinitialisés, mais l’e-mail n’a pas pu partir. Transmettez-lui ce lien : {activationUrl}", { activationUrl: r.activationUrl }),
       });
       onDone();
     } catch (e: any) {
-      setNotice({ ok: false, text: e?.message ?? 'La réinitialisation a échoué.' });
+      setNotice({ ok: false, text: e?.message ?? t("La réinitialisation a échoué.") });
     }
     setBusy(null);
   }
 
   /** Le n°1 débloque un Super Admin verrouillé ou suspendu. */
   async function unlockAdmin() {
-    if (!await confirmDialog(`Débloquer ${name} ?`)) return;
+    if (!await confirmDialog(t("Débloquer {name} ?", { name }))) return;
     setBusy('unlock');
     setNotice(null);
     try {
       await api.post(`/auth/admin/${target.id}/unlock`, {});
-      setNotice({ ok: true, text: `${name} est débloqué.` });
+      setNotice({ ok: true, text: t("{name} est débloqué.", { name }) });
       onDone();
     } catch (e: any) {
-      setNotice({ ok: false, text: e?.message ?? 'Le déblocage a échoué.' });
+      setNotice({ ok: false, text: e?.message ?? t("Le déblocage a échoué.") });
     }
     setBusy(null);
   }
@@ -80,12 +82,12 @@ export function UserActions({ target, onDone }: { target: Target; onDone: () => 
     setNotice(null);
     try {
       await api.post(`/users/${target.id}/warn`, { message: body });
-      setNotice({ ok: true, text: `Avertissement envoyé à ${name}.` });
+      setNotice({ ok: true, text: t("Avertissement envoyé à {name}.", { name }) });
       setMessage('');
       setMode(null);
       onDone();
     } catch (e: any) {
-      setNotice({ ok: false, text: e?.message ?? "L’avertissement n’a pas pu être envoyé." });
+      setNotice({ ok: false, text: e?.message ?? t("L’avertissement n’a pas pu être envoyé.") });
     }
     setBusy(null);
   }
@@ -100,8 +102,8 @@ export function UserActions({ target, onDone }: { target: Target; onDone: () => 
     if (
       !await confirmDialog(
         next
-          ? `Dispenser ${name} des notifications ? Cette personne pourra accéder à RISAC sans les activer.`
-          : `Retirer la dispense de ${name} ? L’activation des notifications redeviendra obligatoire.`,
+          ? t("Dispenser {name} des notifications ? Cette personne pourra accéder à RISAC sans les activer.", { name })
+          : t("Retirer la dispense de {name} ? L’activation des notifications redeviendra obligatoire.", { name }),
       )
     )
       return;
@@ -111,27 +113,27 @@ export function UserActions({ target, onDone }: { target: Target; onDone: () => 
       await api.patch(`/users/${target.id}/push-exempt`, { exempt: next });
       setNotice({
         ok: true,
-        text: next ? `${name} est dispensé des notifications.` : `La dispense de ${name} est retirée.`,
+        text: next ? t("{name} est dispensé des notifications.", { name }) : t("La dispense de {name} est retirée.", { name }),
       });
       onDone();
     } catch (e: any) {
-      setNotice({ ok: false, text: e?.message ?? 'La dispense n’a pas pu être modifiée.' });
+      setNotice({ ok: false, text: e?.message ?? t("La dispense n’a pas pu être modifiée.") });
     }
     setBusy(null);
   }
 
   /** Gel du compte par la gouvernance : acces coupe sur-le-champ, motif obligatoire et journalise. */
   async function freezeAccount() {
-    const reason = await promptDialog(`Motif du gel du compte de ${name} ?`);
+    const reason = await promptDialog(t("Motif du gel du compte de {name} ?", { name }));
     if (!reason?.trim()) return;
     setBusy('freeze');
     setNotice(null);
     try {
       await api.post(`/users/${target.id}/freeze`, { reason: reason.trim() });
-      setNotice({ ok: true, text: `Le compte de ${name} est gelé.` });
+      setNotice({ ok: true, text: t("Le compte de {name} est gelé.", { name }) });
       onDone();
     } catch (e: any) {
-      setNotice({ ok: false, text: e?.message ?? 'Le gel a échoué.' });
+      setNotice({ ok: false, text: e?.message ?? t("Le gel a échoué.") });
     }
     setBusy(null);
   }
@@ -142,31 +144,31 @@ export function UserActions({ target, onDone }: { target: Target; onDone: () => 
    */
   async function anonymiseAccount() {
     const answer = await promptDialog(
-      `Anonymiser ${name} efface son identité et ses coordonnées de façon définitive.\nTapez ANONYMISER pour confirmer.`,
+      t("Anonymiser {name} efface son identité et ses coordonnées de façon définitive.\nTapez ANONYMISER pour confirmer.", { name }),
     );
     if (answer?.trim() !== 'ANONYMISER') return;
     setBusy('forget');
     setNotice(null);
     try {
       await api.del(`/users/${target.id}/personal-data`);
-      setNotice({ ok: true, text: 'Le compte est anonymisé.' });
+      setNotice({ ok: true, text: t("Le compte est anonymisé.") });
       onDone();
     } catch (e: any) {
-      setNotice({ ok: false, text: e?.message ?? 'L’anonymisation a échoué.' });
+      setNotice({ ok: false, text: e?.message ?? t("L’anonymisation a échoué.") });
     }
     setBusy(null);
   }
 
   async function forceLogout() {
-    if (!await confirmDialog(`Déconnecter ${name} de toutes ses sessions ?`)) return;
+    if (!await confirmDialog(t("Déconnecter {name} de toutes ses sessions ?", { name }))) return;
     setBusy('logout');
     setNotice(null);
     try {
       await api.post(`/auth/users/${target.id}/force-logout`, {});
-      setNotice({ ok: true, text: `${name} a été déconnecté de toutes ses sessions.` });
+      setNotice({ ok: true, text: t("{name} a été déconnecté de toutes ses sessions.", { name }) });
       onDone();
     } catch (e: any) {
-      setNotice({ ok: false, text: e?.message ?? 'La déconnexion a échoué.' });
+      setNotice({ ok: false, text: e?.message ?? t("La déconnexion a échoué.") });
     }
     setBusy(null);
   }
@@ -182,7 +184,7 @@ export function UserActions({ target, onDone }: { target: Target; onDone: () => 
             aria-expanded={mode === 'warn'}
           >
             <ShieldAlert className="h-3.5 w-3.5" />
-            Avertir
+            {t("Avertir")}
           </button>
         )}
         {canRecover && (
@@ -195,7 +197,7 @@ export function UserActions({ target, onDone }: { target: Target; onDone: () => 
               className="btn-outline px-3 text-xs"
             >
               <KeyRound className="h-3.5 w-3.5" />
-              {busy === 'reset' ? 'Réinitialisation…' : 'Réinitialiser ses identifiants'}
+              {busy === 'reset' ? t("Réinitialisation…") : t("Réinitialiser ses identifiants")}
             </button>
             <button
               type="button"
@@ -205,7 +207,7 @@ export function UserActions({ target, onDone }: { target: Target; onDone: () => 
               className="btn-outline px-3 text-xs"
             >
               <LockOpen className="h-3.5 w-3.5" />
-              {busy === 'unlock' ? 'Déblocage…' : 'Débloquer'}
+              {busy === 'unlock' ? t("Déblocage…") : t("Débloquer")}
             </button>
           </>
         )}
@@ -219,7 +221,7 @@ export function UserActions({ target, onDone }: { target: Target; onDone: () => 
             className="btn-outline px-3 text-xs"
           >
             {target.pushExempt ? <BellRing className="h-3.5 w-3.5" /> : <BellOff className="h-3.5 w-3.5" />}
-            {target.pushExempt ? 'Rendre obligatoire' : 'Dispenser du push'}
+            {target.pushExempt ? t("Rendre obligatoire") : t("Dispenser du push")}
           </button>
         )}
         {canForceLogout && (
@@ -231,7 +233,7 @@ export function UserActions({ target, onDone }: { target: Target; onDone: () => 
             className="btn-outline px-3 text-xs"
           >
             <LogOut className="h-3.5 w-3.5" />
-            {busy === 'logout' ? 'Déconnexion…' : 'Déconnecter'}
+            {busy === 'logout' ? t("Déconnexion…") : t("Déconnecter")}
           </button>
         )}
         {canForceLogout && target.status !== 'FROZEN' && (
@@ -243,7 +245,7 @@ export function UserActions({ target, onDone }: { target: Target; onDone: () => 
             className="btn-outline px-3 text-xs"
           >
             <Snowflake className="h-3.5 w-3.5" />
-            {busy === 'freeze' ? 'Gel…' : 'Geler'}
+            {busy === 'freeze' ? t("Gel…") : t("Geler")}
           </button>
         )}
         {canForceLogout && (
@@ -255,7 +257,7 @@ export function UserActions({ target, onDone }: { target: Target; onDone: () => 
             className="btn-outline px-3 text-xs text-rose-700"
           >
             <UserX className="h-3.5 w-3.5" />
-            {busy === 'forget' ? 'Anonymisation…' : 'Anonymiser'}
+            {busy === 'forget' ? t("Anonymisation…") : t("Anonymiser")}
           </button>
         )}
       </div>
@@ -263,7 +265,7 @@ export function UserActions({ target, onDone }: { target: Target; onDone: () => 
       {mode === 'warn' && (
         <div className="w-full rounded-xl border border-amber-200 bg-amber-50/70 p-3 sm:w-80">
           <label htmlFor={`warn-${target.id}`} className="label">
-            Motif de l&apos;avertissement
+            {t("Motif de l'avertissement")}
           </label>
           <textarea
             id={`warn-${target.id}`}
@@ -271,7 +273,7 @@ export function UserActions({ target, onDone }: { target: Target; onDone: () => 
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             className="input"
-            placeholder={`Message adressé à ${name}`}
+            placeholder={t("Message adressé à {name}", { name })}
           />
           <div className="mt-2 flex gap-2">
             <button
@@ -281,10 +283,10 @@ export function UserActions({ target, onDone }: { target: Target; onDone: () => 
               aria-busy={busy === 'warn'}
               className="btn-primary px-3 text-xs"
             >
-              {busy === 'warn' ? 'Envoi…' : 'Envoyer'}
+              {busy === 'warn' ? t("Envoi…") : t("Envoyer")}
             </button>
             <button type="button" onClick={() => setMode(null)} className="btn-ghost px-3 text-xs">
-              Annuler
+              {t("Annuler")}
             </button>
           </div>
         </div>

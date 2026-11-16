@@ -5,30 +5,32 @@ import { AlertTriangle, Banknote, CheckCircle2, Eye, Heart, Users } from 'lucide
 import { Stat } from '@/components/ui/Stat';
 import { AlertRow, QueueItem, SectionTitle } from '../widgets';
 import { money, num } from '@/lib/format';
+import { t, localized } from '@/lib/i18n';
 
-const FONAREV_LABEL: Record<string, string> = {
+
+const FONAREV_LABEL: Record<string, string> = localized({
   IDENTIFIED: 'Identifie',
   ORIENTED: 'Oriente',
   FILED: 'Dossier depose',
   REPARATION_OBTAINED: 'Reparation obtenue',
-};
+});
 
 export function AmbassadorBoard({ data }: { data: any }) {
   return (
     <>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Stat label="Mes enfants" value={num(data.myChildren)} tone="primary" icon={<Users className="h-5 w-5" />} />
-        <Stat label="À valider" value={num(data.validationQueue)} tone="amber" icon={<CheckCircle2 className="h-5 w-5" />} />
+        <Stat label={t("Mes enfants")} value={num(data.myChildren)} tone="primary" icon={<Users className="h-5 w-5" />} />
+        <Stat label={t("À valider")} value={num(data.validationQueue)} tone="amber" icon={<CheckCircle2 className="h-5 w-5" />} />
         <Stat
-          label="Décaissements à confirmer"
+          label={t("Décaissements à confirmer")}
           value={num(data.disbursementsToConfirm)}
           tone="coral"
           icon={<Banknote className="h-5 w-5" />}
         />
         <Stat
-          label="Fonds levés"
+          label={t("Fonds levés")}
           value={money(data.fundsRaised)}
-          hint={`${num(data.sponsoredChildren)} enfants parraines`}
+          hint={t("{v0} enfants parraines", { v0: num(data.sponsoredChildren) })}
           tone="mint"
           icon={<Heart className="h-5 w-5" />}
         />
@@ -39,15 +41,15 @@ export function AmbassadorBoard({ data }: { data: any }) {
           <SectionTitle
             action={
               <Link href="/validations" className="link-action">
-                File complete
+                {t("File complete")}
               </Link>
             }
           >
-            Ma file de validation
+            {t("Ma file de validation")}
           </SectionTitle>
           <div className="space-y-2">
             {data.queueDetails.length === 0 && (
-              <p className="py-6 text-center text-sm text-ink-400">Rien à valider pour le moment.</p>
+              <p className="py-6 text-center text-sm text-ink-400">{t("Rien à valider pour le moment.")}</p>
             )}
             {data.queueDetails.map((r: any) => (
               <QueueItem key={r.id} request={r} />
@@ -59,15 +61,15 @@ export function AmbassadorBoard({ data }: { data: any }) {
           <SectionTitle
             action={
               <Link href="/enfants" className="link-action">
-                Mes enfants
+                {t("Mes enfants")}
               </Link>
             }
           >
-            Rappels
+            {t("Rappels")}
           </SectionTitle>
           <div className="space-y-2">
             {data.alerts.length === 0 && (
-              <p className="py-6 text-center text-sm text-ink-400">Aucun rappel en cours.</p>
+              <p className="py-6 text-center text-sm text-ink-400">{t("Aucun rappel en cours.")}</p>
             )}
             {data.alerts.slice(0, 8).map((a: any, i: number) => (
               <AlertRow
@@ -87,36 +89,36 @@ export function AmbassadorBoard({ data }: { data: any }) {
           <SectionTitle
             action={
               <Link href="/communication" className="link-action">
-                Publier
+                {t("Publier")}
               </Link>
             }
           >
-            Mes publications
+            {t("Mes publications")}
           </SectionTitle>
           <div className="grid grid-cols-3 gap-3 text-center">
             <div className="rounded-xl bg-ink-50 py-3">
               <p className="text-xl font-semibold text-ink-900">{num(data.publications.count)}</p>
-              <p className="text-xs text-ink-500">publications</p>
+              <p className="text-xs text-ink-500">{t("publications")}</p>
             </div>
             <div className="rounded-xl bg-ink-50 py-3">
               <p className="text-xl font-semibold text-ink-900">{num(data.publications.views)}</p>
-              <p className="text-xs text-ink-500">vues</p>
+              <p className="text-xs text-ink-500">{t("vues")}</p>
             </div>
             <div className="rounded-xl bg-ink-50 py-3">
               <p className="text-xl font-semibold text-ink-900">{num(data.publications.reactions)}</p>
-              <p className="text-xs text-ink-500">reactions</p>
+              <p className="text-xs text-ink-500">{t("reactions")}</p>
             </div>
           </div>
           <p className="mt-4 flex items-center gap-2 text-xs text-ink-400">
             <Eye className="h-3.5 w-3.5" />
-            {num(data.visitReports)} rapports de visite deposes
+            {num(data.visitReports)}{' '}{t("rapports de visite deposes")}
           </p>
         </section>
 
         <section className="card card-pad lg:col-span-2">
-          <SectionTitle>Demarches FONAREV</SectionTitle>
+          <SectionTitle>{t("Demarches FONAREV")}</SectionTitle>
           {data.fonarev.length === 0 ? (
-            <p className="py-6 text-center text-sm text-ink-400">Aucune demarche en cours.</p>
+            <p className="py-6 text-center text-sm text-ink-400">{t("Aucune demarche en cours.")}</p>
           ) : (
             <div className="space-y-2">
               {data.fonarev.map((f: any) => (

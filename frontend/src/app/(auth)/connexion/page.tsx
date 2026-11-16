@@ -8,6 +8,8 @@ import { useAuth } from '@/lib/auth-context';
 import { Spinner } from '@/components/ui/Loading';
 import { getRememberedEmail, postLoginPath, setRememberedEmail } from '@/lib/remember';
 import { PasswordInput } from '@/components/ui/PasswordInput';
+import { t } from '@/lib/i18n';
+
 
 export default function LoginPage() {
   const { login, user, loading } = useAuth();
@@ -42,7 +44,7 @@ export default function LoginPage() {
     try {
       const res = await login(email, password, needsTotp ? totp : undefined);
       if (res.adminKeyRequired) {
-        setError('Ce compte est un compte Super Admin : connectez-vous depuis l’espace administrateur (/admin), avec votre clé.');
+        setError(t("Ce compte est un compte Super Admin : connectez-vous depuis l’espace administrateur (/admin), avec votre clé."));
         setBusy(false);
         return;
       }
@@ -54,7 +56,7 @@ export default function LoginPage() {
       setRememberedEmail(remember ? email.trim() : null);
       router.push(res.user ? postLoginPath(res.user) : '/tableau-de-bord');
     } catch (err: any) {
-      setError(err?.message ?? 'Connexion impossible');
+      setError(err?.message ?? t("Connexion impossible"));
       setBusy(false);
     }
   }
@@ -62,9 +64,9 @@ export default function LoginPage() {
   return (
     <div>
       <div className="text-center">
-        <h1 className="text-balance text-xl font-semibold tracking-tight text-ink-950 sm:text-2xl">Se connecter</h1>
+        <h1 className="text-balance text-xl font-semibold tracking-tight text-ink-950 sm:text-2xl">{t("Se connecter")}</h1>
         <p className="mt-1 text-pretty text-sm text-ink-500">
-          Acc&eacute;dez &agrave; votre espace selon votre r&ocirc;le dans le r&eacute;seau.
+          {t("Accédez à votre espace selon votre rôle dans le réseau.")}
         </p>
       </div>
 
@@ -82,7 +84,7 @@ export default function LoginPage() {
 
         <div>
           <label htmlFor="email" className="label">
-            Adresse e-mail
+            {t("Adresse e-mail")}
           </label>
           <div className="relative">
             <Mail
@@ -107,7 +109,7 @@ export default function LoginPage() {
 
         <div>
           <label htmlFor="password" className="label">
-            Mot de passe
+            {t("Mot de passe")}
           </label>
           <div className="relative">
             <KeyRound
@@ -129,7 +131,7 @@ export default function LoginPage() {
         {needsTotp && (
           <div className="animate-fade-up">
             <label htmlFor="totp" className="label">
-              Code de double authentification
+              {t("Code de double authentification")}
             </label>
             <input
               id="totp"
@@ -144,7 +146,7 @@ export default function LoginPage() {
               placeholder="000000"
             />
             <p className="mt-2 text-xs text-ink-500">
-              Saisissez le code &agrave; six chiffres de votre application d&apos;authentification.
+              {t("Saisissez le code à six chiffres de votre application d'authentification.")}
             </p>
           </div>
         )}
@@ -157,29 +159,29 @@ export default function LoginPage() {
             onChange={(e) => setRemember(e.target.checked)}
             className="h-4 w-4 rounded border-ink-300 accent-[#174a70] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sun-200"
           />
-          Se souvenir de moi
+          {t("Se souvenir de moi")}
         </label>
 
         <button type="submit" disabled={busy} className="btn-primary w-full">
           {busy ? <Spinner className="h-4 w-4" /> : null}
-          {busy ? 'Connexion…' : needsTotp ? 'Valider le code' : 'Se connecter'}
+          {busy ? t("Connexion…") : needsTotp ? t("Valider le code") : t("Se connecter")}
         </button>
       </form>
 
       <div className="mt-5 space-y-2 border-t border-ink-100 pt-4 text-center text-sm leading-6 text-ink-600">
         <p>
-          Soutenir un enfant&nbsp;?{' '}
+          {t("Soutenir un enfant ?")}{' '}
           <Link href="/inscription" className="link-inline">
-            Cr&eacute;er un compte bailleur
+            {t("Créer un compte bailleur")}
           </Link>
         </p>
         <p>
-          Administrateur&nbsp;?{' '}
+          {t("Administrateur ?")}{' '}
           <Link href="/admin" className="link-inline">
-            Espace administrateur
+            {t("Espace administrateur")}
           </Link>
         </p>
-        <p className="text-xs text-ink-500">Les autres r&ocirc;les re&ccedil;oivent une invitation par e-mail.</p>
+        <p className="text-xs text-ink-500">{t("Les autres rôles reçoivent une invitation par e-mail.")}</p>
       </div>
     </div>
   );

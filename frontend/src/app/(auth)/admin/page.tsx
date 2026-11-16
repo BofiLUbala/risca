@@ -11,6 +11,7 @@ import { Spinner } from '@/components/ui/Loading';
 import { postLoginPath, getRememberedEmail, setRememberedEmail } from '@/lib/remember';
 import { AdminRecovery } from '@/components/auth/AdminRecovery';
 import { PasswordInput } from '@/components/ui/PasswordInput';
+import { t } from '@/lib/i18n';
 
 // Rôles autorisés à entrer par cette porte : les comptes d'administration.
 const KEY_STORAGE = 'risac.admin-key';
@@ -103,7 +104,7 @@ export default function AdminPage() {
       await navigator.clipboard.writeText(adminKey);
       setCopied(true);
     } catch {
-      setError('Copie impossible : sélectionnez la clé et copiez-la à la main.');
+      setError(t("Copie impossible : sélectionnez la clé et copiez-la à la main."));
     }
   }
   const [step, setStep] = useState<'form' | 'verify'>('form');
@@ -124,7 +125,7 @@ export default function AdminPage() {
       setRememberedEmail(rememberMe ? email : null);
       if (res.adminKeyRequired) {
         setNeedsKey(true);
-        setInfo('Saisissez la clé administrateur que vous avez choisie à la création de votre compte.');
+        setInfo(t("Saisissez la clé administrateur que vous avez choisie à la création de votre compte."));
         setBusy(false);
         return;
       }
@@ -136,7 +137,7 @@ export default function AdminPage() {
       const me = await api.get<{ role: string }>('/auth/me');
       if (!ADMIN_ROLES.includes(me.role)) {
         await logout();
-        setError('Cet espace est réservé aux comptes d’administration. Utilisez la page de connexion générale.');
+        setError(t("Cet espace est réservé aux comptes d’administration. Utilisez la page de connexion générale."));
         setBusy(false);
         return;
       }
@@ -148,7 +149,7 @@ export default function AdminPage() {
       }
       router.push(res.user ? postLoginPath(res.user) : '/tableau-de-bord');
     } catch (err: any) {
-      setError(err?.message ?? 'Connexion impossible');
+      setError(err?.message ?? t("Connexion impossible"));
       setBusy(false);
     }
   }
@@ -157,19 +158,19 @@ export default function AdminPage() {
     e.preventDefault();
     setError(null);
     if (password.length < 12) {
-      setError('Le mot de passe doit contenir au moins 12 caractères.');
+      setError(t("Le mot de passe doit contenir au moins 12 caractères."));
       return;
     }
     if (password !== confirm) {
-      setError('Les deux mots de passe ne correspondent pas.');
+      setError(t("Les deux mots de passe ne correspondent pas."));
       return;
     }
     if (adminKey.trim().length < 16) {
-      setError('La clé administrateur doit contenir au moins 16 caractères.');
+      setError(t("La clé administrateur doit contenir au moins 16 caractères."));
       return;
     }
     if (!keySaved) {
-      setError('Confirmez que vous avez conservé votre clé : elle ne pourra pas être affichée de nouveau.');
+      setError(t("Confirmez que vous avez conservé votre clé : elle ne pourra pas être affichée de nouveau."));
       return;
     }
     setBusy(true);
@@ -185,11 +186,11 @@ export default function AdminPage() {
       setStep('verify');
       setInfo(
         res.emailSent === false && !res.devOtp
-          ? 'Le compte est créé, mais l’e-mail n’a pas pu être envoyé. Utilisez « Renvoyer le code ».'
-          : `Un code à 6 chiffres vient d’être envoyé à ${email}.`,
+          ? t("Le compte est créé, mais l’e-mail n’a pas pu être envoyé. Utilisez « Renvoyer le code ».")
+          : t("Un code à 6 chiffres vient d’être envoyé à {email}.", { email }),
       );
     } catch (err: any) {
-      setError(err?.message ?? 'Création impossible');
+      setError(err?.message ?? t("Création impossible"));
     }
     setBusy(false);
   }
@@ -205,7 +206,7 @@ export default function AdminPage() {
       await refresh();
       router.push(res.twoFactorRequired ? '/profil?2fa=1' : '/tableau-de-bord');
     } catch (err: any) {
-      setError(err?.message ?? 'Vérification impossible');
+      setError(err?.message ?? t("Vérification impossible"));
       setBusy(false);
     }
   }
@@ -215,9 +216,9 @@ export default function AdminPage() {
     setInfo(null);
     try {
       await api.post('/auth/verify-email/resend', { email });
-      setInfo('Si l’adresse est en attente de confirmation, un nouveau code vient d’être envoyé.');
+      setInfo(t("Si l’adresse est en attente de confirmation, un nouveau code vient d’être envoyé."));
     } catch (err: any) {
-      setError(err?.message ?? 'Envoi impossible');
+      setError(err?.message ?? t("Envoi impossible"));
     }
   }
 
@@ -232,11 +233,11 @@ export default function AdminPage() {
         <span className="grid h-10 w-10 place-items-center rounded-xl bg-risac-50 text-risac-700">
           <ShieldCheck className="h-5 w-5" aria-hidden="true" />
         </span>
-        <h1 className="page-title">Espace administrateur</h1>
+        <h1 className="page-title">{t("Espace administrateur")}</h1>
       </div>
-      <p className="page-subtitle text-center">Réservé au Super Admin et aux équipes d’administration de RISAC.</p>
+      <p className="page-subtitle text-center">{t("Réservé au Super Admin et aux équipes d’administration de RISAC.")}</p>
 
-      <div role="tablist" aria-label="Accès administrateur" className="mt-6 flex gap-1 rounded-xl bg-ink-100 p-1">
+      <div role="tablist" aria-label={t("Accès administrateur")} className="mt-6 flex gap-1 rounded-xl bg-ink-100 p-1">
         <button
           type="button"
           role="tab"
@@ -246,7 +247,7 @@ export default function AdminPage() {
           onClick={() => switchTab('login')}
           className={tabClass(tab === 'login')}
         >
-          Se connecter
+          {t("Se connecter")}
         </button>
         <button
           type="button"
@@ -257,7 +258,7 @@ export default function AdminPage() {
           onClick={() => switchTab('create')}
           className={tabClass(tab === 'create')}
         >
-          Créer mon compte
+          {t("Créer mon compte")}
         </button>
       </div>
 
@@ -270,7 +271,7 @@ export default function AdminPage() {
           <form id="panel-login" role="tabpanel" aria-labelledby="tab-login" onSubmit={onLogin} className="space-y-4" noValidate>
             <div>
               <label htmlFor="a-email" className="label">
-                Adresse e-mail
+                {t("Adresse e-mail")}
               </label>
               <input
                 id="a-email"
@@ -284,7 +285,7 @@ export default function AdminPage() {
             </div>
             <div>
               <label htmlFor="a-password" className="label">
-                Mot de passe
+                {t("Mot de passe")}
               </label>
               <PasswordInput
                 id="a-password"
@@ -298,7 +299,7 @@ export default function AdminPage() {
             {needsKey && (
               <div className="animate-fade-up">
                 <label htmlFor="a-key" className="label">
-                  Clé administrateur
+                  {t("Clé administrateur")}
                 </label>
                 <PasswordInput
                   id="a-key"
@@ -313,21 +314,21 @@ export default function AdminPage() {
             )}
             <label className="flex items-center gap-2.5 text-sm text-ink-700">
               <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="h-4 w-4 rounded border-ink-300" />
-              Se souvenir de moi
+              {t("Se souvenir de moi")}
             </label>
             {needsKey && (
               <div>
                 <label className="flex items-start gap-2.5 text-sm text-ink-700">
                   <input type="checkbox" checked={rememberKey} onChange={(e) => setRememberKey(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-ink-300" />
-                  <span>Mémoriser ma clé sur cet appareil</span>
+                  <span>{t("Mémoriser ma clé sur cet appareil")}</span>
                 </label>
-                <p className="mt-1 pl-6 text-xs text-ink-500">À éviter sur un ordinateur partagé : la clé serait lisible par quiconque utilise ce navigateur.</p>
+                <p className="mt-1 pl-6 text-xs text-ink-500">{t("À éviter sur un ordinateur partagé : la clé serait lisible par quiconque utilise ce navigateur.")}</p>
               </div>
             )}
             {needsTotp && (
               <div className="animate-fade-up">
                 <label htmlFor="a-totp" className="label">
-                  Code de double authentification
+                  {t("Code de double authentification")}
                 </label>
                 <input
                   id="a-totp"
@@ -344,7 +345,7 @@ export default function AdminPage() {
             )}
             <button type="submit" disabled={busy} className="btn-primary w-full py-3">
               {busy ? <Spinner className="h-4 w-4" /> : null}
-              {needsTotp ? 'Valider le code' : 'Se connecter'}
+              {needsTotp ? t("Valider le code") : t("Se connecter")}
             </button>
             <button
               type="button"
@@ -352,7 +353,7 @@ export default function AdminPage() {
               aria-expanded={showLost}
               className="text-sm font-medium text-risac-700 hover:text-risac-800"
             >
-              Identifiants ou clé perdus ?
+              {t("Identifiants ou clé perdus ?")}
             </button>
           </form>
           {showLost && <AdminRecovery />}
@@ -362,10 +363,10 @@ export default function AdminPage() {
         {tab === 'create' && step === 'form' && setup && !setup.creationOpen && (
           <div id="panel-create" role="tabpanel" aria-labelledby="tab-create" className="space-y-4">
             <Alert>
-              Les trois comptes Super Admin sont déjà créés. Le Super Admin n°1 invite les deux autres depuis la page Utilisateurs ; connectez-vous avec votre compte et votre clé administrateur.
+              {t("Les trois comptes Super Admin sont déjà créés. Le Super Admin n°1 invite les deux autres depuis la page Utilisateurs ; connectez-vous avec votre compte et votre clé administrateur.")}
             </Alert>
             <button type="button" onClick={() => switchTab('login')} className="btn-outline w-full py-3">
-              Aller à la connexion
+              {t("Aller à la connexion")}
             </button>
           </div>
         )}
@@ -375,20 +376,20 @@ export default function AdminPage() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="c-first" className="label">
-                  Prénom
+                  {t("Prénom")}
                 </label>
                 <input id="c-first" required value={firstName} onChange={(e) => setFirstName(e.target.value)} className="input" />
               </div>
               <div>
                 <label htmlFor="c-last" className="label">
-                  Nom
+                  {t("Nom")}
                 </label>
                 <input id="c-last" required value={lastName} onChange={(e) => setLastName(e.target.value)} className="input" />
               </div>
             </div>
             <div>
               <label htmlFor="c-email" className="label">
-                Adresse e-mail
+                {t("Adresse e-mail")}
               </label>
               <input
                 id="c-email"
@@ -399,12 +400,12 @@ export default function AdminPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="input"
               />
-              <p className="mt-1.5 text-xs text-ink-500">Un code de confirmation y sera envoyé.</p>
+              <p className="mt-1.5 text-xs text-ink-500">{t("Un code de confirmation y sera envoyé.")}</p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="c-pass" className="label">
-                  Mot de passe
+                  {t("Mot de passe")}
                 </label>
                 <PasswordInput
                   id="c-pass"
@@ -419,7 +420,7 @@ export default function AdminPage() {
               </div>
               <div>
                 <label htmlFor="c-confirm" className="label">
-                  Confirmer
+                  {t("Confirmer")}
                 </label>
                 <PasswordInput
                   id="c-confirm"
@@ -432,12 +433,12 @@ export default function AdminPage() {
               </div>
             </div>
             <p id="c-pass-help" className="-mt-2 text-xs text-ink-500">
-              12 caractères au minimum. La double authentification sera exigée dès votre première connexion.
+              {t("12 caractères au minimum. La double authentification sera exigée dès votre première connexion.")}
             </p>
 
             <div>
               <label htmlFor="c-admin-key" className="label">
-                Votre clé administrateur
+                {t("Votre clé administrateur")}
               </label>
               <div className="flex gap-2">
                 <input
@@ -456,7 +457,7 @@ export default function AdminPage() {
                   aria-describedby="c-admin-key-help"
                 />
                 <button type="button" onClick={generateKey} className="btn-outline shrink-0">
-                  Générer
+                  {t("Générer")}
                 </button>
               </div>
               <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
@@ -465,7 +466,7 @@ export default function AdminPage() {
                   onClick={() => setShowKey((v) => !v)}
                   className="font-medium text-risac-700 hover:text-risac-800"
                 >
-                  {showKey ? 'Masquer' : 'Afficher'}
+                  {showKey ? t("Masquer") : t("Afficher")}
                 </button>
                 <button
                   type="button"
@@ -473,12 +474,11 @@ export default function AdminPage() {
                   disabled={!adminKey}
                   className="font-medium text-risac-700 hover:text-risac-800 disabled:opacity-40"
                 >
-                  {copied ? 'Copiée' : 'Copier'}
+                  {copied ? t("Copiée") : t("Copier")}
                 </button>
               </div>
               <p id="c-admin-key-help" className="mt-1.5 text-xs text-ink-500">
-                16 caractères minimum. Cette clé, que vous seul connaîtrez, sera demandée à chaque connexion en plus du
-                mot de passe. Elle est enregistrée chiffrée : personne, pas même nous, ne peut la retrouver.
+                {t("16 caractères minimum. Cette clé, que vous seul connaîtrez, sera demandée à chaque connexion en plus du mot de passe. Elle est enregistrée chiffrée : personne, pas même nous, ne peut la retrouver.")}
               </p>
               <label className="mt-3 flex items-start gap-2.5 text-sm text-ink-700">
                 <input
@@ -487,14 +487,14 @@ export default function AdminPage() {
                   onChange={(e) => setKeySaved(e.target.checked)}
                   className="mt-0.5 h-4 w-4 rounded border-ink-300"
                 />
-                <span>J’ai conservé ma clé dans un endroit sûr (gestionnaire de mots de passe).</span>
+                <span>{t("J’ai conservé ma clé dans un endroit sûr (gestionnaire de mots de passe).")}</span>
               </label>
             </div>
 
             {setup?.installKeyRequired && (
               <div>
                 <label htmlFor="c-key" className="label">
-                  Clé d’installation
+                  {t("Clé d’installation")}
                 </label>
                 <PasswordInput
                   id="c-key"
@@ -506,29 +506,28 @@ export default function AdminPage() {
                   aria-describedby="c-key-help"
                 />
                 <p id="c-key-help" className="mt-1.5 text-xs text-ink-500">
-                  Clé secrète du serveur (<code className="font-mono">ADMIN_SETUP_KEY</code>). Seul le propriétaire de la
-                  plateforme la connaît.
+                  {t("Clé secrète du serveur (")}<code className="font-mono">ADMIN_SETUP_KEY</code>{t("). Seul le propriétaire de la plateforme la connaît.")}
                 </p>
               </div>
             )}
 
             <button type="submit" disabled={busy} className="btn-primary w-full py-3">
               {busy ? <Spinner className="h-4 w-4" /> : null}
-              Créer mon compte
+              {t("Créer mon compte")}
             </button>
             {setup?.claimable && (
               <p className="text-sm text-ink-500">
-                Compte déjà créé mais pas encore confirmé ?{' '}
+                {t("Compte déjà créé mais pas encore confirmé ?")}{' '}
                 <button
                   type="button"
                   onClick={() => {
                     setError(null);
-                    setInfo('Saisissez l’adresse e-mail du compte puis le code reçu (ou demandez-en un nouveau).');
+                    setInfo(t("Saisissez l’adresse e-mail du compte puis le code reçu (ou demandez-en un nouveau)."));
                     setStep('verify');
                   }}
                   className="font-medium text-risac-700 hover:text-risac-800"
                 >
-                  Saisir mon code
+                  {t("Saisir mon code")}
                 </button>
               </p>
             )}
@@ -539,7 +538,7 @@ export default function AdminPage() {
           <form id="panel-create" role="tabpanel" aria-labelledby="tab-create" onSubmit={onVerify} className="space-y-5" noValidate>
             <div>
               <label htmlFor="v-email" className="label">
-                Adresse e-mail du compte
+                {t("Adresse e-mail du compte")}
               </label>
               <input
                 id="v-email"
@@ -553,7 +552,7 @@ export default function AdminPage() {
             </div>
             <div>
               <label htmlFor="v-otp" className="label">
-                Code de vérification
+                {t("Code de vérification")}
               </label>
               <input
                 id="v-otp"
@@ -567,24 +566,24 @@ export default function AdminPage() {
                 className="input text-center text-lg tracking-[0.5em]"
               />
               <p className="mt-1.5 text-xs text-ink-500">
-                Valable 15 minutes.{' '}
+                {t("Valable 15 minutes.")}{' '}
                 <button type="button" onClick={resendCode} className="font-medium text-risac-700 hover:text-risac-800">
-                  Renvoyer le code
+                  {t("Renvoyer le code")}
                 </button>
               </p>
             </div>
             <button type="submit" disabled={busy || otp.length !== 6} className="btn-primary w-full py-3">
               {busy ? <Spinner className="h-4 w-4" /> : null}
-              Activer mon compte
+              {t("Activer mon compte")}
             </button>
           </form>
         )}
       </div>
 
       <p className="mt-8 text-sm text-ink-500">
-        Vous n’êtes pas administrateur ?{' '}
+        {t("Vous n’êtes pas administrateur ?")}{' '}
         <Link href="/connexion" className="inline-flex min-h-[44px] items-center font-medium text-risac-700 hover:text-risac-800 sm:min-h-0">
-          Retour à la connexion générale
+          {t("Retour à la connexion générale")}
         </Link>
       </p>
     </div>

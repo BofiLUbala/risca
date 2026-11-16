@@ -8,14 +8,16 @@ import { Menu, X } from 'lucide-react';
 import { Logo } from '@/components/ui/Logo';
 import { useAuth } from '@/lib/auth-context';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { LanguageToggle } from '@/components/ui/LanguageToggle';
+import { t, localized } from '@/lib/i18n';
 
-const LINKS = [
+const LINKS = localized([
   { href: '/', label: 'Accueil' },
   { href: '/enfants-a-soutenir', label: 'Enfants à soutenir' },
   { href: '/projets-ouverts', label: 'Projets' },
   { href: '/structures', label: 'Orphelinats' },
   { href: '/partenaires', label: 'Partenaires' },
-];
+]);
 
 export function PublicHeader() {
   const { user } = useAuth();
@@ -26,7 +28,7 @@ export function PublicHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-ink-100 bg-surface/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-6 px-4 sm:px-6 lg:px-8">
-        <Link href="/" aria-label="RISAC, accueil">
+        <Link href="/" aria-label={t("RISAC, accueil")}>
           <Logo className="h-12" />
         </Link>
 
@@ -48,28 +50,30 @@ export function PublicHeader() {
         </nav>
 
         <div className="ml-auto hidden items-center gap-2 md:flex">
+          <LanguageToggle />
           <ThemeToggle />
           {user ? (
             <Link href="/tableau-de-bord" className="btn-primary">
-              Mon espace
+              {t("Mon espace")}
             </Link>
           ) : (
             <>
               <Link href="/connexion" className="btn-ghost">
-                Se connecter
+                {t("Se connecter")}
               </Link>
               <Link href="/inscription" className="btn-primary">
-                Devenir bailleur
+                {t("Devenir bailleur")}
               </Link>
             </>
           )}
         </div>
 
-        <ThemeToggle className="ml-auto md:hidden" />
+        <LanguageToggle className="ml-auto md:hidden" />
+        <ThemeToggle className="md:hidden" />
         <button
           onClick={() => setOpen(!open)}
           className="btn-ghost h-10 w-10 p-0 md:hidden"
-          aria-label="Menu"
+          aria-label={t("Menu")}
           aria-expanded={open}
         >
           {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -100,15 +104,15 @@ export function PublicHeader() {
           <div className="flex gap-2 pt-3">
             {user ? (
               <Link href="/tableau-de-bord" className="btn-primary flex-1">
-                Mon espace
+                {t("Mon espace")}
               </Link>
             ) : (
               <>
                 <Link href="/connexion" className="btn-outline flex-1">
-                  Se connecter
+                  {t("Se connecter")}
                 </Link>
                 <Link href="/inscription" className="btn-primary flex-1">
-                  Devenir bailleur
+                  {t("Devenir bailleur")}
                 </Link>
               </>
             )}

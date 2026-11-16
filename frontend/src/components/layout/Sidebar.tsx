@@ -8,6 +8,7 @@ import { Logo } from '@/components/ui/Logo';
 import { GROUP_ORDER, navForRole } from '@/lib/nav';
 import { useAuth } from '@/lib/auth-context';
 import { useLayoutPrefs } from '@/lib/layout-prefs';
+import { t } from '@/lib/i18n';
 
 function Icon({ name, className }: { name: string; className?: string }) {
   const C = (Icons as any)[name] ?? Icons.Circle;
@@ -47,7 +48,7 @@ export function Sidebar({
     : right
       ? Icons.PanelRightClose
       : Icons.PanelLeftClose;
-  const toggleLabel = collapsed ? 'Agrandir le menu' : 'Réduire le menu';
+  const toggleLabel = collapsed ? t("Agrandir le menu") : t("Réduire le menu");
 
   return (
     <div className={clsx('sb flex h-full flex-col overflow-hidden', `sb-${color}`)}>
@@ -58,8 +59,8 @@ export function Sidebar({
         <Link
           href="/tableau-de-bord"
           onClick={onNavigate}
-          aria-label="RISAC, tableau de bord"
-          title={collapsed ? 'RISAC, tableau de bord' : undefined}
+          aria-label={t("RISAC, tableau de bord")}
+          title={collapsed ? t("RISAC, tableau de bord") : undefined}
           className={clsx(!light && (collapsed ? 'rounded-lg bg-[#ffffff] p-1' : 'rounded-xl bg-[#ffffff] px-2 py-1'))}
         >
           {collapsed ? <Logo showText={false} className="h-8 w-8" /> : <Logo className={light ? 'h-12' : 'h-10'} />}
@@ -71,7 +72,7 @@ export function Sidebar({
           // En colonne étroite, la barre de défilement mangerait la place des icônes : on la masque (la molette et le clavier restent actifs).
           collapsed ? 'space-y-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden' : 'space-y-6',
         )}
-        aria-label="Navigation principale"
+        aria-label={t("Navigation principale")}
       >
         {GROUP_ORDER.filter((g) => groups[g]?.length).map((group, i) => (
           <div key={group}>
@@ -120,18 +121,18 @@ export function Sidebar({
             title={toggleLabel}
           >
             <ToggleIcon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} />
-            {!collapsed && <span className="truncate">Réduire le menu</span>}
+            {!collapsed && <span className="truncate">{t("Réduire le menu")}</span>}
           </button>
         )}
         <button
           type="button"
           onClick={logout}
           className={clsx('sb-item', collapsed && 'justify-center px-0')}
-          aria-label={collapsed ? 'Se déconnecter' : undefined}
-          title={collapsed ? 'Se déconnecter' : undefined}
+          aria-label={collapsed ? t("Se déconnecter") : undefined}
+          title={collapsed ? t("Se déconnecter") : undefined}
         >
           <Icons.LogOut className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} />
-          {!collapsed && <span className="truncate">Se déconnecter</span>}
+          {!collapsed && <span className="truncate">{t("Se déconnecter")}</span>}
         </button>
       </div>
     </div>

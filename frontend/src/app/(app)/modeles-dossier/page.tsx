@@ -7,6 +7,7 @@ import { CountrySelect } from '@/components/geo/GeoSelects';
 import { FileCog, Plus, Trash2 } from 'lucide-react';
 import { api, fetcher } from '@/lib/api';
 import { SkeletonList } from '@/components/ui/Loading';
+import { t } from '@/lib/i18n';
 
 const TYPES = ['TEXT', 'LONGTEXT', 'NUMBER', 'DATE', 'BOOLEAN', 'SELECT', 'MULTISELECT', 'FILE', 'PHOTO'];
 
@@ -20,10 +21,10 @@ export default function TemplatesPage() {
   const [error, setError] = useState<string | null>(null);
 
   async function addField(sectionId: string) {
-    const labelFr = await promptDialog('Libelle du champ (francais) ?');
+    const labelFr = await promptDialog(t("Libelle du champ (francais) ?"));
     if (!labelFr) return;
-    const type = await promptDialog(`Type ? (${TYPES.join(', ')})`, 'TEXT');
-    const required = await confirmDialog('Ce champ est-il obligatoire ?');
+    const type = await promptDialog(t("Type ? ({v0})", { v0: TYPES.join(', ') }), 'TEXT');
+    const required = await confirmDialog(t("Ce champ est-il obligatoire ?"));
     const key = labelFr
       .normalize('NFD')
       .replace(/[̀-ͯ]/g, '')
@@ -42,12 +43,12 @@ export default function TemplatesPage() {
       });
       mutate();
     } catch (e: any) {
-      setError(e?.message ?? 'Ajout impossible');
+      setError(e?.message ?? t("Ajout impossible"));
     }
   }
 
   async function removeField(fieldId: string) {
-    if (!await confirmDialog('Supprimer ce champ du modele ?')) return;
+    if (!await confirmDialog(t("Supprimer ce champ du modele ?"))) return;
     await api.del(`/templates/fields/${fieldId}`);
     mutate();
   }
@@ -55,16 +56,15 @@ export default function TemplatesPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="page-title">Modèles de dossier</h1>
+        <h1 className="page-title">{t("Modèles de dossier")}</h1>
         <p className="mt-1 text-sm text-ink-500">
-          Les champs et documents requis varient selon le pays. Ajouter un pays ou un champ ne demande
-          aucun changement de code.
+          {t("Les champs et documents requis varient selon le pays. Ajouter un pays ou un champ ne demande aucun changement de code.")}
         </p>
       </div>
 
       <div className="card card-pad">
         <label htmlFor="country" className="label">
-          Pays
+          {t("Pays")}
         </label>
         <CountrySelect id="country" value={countryId} onChange={(id) => setCountryId(id)} className="sm:w-80" />
       </div>
@@ -74,17 +74,17 @@ export default function TemplatesPage() {
       {!countryId ? (
         <div className="card card-pad flex items-center gap-3 text-sm text-ink-500">
           <FileCog className="h-5 w-5 text-ink-400" />
-          Choisissez un pays pour afficher son modele de dossier.
+          {t("Choisissez un pays pour afficher son modele de dossier.")}
         </div>
       ) : isLoading ? (
         <SkeletonList rows={4} />
       ) : !template ? (
-        <div className="card card-pad text-sm text-ink-500">Aucun modele pour ce pays.</div>
+        <div className="card card-pad text-sm text-ink-500">{t("Aucun modele pour ce pays.")}</div>
       ) : (
         <div className="space-y-4">
           <p className="text-sm text-ink-500">
-            {template.name} &middot; version {template.version} &middot; {template.sections.length}{' '}
-            sections
+            {template.name}{' '}{t("· version")}{' '}{template.version} &middot; {template.sections.length}{' '}
+            {t("sections")}
           </p>
 
           {template.sections.map((s: any) => (
@@ -93,12 +93,12 @@ export default function TemplatesPage() {
                 <div>
                   <h2 className="card-title">{s.labelFr}</h2>
                   <p className="text-xs text-ink-400">
-                    cle : {s.key} &middot; visibilite : {s.visibility}
+                    {t("cle :")}{' '}{s.key}{' '}{t("· visibilite :")}{' '}{s.visibility}
                   </p>
                 </div>
                 <button onClick={() => addField(s.id)} className="btn-soft h-9">
                   <Plus className="h-4 w-4" />
-                  Champ
+                  {t("Champ")}
                 </button>
               </div>
 
@@ -119,7 +119,7 @@ export default function TemplatesPage() {
                     <button
                       onClick={() => removeField(f.id)}
                       className="btn-ghost h-8 w-8 p-0 text-ink-400 hover:text-accent-coral"
-                      aria-label="Supprimer"
+                      aria-label={t("Supprimer")}
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>

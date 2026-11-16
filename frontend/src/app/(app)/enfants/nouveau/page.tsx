@@ -9,6 +9,7 @@ import { api, fetcher } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { DynamicField } from '@/components/child/DynamicField';
 import { Spinner } from '@/components/ui/Loading';
+import { t, geoName } from '@/lib/i18n';
 
 /**
  * Bouton « + Nouvel enfant » (section 11) : le formulaire affiche
@@ -64,7 +65,7 @@ export default function NewChildPage() {
       });
       router.push(`/enfants/${r.child.id}`);
     } catch (err: any) {
-      setError(err?.message ?? 'Création impossible');
+      setError(err?.message ?? t("Création impossible"));
       setBusy(false);
     }
   }
@@ -73,22 +74,22 @@ export default function NewChildPage() {
     <div className="max-w-3xl space-y-5">
       <Link href="/enfants" className="inline-flex min-h-[44px] items-center gap-1.5 text-sm text-ink-500 hover:text-ink-800 sm:min-h-0">
         <ArrowLeft className="h-4 w-4" />
-        Retour aux enfants
+        {t("Retour aux enfants")}
       </Link>
 
       <div>
-        <h1 className="page-title">Nouvel enfant</h1>
+        <h1 className="page-title">{t("Nouvel enfant")}</h1>
         <p className="mt-1 text-sm text-ink-500">
-          Les champs et documents requis sont ceux du pays de la structure.
+          {t("Les champs et documents requis sont ceux du pays de la structure.")}
         </p>
       </div>
 
       <form onSubmit={submit} className="space-y-5">
         <section className="card card-pad space-y-4">
-          <h2 className="card-title">Structure d’accueil</h2>
+          <h2 className="card-title">{t("Structure d’accueil")}</h2>
           <div>
             <label htmlFor="orph" className="label">
-              Orphelinat
+              {t("Orphelinat")}
             </label>
             <select
               id="orph"
@@ -97,10 +98,10 @@ export default function NewChildPage() {
               onChange={(e) => setOrphanageId(e.target.value)}
               className="input"
             >
-              <option value="">Choisir une structure</option>
+              <option value="">{t("Choisir une structure")}</option>
               {orphanages?.map((o) => (
                 <option key={o.id} value={o.id}>
-                  {o.name} - {o.country.nameFr}
+                  {o.name} - {geoName(o.country)}
                 </option>
               ))}
             </select>
@@ -136,10 +137,10 @@ export default function NewChildPage() {
         ) : null}
 
         <section className="card card-pad space-y-4">
-          <h2 className="card-title">Profil public</h2>
+          <h2 className="card-title">{t("Profil public")}</h2>
           <div>
             <label htmlFor="story" className="label">
-              Histoire racontee avec soin
+              {t("Histoire racontee avec soin")}
             </label>
             <textarea
               id="story"
@@ -151,7 +152,7 @@ export default function NewChildPage() {
           </div>
           <div>
             <label htmlFor="needs" className="label">
-              Besoins
+              {t("Besoins")}
             </label>
             <input
               id="needs"
@@ -171,14 +172,14 @@ export default function NewChildPage() {
         <div className="flex gap-2">
           <button type="submit" disabled={busy || !orphanageId} className="btn-primary">
             {busy ? <Spinner className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-            Enregistrer le brouillon
+            {t("Enregistrer le brouillon")}
           </button>
           <Link href="/enfants" className="btn-ghost">
-            Annuler
+            {t("Annuler")}
           </Link>
         </div>
         <p className="text-xs text-ink-400">
-          Le dossier est cree en brouillon. Vous le soumettrez ensuite au circuit de validation.
+          {t("Le dossier est cree en brouillon. Vous le soumettrez ensuite au circuit de validation.")}
         </p>
       </form>
     </div>
@@ -198,11 +199,11 @@ function IdentitySection({
 }) {
   return (
     <section className="card card-pad space-y-4">
-      <h2 className="card-title">Identité</h2>
+      <h2 className="card-title">{t("Identité")}</h2>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="fn" className="label">
-            Prenom <span className="text-accent-coral">*</span>
+            {t("Prenom")}{' '}<span className="text-accent-coral">*</span>
           </label>
           <input
             id="fn"
@@ -215,7 +216,7 @@ function IdentitySection({
         </div>
         <div>
           <label htmlFor="ln" className="label">
-            Nom (confidentiel) <span className="text-accent-coral">*</span>
+            {t("Nom (confidentiel)")}{' '}<span className="text-accent-coral">*</span>
           </label>
           <input
             id="ln"
@@ -228,7 +229,7 @@ function IdentitySection({
         </div>
         <div>
           <label htmlFor="sex" className="label">
-            Sexe <span className="text-accent-coral">*</span>
+            {t("Sexe")}{' '}<span className="text-accent-coral">*</span>
           </label>
           <select
             id="sex"
@@ -236,13 +237,13 @@ function IdentitySection({
             onChange={(e) => setBase({ ...base, sex: e.target.value })}
             className="input"
           >
-            <option value="M">Masculin</option>
-            <option value="F">Feminin</option>
+            <option value="M">{t("Masculin")}</option>
+            <option value="F">{t("Feminin")}</option>
           </select>
         </div>
         <div>
           <label htmlFor="bd" className="label">
-            Date de naissance
+            {t("Date de naissance")}
           </label>
           <input
             id="bd"
@@ -259,12 +260,12 @@ function IdentitySection({
         <div role="alert" className="rounded-xl bg-amber-50 px-4 py-3">
           <p className="flex items-center gap-2 text-sm font-medium text-amber-800">
             <AlertTriangle className="h-4 w-4" />
-            Doublon possible detecte
+            {t("Doublon possible detecte")}
           </p>
           <ul className="mt-2 space-y-1 text-xs text-amber-700">
             {duplicates.map((d) => (
               <li key={d.id}>
-                {d.firstName} ({d.publicId}) - {d.orphanage.name} - correspondance {d.matchScore} %
+                {d.firstName} ({d.publicId}) - {d.orphanage.name}{' '}{t("- correspondance")}{' '}{d.matchScore} %
               </li>
             ))}
           </ul>

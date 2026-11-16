@@ -5,6 +5,7 @@ import { money, percent } from '@/lib/format';
 import { mediaUrl } from '@/lib/api';
 import { SafeImage } from '@/components/ui/SafeImage';
 import { Badge } from '@/components/ui/Badge';
+import { t, geoName } from '@/lib/i18n';
 
 export interface PublicProject {
   id: string;
@@ -72,13 +73,13 @@ export function ProjectCard({
               {money(project.collectedAmount, project.currency)}
             </span>
             <span className="text-xs text-ink-400">
-              sur {money(project.targetAmount, project.currency)} · {pct} %
+              {t("sur")}{' '}{money(project.targetAmount, project.currency)} · {pct} %
             </span>
           </div>
           {project.orphanage && (
             <p className="mt-2 truncate text-xs text-ink-400">
               {project.orphanage.name}
-              {project.orphanage.province ? ` · ${project.orphanage.province.nameFr}` : ''}
+              {project.orphanage.province ? ` · ${geoName(project.orphanage.province)}` : ''}
             </p>
           )}
         </div>

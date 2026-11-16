@@ -1,6 +1,8 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
+import { localized } from '@/lib/i18n';
+
 
 /**
  * Préférences d'affichage de l'espace connecté : couleur et côté du menu.
@@ -10,13 +12,13 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, R
 export type SidebarColor = 'light' | 'navy' | 'green' | 'steel' | 'dark';
 export type SidebarSide = 'left' | 'right';
 
-export const SIDEBAR_COLORS: { value: SidebarColor; label: string; swatch: string }[] = [
+export const SIDEBAR_COLORS: { value: SidebarColor; label: string; swatch: string }[] = localized([
   { value: 'light', label: 'Clair', swatch: '#ffffff' },
   { value: 'navy', label: 'Bleu RISAC', swatch: '#123f62' },
   { value: 'green', label: 'Vert', swatch: '#2d6a40' },
   { value: 'steel', label: 'Bleu acier', swatch: '#35697e' },
   { value: 'dark', label: 'Sombre', swatch: '#172430' },
-];
+]);
 
 interface Prefs {
   color: SidebarColor;

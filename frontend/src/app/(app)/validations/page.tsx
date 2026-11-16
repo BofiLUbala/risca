@@ -6,8 +6,9 @@ import { fetcher } from '@/lib/api';
 import { Empty } from '@/components/ui/Empty';
 import { SkeletonList } from '@/components/ui/Loading';
 import { QueueItem } from '@/components/dashboard/widgets';
+import { t, localized } from '@/lib/i18n';
 
-const KIND_LABEL: Record<string, string> = {
+const KIND_LABEL: Record<string, string> = localized({
   CHILD_DOSSIER: 'Nouveau dossier enfant',
   CHILD_UPDATE: 'Mise à jour de dossier',
   PROJECT: 'Projet',
@@ -15,7 +16,7 @@ const KIND_LABEL: Record<string, string> = {
   ORPHANAGE_UPDATE: 'Fiche orphelinat',
   DISBURSEMENT: 'Décaissement',
   LABEL_APPLICATION: 'Labellisation',
-};
+});
 
 export default function ValidationsPage() {
   const { data, isLoading } = useSWR<any[]>('/approvals/queue', fetcher, { refreshInterval: 30000 });
@@ -28,9 +29,9 @@ export default function ValidationsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="page-title">Ma file de validation</h1>
+        <h1 className="page-title">{t("Ma file de validation")}</h1>
         <p className="mt-1 text-sm text-ink-500">
-          {data ? `${data.length} élément(s) attendent votre décision` : 'Chargement…'}
+          {data ? t("{length} élément(s) attendent votre décision", { length: data.length }) : t("Chargement…")}
         </p>
       </div>
 
@@ -39,8 +40,8 @@ export default function ValidationsPage() {
       ) : !data?.length ? (
         <Empty
           icon={<CheckCircle2 className="h-6 w-6" />}
-          title="Rien à valider"
-          description="Votre file est vide. Les nouvelles demandes apparaîtront ici."
+          title={t("Rien à valider")}
+          description={t("Votre file est vide. Les nouvelles demandes apparaîtront ici.")}
         />
       ) : (
         <div className="space-y-6">

@@ -4,12 +4,13 @@ import { useState } from 'react';
 import { Landmark } from 'lucide-react';
 import { api } from '@/lib/api';
 import { money } from '@/lib/format';
+import { t, localized } from '@/lib/i18n';
 
-const KINDS = [
+const KINDS = localized([
   { value: 'GENERAL_FUND', label: 'Fonds général' },
   { value: 'ONE_OFF', label: 'Don ponctuel à un enfant' },
   { value: 'PROJECT_CONTRIBUTION', label: 'Contribution à un projet' },
-];
+]);
 
 /**
  * Enregistrement d’un virement bancaire reçu hors plateforme
@@ -61,14 +62,12 @@ export function ManualTransferForm({ onRecorded }: { onRecorded: () => void }) {
       });
       setNotice({
         ok: true,
-        text: `Virement enregistré : ${money(r.amount ?? amount, r.currency ?? form.currency)}${
-          r.reference ? ` · référence ${r.reference}` : ''
-        }`,
+        text: t("Virement enregistré : {v0}{v1}", { v0: money(r.amount ?? amount, r.currency ?? form.currency), v1: r.reference ? t(" · référence {reference}", { reference: r.reference }) : '' }),
       });
       setForm((f) => ({ ...f, amount: '', childId: '', projectId: '', note: '' }));
       onRecorded();
     } catch (err: any) {
-      setNotice({ ok: false, text: err?.message ?? 'L’enregistrement a échoué.' });
+      setNotice({ ok: false, text: err?.message ?? t("L’enregistrement a échoué.") });
     }
     setBusy(false);
   }
@@ -77,7 +76,7 @@ export function ManualTransferForm({ onRecorded }: { onRecorded: () => void }) {
     return (
       <button type="button" onClick={() => setOpen(true)} className="btn-outline">
         <Landmark className="h-4 w-4" />
-        Enregistrer un virement
+        {t("Enregistrer un virement")}
       </button>
     );
   }
@@ -85,17 +84,16 @@ export function ManualTransferForm({ onRecorded }: { onRecorded: () => void }) {
   return (
     <form onSubmit={submit} className="card card-pad space-y-4">
       <div>
-        <h2 className="section-title">Virement bancaire reçu</h2>
+        <h2 className="section-title">{t("Virement bancaire reçu")}</h2>
         <p className="meta mt-0.5">
-          À saisir uniquement après vérification sur le relevé bancaire. Le registre traite ce don
-          comme un paiement en ligne.
+          {t("À saisir uniquement après vérification sur le relevé bancaire. Le registre traite ce don comme un paiement en ligne.")}
         </p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label htmlFor="mt-email" className="label">
-            Adresse e-mail du bailleur
+            {t("Adresse e-mail du bailleur")}
           </label>
           <input
             id="mt-email"
@@ -109,7 +107,7 @@ export function ManualTransferForm({ onRecorded }: { onRecorded: () => void }) {
         </div>
         <div>
           <label htmlFor="mt-kind" className="label">
-            Affectation
+            {t("Affectation")}
           </label>
           <select id="mt-kind" className="input" value={form.kind} onChange={(e) => set('kind', e.target.value)}>
             {KINDS.map((k) => (
@@ -121,7 +119,7 @@ export function ManualTransferForm({ onRecorded }: { onRecorded: () => void }) {
         </div>
         <div>
           <label htmlFor="mt-amount" className="label">
-            Montant
+            {t("Montant")}
           </label>
           <input
             id="mt-amount"
@@ -136,7 +134,7 @@ export function ManualTransferForm({ onRecorded }: { onRecorded: () => void }) {
         </div>
         <div>
           <label htmlFor="mt-currency" className="label">
-            Devise
+            {t("Devise")}
           </label>
           <select
             id="mt-currency"
@@ -155,42 +153,42 @@ export function ManualTransferForm({ onRecorded }: { onRecorded: () => void }) {
         {needsChild && (
           <div className="sm:col-span-2">
             <label htmlFor="mt-child" className="label">
-              Identifiant de l’enfant
+              {t("Identifiant de l’enfant")}
             </label>
             <input
               id="mt-child"
               className="input font-mono text-sm"
               value={form.childId}
               onChange={(e) => set('childId', e.target.value)}
-              placeholder="Identifiant technique de la fiche enfant"
+              placeholder={t("Identifiant technique de la fiche enfant")}
             />
           </div>
         )}
         {needsProject && (
           <div className="sm:col-span-2">
             <label htmlFor="mt-project" className="label">
-              Identifiant du projet
+              {t("Identifiant du projet")}
             </label>
             <input
               id="mt-project"
               className="input font-mono text-sm"
               value={form.projectId}
               onChange={(e) => set('projectId', e.target.value)}
-              placeholder="Identifiant technique du projet"
+              placeholder={t("Identifiant technique du projet")}
             />
           </div>
         )}
 
         <div className="sm:col-span-2">
           <label htmlFor="mt-note" className="label">
-            Référence du virement
+            {t("Référence du virement")}
           </label>
           <input
             id="mt-note"
             className="input"
             value={form.note}
             onChange={(e) => set('note', e.target.value)}
-            placeholder="Numéro d’opération sur le relevé"
+            placeholder={t("Numéro d’opération sur le relevé")}
           />
         </div>
       </div>
@@ -208,10 +206,10 @@ export function ManualTransferForm({ onRecorded }: { onRecorded: () => void }) {
 
       <div className="flex flex-wrap gap-2">
         <button type="submit" disabled={!valid || busy} aria-busy={busy} className="btn-primary">
-          {busy ? 'Enregistrement…' : 'Enregistrer le virement'}
+          {busy ? t("Enregistrement…") : t("Enregistrer le virement")}
         </button>
         <button type="button" onClick={() => setOpen(false)} className="btn-ghost">
-          Fermer
+          {t("Fermer")}
         </button>
       </div>
     </form>

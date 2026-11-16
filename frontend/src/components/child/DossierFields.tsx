@@ -2,11 +2,12 @@
 
 import { Field } from './Tabs';
 import { mediaUrl } from '@/lib/api';
+import { t } from '@/lib/i18n';
 
 /** Rend les champs dynamiques definis par le modele de dossier du pays. */
 export function DossierFields({ template, data }: { template: any; data: Record<string, any> }) {
   if (!template?.sections?.length) {
-    return <p className="text-sm text-ink-400">Aucun modele de dossier defini pour ce pays.</p>;
+    return <p className="text-sm text-ink-400">{t("Aucun modele de dossier defini pour ce pays.")}</p>;
   }
 
   return (
@@ -24,7 +25,7 @@ export function DossierFields({ template, data }: { template: any; data: Record<
 
               if (raw == null || raw === '') value = undefined;
               else if (Array.isArray(raw)) value = raw.join(', ');
-              else if (field.type === 'BOOLEAN') value = raw ? 'Oui' : 'Non';
+              else if (field.type === 'BOOLEAN') value = raw ? t("Oui") : t("Non");
               else if (field.type === 'FILE' || field.type === 'PHOTO') {
                 value = (
                   <a
@@ -33,7 +34,7 @@ export function DossierFields({ template, data }: { template: any; data: Record<
                     rel="noreferrer"
                     className="text-risac-600 hover:text-risac-700"
                   >
-                    Ouvrir le document
+                    {t("Ouvrir le document")}
                   </a>
                 );
               }

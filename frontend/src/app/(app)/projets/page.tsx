@@ -10,8 +10,10 @@ import { Badge } from '@/components/ui/Badge';
 import { Empty } from '@/components/ui/Empty';
 import { SkeletonList } from '@/components/ui/Loading';
 import { money, percent } from '@/lib/format';
+import { t, localized } from '@/lib/i18n';
 
-const STATUSES = [
+
+const STATUSES = localized([
   { value: '', label: 'Tous les statuts' },
   { value: 'DRAFT', label: 'Brouillon' },
   { value: 'IN_VALIDATION', label: 'En validation' },
@@ -19,7 +21,7 @@ const STATUSES = [
   { value: 'FULLY_FUNDED', label: 'Financé à 100 %' },
   { value: 'IN_EXECUTION', label: 'En exécution' },
   { value: 'COMPLETED', label: 'Terminé' },
-];
+]);
 
 export default function ProjectsPage() {
   const { user } = useAuth();
@@ -33,9 +35,9 @@ export default function ProjectsPage() {
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="page-title">Projets</h1>
+        <h1 className="page-title">{t("Projets")}</h1>
         <div className="flex gap-2">
-          <select value={status} onChange={(e) => setStatus(e.target.value)} className="input w-48" aria-label="Statut">
+          <select value={status} onChange={(e) => setStatus(e.target.value)} className="input w-48" aria-label={t("Statut")}>
             {STATUSES.map((s) => (
               <option key={s.value} value={s.value}>
                 {s.label}
@@ -45,7 +47,7 @@ export default function ProjectsPage() {
           {canCreate && (
             <Link href="/projets/nouveau" className="btn-primary">
               <Plus className="h-4 w-4" />
-              Nouveau projet
+              {t("Nouveau projet")}
             </Link>
           )}
         </div>
@@ -54,7 +56,7 @@ export default function ProjectsPage() {
       {isLoading ? (
         <SkeletonList rows={4} />
       ) : !data?.length ? (
-        <Empty icon={<Target className="h-6 w-6" />} title="Aucun projet" />
+        <Empty icon={<Target className="h-6 w-6" />} title={t("Aucun projet")} />
       ) : (
         <div className="space-y-3">
           {data.map((p) => (

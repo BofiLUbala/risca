@@ -7,9 +7,11 @@ import { AlertTriangle, CakeSlice, ChevronDown } from 'lucide-react';
 import { fetcher } from '@/lib/api';
 import { SkeletonList } from '@/components/ui/Loading';
 import { date } from '@/lib/format';
+import { t } from '@/lib/i18n';
+
 
 function age(birthDate?: string | null): string {
-  if (!birthDate) return 'âge inconnu';
+  if (!birthDate) return t("âge inconnu");
   const years = (Date.now() - new Date(birthDate).getTime()) / (365.25 * 24 * 3600000);
   return `${Math.floor(years)} ans`;
 }
@@ -42,7 +44,7 @@ export function FollowUpAlerts() {
         className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors duration-fast hover:bg-ink-50 sm:px-5"
       >
         <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" aria-hidden />
-        <span className="flex-1 section-title">Alertes de suivi</span>
+        <span className="flex-1 section-title">{t("Alertes de suivi")}</span>
         {open && !loadingOverdue && !loadingAdults && (
           <span className="chip bg-amber-50 text-amber-800">{total}</span>
         )}
@@ -55,11 +57,11 @@ export function FollowUpAlerts() {
       {open && (
         <div className="animate-fade-up space-y-5 border-t border-ink-100 px-4 py-4 sm:px-5">
           <div>
-            <h3 className="card-title">Visites et bulletins en retard</h3>
+            <h3 className="card-title">{t("Visites et bulletins en retard")}</h3>
             {loadingOverdue ? (
               <SkeletonList rows={2} />
             ) : !overdue?.length ? (
-              <p className="meta mt-1">Aucun retard de suivi dans votre périmètre.</p>
+              <p className="meta mt-1">{t("Aucun retard de suivi dans votre périmètre.")}</p>
             ) : (
               <ul className="mt-2 divide-y divide-ink-100">
                 {overdue.map((a, i) => (
@@ -68,7 +70,7 @@ export function FollowUpAlerts() {
                       {a.firstName} · {a.publicId}
                     </Link>
                     <span className="chip bg-amber-50 text-amber-800">
-                      {a.kind === 'VISIT_OVERDUE' ? 'Visite' : 'Bulletin'}
+                      {a.kind === 'VISIT_OVERDUE' ? t("Visite") : t("Bulletin")}
                     </span>
                     <span className="meta w-full sm:w-auto sm:flex-1">{a.message}</span>
                     <span className="meta">{a.orphanage}</span>
@@ -81,12 +83,12 @@ export function FollowUpAlerts() {
           <div>
             <h3 className="card-title flex items-center gap-2">
               <CakeSlice className="h-4 w-4 text-steel-600" aria-hidden />
-              Approchent la majorité
+              {t("Approchent la majorité")}
             </h3>
             {loadingAdults ? (
               <SkeletonList rows={2} />
             ) : !adults?.length ? (
-              <p className="meta mt-1">Aucun enfant de plus de 16 ans dans votre périmètre.</p>
+              <p className="meta mt-1">{t("Aucun enfant de plus de 16 ans dans votre périmètre.")}</p>
             ) : (
               <ul className="mt-2 divide-y divide-ink-100">
                 {adults.map((c) => (
@@ -101,9 +103,9 @@ export function FollowUpAlerts() {
                         c.postMajorityPrepared ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-800'
                       }`}
                     >
-                      {c.postMajorityPrepared ? 'Sortie préparée' : 'Sortie à préparer'}
+                      {c.postMajorityPrepared ? t("Sortie préparée") : t("Sortie à préparer")}
                     </span>
-                    {c.birthDate && <span className="meta">Né le {date(c.birthDate)}</span>}
+                    {c.birthDate && <span className="meta">{t("Né le")}{' '}{date(c.birthDate)}</span>}
                   </li>
                 ))}
               </ul>

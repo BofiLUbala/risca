@@ -3,6 +3,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import useSWR from 'swr';
 import { fetcher } from '@/lib/api';
+import { t, geoName } from '@/lib/i18n';
 
 export interface GeoCountry {
   id: string;
@@ -29,7 +30,7 @@ export function FlagImg({ iso2, name, className = '' }: { iso2: string; name?: s
       src={`/flags/svg/${iso2.toLowerCase()}.svg`}
       width={20}
       height={15}
-      alt={name ? `Drapeau : ${name}` : ''}
+      alt={name ? t("Drapeau : {name}", { name }) : ''}
       loading="lazy"
       className={`h-[15px] w-5 shrink-0 rounded-[2px] object-cover shadow-[0_0_0_1px_rgba(23,36,48,0.15)] ${className}`}
       onError={() => setFailed(true)}
@@ -54,7 +55,7 @@ export function CountrySelect({
   value,
   onChange,
   id,
-  placeholder = 'Choisir un pays',
+  placeholder = t("Choisir un pays"),
   allLabel,
   className = '',
   disabled = false,
@@ -157,12 +158,12 @@ export function CountrySelect({
       >
         {selected ? (
           <>
-            <FlagImg iso2={selected.iso2} name={selected.nameFr} />
-            <span className="min-w-0 flex-1 truncate">{selected.nameFr}</span>
+            <FlagImg iso2={selected.iso2} name={geoName(selected)} />
+            <span className="min-w-0 flex-1 truncate">{geoName(selected)}</span>
           </>
         ) : (
           <span className="min-w-0 flex-1 truncate text-ink-500">
-            {value === '' && allLabel ? allLabel : isLoading ? 'Chargement…' : placeholder}
+            {value === '' && allLabel ? allLabel : isLoading ? t("Chargement…") : placeholder}
           </span>
         )}
         <svg viewBox="0 0 20 20" className="h-4 w-4 shrink-0 text-ink-500" fill="currentColor" aria-hidden="true">
@@ -181,14 +182,14 @@ export function CountrySelect({
                 setActive(0);
               }}
               onKeyDown={onKey}
-              placeholder="Rechercher un pays…"
-              aria-label="Rechercher un pays"
+              placeholder={t("Rechercher un pays…")}
+              aria-label={t("Rechercher un pays")}
               aria-controls={listId}
               className="input h-9 w-full text-sm"
             />
           </div>
           <ul ref={listRef} id={listId} role="listbox" className="max-h-64 overflow-y-auto py-1">
-            {options.length === 0 && <li className="px-3 py-2 text-sm text-ink-500">Aucun pays trouvé</li>}
+            {options.length === 0 && <li className="px-3 py-2 text-sm text-ink-500">{t("Aucun pays trouvé")}</li>}
             {options.map((o, i) => {
               const isSel = o ? o.id === value : value === '';
               return (
@@ -208,8 +209,8 @@ export function CountrySelect({
                 >
                   {o ? (
                     <>
-                      <FlagImg iso2={o.iso2} name={o.nameFr} />
-                      <span className="truncate">{o.nameFr}</span>
+                      <FlagImg iso2={o.iso2} name={geoName(o)} />
+                      <span className="truncate">{geoName(o)}</span>
                     </>
                   ) : (
                     <span>{allLabel}</span>
@@ -252,12 +253,12 @@ export function ProvinceSelect({
   );
   const none = !!countryId && !isLoading && provinces?.length === 0;
   const first = !countryId
-    ? 'Choisissez d’abord un pays'
+    ? t("Choisissez d’abord un pays")
     : isLoading
-      ? 'Chargement…'
+      ? t("Chargement…")
       : none
-        ? 'Aucune subdivision'
-        : (allLabel ?? 'Choisir une province');
+        ? t("Aucune subdivision")
+        : (allLabel ?? t("Choisir une province"));
 
   return (
     <select
@@ -271,8 +272,8 @@ export function ProvinceSelect({
       <option value="">{first}</option>
       {provinces?.map((p) => (
         <option key={p.id} value={p.id}>
-          {p.nameFr}
-          {p.riskZone ? ' (zone à risque)' : ''}
+          {geoName(p)}
+          {p.riskZone ? t(" (zone à risque)") : ''}
         </option>
       ))}
     </select>

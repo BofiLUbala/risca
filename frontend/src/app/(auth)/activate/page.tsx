@@ -7,6 +7,7 @@ import { api, setTokens } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { Spinner } from '@/components/ui/Loading';
 import { PasswordInput } from '@/components/ui/PasswordInput';
+import { t } from '@/lib/i18n';
 
 function ActivateForm() {
   const params = useSearchParams();
@@ -46,11 +47,11 @@ function ActivateForm() {
       const r = await api.post<any>('/auth/activate/resend-otp', { token });
       setInfo(
         r.emailSent === false && !r.devOtp
-          ? 'L’e-mail n’a pas pu être envoyé. Contactez votre responsable.'
-          : 'Un nouveau code vient de vous être envoyé par e-mail.',
+          ? t("L’e-mail n’a pas pu être envoyé. Contactez votre responsable.")
+          : t("Un nouveau code vient de vous être envoyé par e-mail."),
       );
     } catch (err: any) {
-      setError(err?.message ?? 'Envoi impossible');
+      setError(err?.message ?? t("Envoi impossible"));
     }
     setResending(false);
   }
@@ -60,24 +61,24 @@ function ActivateForm() {
     setError(null);
     setInfo(null);
     if (!/^\d{6}$/.test(otp)) {
-      setError('Saisissez le code à 6 chiffres reçu par e-mail');
+      setError(t("Saisissez le code à 6 chiffres reçu par e-mail"));
       return;
     }
     if (password !== confirm) {
-      setError('Les deux mots de passe ne correspondent pas');
+      setError(t("Les deux mots de passe ne correspondent pas"));
       return;
     }
     if (needsKey) {
       if (password.length < 12) {
-        setError('Le mot de passe d’un Super Admin doit contenir au moins 12 caractères');
+        setError(t("Le mot de passe d’un Super Admin doit contenir au moins 12 caractères"));
         return;
       }
       if (adminKey.trim().length < 16) {
-        setError('La clé administrateur doit contenir au moins 16 caractères');
+        setError(t("La clé administrateur doit contenir au moins 16 caractères"));
         return;
       }
       if (adminKey !== adminKeyConfirm) {
-        setError('Les deux clés administrateur ne correspondent pas');
+        setError(t("Les deux clés administrateur ne correspondent pas"));
         return;
       }
     }
@@ -88,7 +89,7 @@ function ActivateForm() {
       await refresh();
       router.push(res.twoFactorRequired ? '/profil?2fa=1' : '/tableau-de-bord');
     } catch (err: any) {
-      setError(err?.message ?? 'Activation impossible');
+      setError(err?.message ?? t("Activation impossible"));
       setBusy(false);
     }
   }
@@ -98,8 +99,7 @@ function ActivateForm() {
       <div className="flex items-start gap-2.5 rounded-xl bg-amber-50 px-3.5 py-3 text-sm text-amber-800">
         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
         <span>
-          Lien d&apos;activation incomplet. Utilisez le lien exact re&ccedil;u par e-mail, ou
-          demandez un nouvel envoi &agrave; votre responsable.
+          {t("Lien d'activation incomplet. Utilisez le lien exact reçu par e-mail, ou demandez un nouvel envoi à votre responsable.")}
         </span>
       </div>
     );
@@ -126,7 +126,7 @@ function ActivateForm() {
 
       <div>
         <label htmlFor="otp" className="label">
-          Code reçu par e-mail
+          {t("Code reçu par e-mail")}
         </label>
         <input
           id="otp"
@@ -141,21 +141,21 @@ function ActivateForm() {
           className="input text-center text-lg tracking-[0.5em]"
         />
         <p className="mt-1.5 text-xs text-ink-400">
-          Code à 6 chiffres, valable 15 minutes.{' '}
+          {t("Code à 6 chiffres, valable 15 minutes.")}{' '}
           <button
             type="button"
             onClick={resendCode}
             disabled={resending}
             className="font-medium text-risac-600 hover:text-risac-700 disabled:opacity-50"
           >
-            {resending ? 'Envoi…' : 'Renvoyer le code'}
+            {resending ? t("Envoi…") : t("Renvoyer le code")}
           </button>
         </p>
       </div>
 
       <div>
         <label htmlFor="password" className="label">
-          Choisir un mot de passe
+          {t("Choisir un mot de passe")}
         </label>
         <PasswordInput
           id="password"
@@ -170,7 +170,7 @@ function ActivateForm() {
 
       <div>
         <label htmlFor="confirm" className="label">
-          Confirmer le mot de passe
+          {t("Confirmer le mot de passe")}
         </label>
         <PasswordInput
           id="confirm"
@@ -186,13 +186,11 @@ function ActivateForm() {
       {needsKey && (
         <div className="space-y-4 rounded-xl border border-sun-200 bg-sun-50 p-4">
           <p className="text-sm text-ink-800">
-            <strong>Super Admin{adminRank ? ` n°${adminRank}` : ''}.</strong> Choisissez votre clé administrateur : elle vous sera demandée à
-            chaque connexion, en plus du mot de passe. Conservez-la précieusement : si vous la perdez, seul le Super Admin n°1 peut
-            réinitialiser vos identifiants.
+            <strong>{t("Super Admin")}{adminRank ? ` n°${adminRank}` : ''}.</strong>{' '}{t("Choisissez votre clé administrateur : elle vous sera demandée à chaque connexion, en plus du mot de passe. Conservez-la précieusement : si vous la perdez, seul le Super Admin n°1 peut réinitialiser vos identifiants.")}
           </p>
           <div>
             <label htmlFor="admin-key" className="label">
-              Clé administrateur (16 caractères au moins)
+              {t("Clé administrateur (16 caractères au moins)")}
             </label>
             <PasswordInput
               id="admin-key"
@@ -207,7 +205,7 @@ function ActivateForm() {
           </div>
           <div>
             <label htmlFor="admin-key-confirm" className="label">
-              Confirmer la clé administrateur
+              {t("Confirmer la clé administrateur")}
             </label>
             <PasswordInput
               id="admin-key-confirm"
@@ -223,7 +221,7 @@ function ActivateForm() {
 
       <button type="submit" disabled={busy} className="btn-primary w-full py-3">
         {busy ? <Spinner className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
-        Activer mon compte
+        {t("Activer mon compte")}
       </button>
     </form>
   );
@@ -232,10 +230,9 @@ function ActivateForm() {
 export default function ActivatePage() {
   return (
     <div>
-      <h1 className="text-balance text-center text-xl font-semibold tracking-tight text-ink-950 sm:text-2xl">Activer votre compte</h1>
+      <h1 className="text-balance text-center text-xl font-semibold tracking-tight text-ink-950 sm:text-2xl">{t("Activer votre compte")}</h1>
       <p className="mt-1 text-pretty text-center text-sm text-ink-500">
-        Saisissez le code re&ccedil;u par e-mail et d&eacute;finissez votre mot de passe pour rejoindre le
-        r&eacute;seau RISAC.
+        {t("Saisissez le code reçu par e-mail et définissez votre mot de passe pour rejoindre le réseau RISAC.")}
       </p>
       <div className="mt-6">
         <Suspense fallback={<Spinner />}>

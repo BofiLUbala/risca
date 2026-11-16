@@ -6,6 +6,8 @@ import { Stat } from '@/components/ui/Stat';
 import { Badge } from '@/components/ui/Badge';
 import { AlertRow, CountRow, SectionTitle } from '../widgets';
 import { date, money, num } from '@/lib/format';
+import { t } from '@/lib/i18n';
+
 
 export function DirectorBoard({ data }: { data: any }) {
   const o = data.orphanage;
@@ -17,14 +19,14 @@ export function DirectorBoard({ data }: { data: any }) {
             <p className="text-lg font-semibold text-ink-900">{o.name}</p>
             <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-ink-500">
               <Badge status={o.labelStatus} />
-              {o.labelExpiresAt && <span>label valable jusqu au {date(o.labelExpiresAt)}</span>}
+              {o.labelExpiresAt && <span>{t("label valable jusqu au")}{' '}{date(o.labelExpiresAt)}</span>}
               {!o.accountVerified && (
-                <span className="chip bg-amber-50 text-amber-700">compte non vérifié</span>
+                <span className="chip bg-amber-50 text-amber-700">{t("compte non vérifié")}</span>
               )}
             </p>
           </div>
           <div className="text-right">
-            <p className="text-sm text-ink-500">Places occupées</p>
+            <p className="text-sm text-ink-500">{t("Places occupées")}</p>
             <p className="text-xl font-semibold text-ink-900">
               {num(o.occupiedPlaces)} / {num(o.totalPlaces)}
             </p>
@@ -33,17 +35,17 @@ export function DirectorBoard({ data }: { data: any }) {
       )}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Stat label="Enfants accueillis" value={num(data.children.total)} tone="primary" icon={<Users className="h-5 w-5" />} />
+        <Stat label={t("Enfants accueillis")} value={num(data.children.total)} tone="primary" icon={<Users className="h-5 w-5" />} />
         <Stat
-          label="Dossiers à finaliser"
+          label={t("Dossiers à finaliser")}
           value={num(data.children.draft + data.children.needsCorrection)}
-          hint={`${num(data.children.inValidation)} en validation`}
+          hint={t("{v0} en validation", { v0: num(data.children.inValidation) })}
           tone="amber"
           icon={<FileCheck className="h-5 w-5" />}
         />
-        <Stat label="Solde disponible" value={money(data.balance.balance)} tone="mint" icon={<Wallet className="h-5 w-5" />} />
+        <Stat label={t("Solde disponible")} value={money(data.balance.balance)} tone="mint" icon={<Wallet className="h-5 w-5" />} />
         <Stat
-          label="Justificatifs attendus"
+          label={t("Justificatifs attendus")}
           value={num(data.disbursements.awaitingReceipts)}
           tone="coral"
           icon={<Banknote className="h-5 w-5" />}
@@ -55,32 +57,32 @@ export function DirectorBoard({ data }: { data: any }) {
           <SectionTitle
             action={
               <Link href="/enfants/nouveau" className="link-action">
-                Nouvel enfant
+                {t("Nouvel enfant")}
               </Link>
             }
           >
-            Mes dossiers
+            {t("Mes dossiers")}
           </SectionTitle>
-          <CountRow label="Brouillons" value={data.children.draft} href="/enfants?status=DRAFT" />
-          <CountRow label="En validation" value={data.children.inValidation} href="/enfants?status=IN_VALIDATION" />
-          <CountRow label="A corriger" value={data.children.needsCorrection} href="/enfants?status=NEEDS_CORRECTION" />
-          <CountRow label="Personnel" value={data.staff} href="/utilisateurs" />
-          <CountRow label="Projets" value={data.projects} href="/projets" />
+          <CountRow label={t("Brouillons")} value={data.children.draft} href="/enfants?status=DRAFT" />
+          <CountRow label={t("En validation")} value={data.children.inValidation} href="/enfants?status=IN_VALIDATION" />
+          <CountRow label={t("A corriger")} value={data.children.needsCorrection} href="/enfants?status=NEEDS_CORRECTION" />
+          <CountRow label={t("Personnel")} value={data.staff} href="/utilisateurs" />
+          <CountRow label={t("Projets")} value={data.projects} href="/projets" />
         </section>
 
         <section className="card card-pad lg:col-span-2">
           <SectionTitle
             action={
               <Link href="/decaissements" className="link-action">
-                Tout voir
+                {t("Tout voir")}
               </Link>
             }
           >
-            Décaissements récents
+            {t("Décaissements récents")}
           </SectionTitle>
           <div className="space-y-2">
             {data.disbursements.recent.length === 0 && (
-              <p className="py-6 text-center text-sm text-ink-400">Aucune demande pour le moment.</p>
+              <p className="py-6 text-center text-sm text-ink-400">{t("Aucune demande pour le moment.")}</p>
             )}
             {data.disbursements.recent.map((d: any) => (
               <Link
@@ -104,7 +106,7 @@ export function DirectorBoard({ data }: { data: any }) {
 
       {data.overdueUpdates.length > 0 && (
         <section className="card card-pad">
-          <SectionTitle>Mises à jour en retard</SectionTitle>
+          <SectionTitle>{t("Mises à jour en retard")}</SectionTitle>
           <div className="space-y-2">
             {data.overdueUpdates.map((a: any, i: number) => (
               <AlertRow

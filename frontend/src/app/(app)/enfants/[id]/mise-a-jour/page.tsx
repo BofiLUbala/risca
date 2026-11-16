@@ -8,16 +8,17 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { api, fetcher, uploadFile } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { PageLoading, Spinner } from '@/components/ui/Loading';
+import { t, localized } from '@/lib/i18n';
 
 /** Mises a jour de l enfant (section 6.2) : chaque type a sa regle de validation. */
-const KINDS = [
+const KINDS = localized([
   { key: 'HEALTH', label: 'Santé', hint: 'Validée par l’ambassadeur', roles: ['ORPHANAGE_DIRECTOR', 'ORPHANAGE_STAFF', 'AMBASSADOR', 'SUPER_ADMIN'] },
   { key: 'SCHOOLING', label: 'Scolarité / bulletin', hint: 'Validée par l’ambassadeur', roles: ['ORPHANAGE_DIRECTOR', 'ORPHANAGE_STAFF', 'AMBASSADOR', 'SUPER_ADMIN'] },
   { key: 'PSYCHOTRAUMA', label: 'Psychotrauma', hint: 'Confidentiel, aucune validation', roles: ['ORPHANAGE_STAFF', 'SUPER_ADMIN'] },
   { key: 'FONAREV', label: 'Démarche FONAREV', hint: 'Saisie par l’ambassadeur', roles: ['AMBASSADOR', 'SUPER_ADMIN'] },
   { key: 'VISIT', label: 'Rapport de visite', hint: 'Au moins une fois par trimestre', roles: ['AMBASSADOR', 'SUPER_ADMIN'] },
   { key: 'INCIDENT', label: 'Incident', hint: 'Consigné dans l’historique', roles: ['ORPHANAGE_DIRECTOR', 'ORPHANAGE_STAFF', 'AMBASSADOR', 'REGIONAL_MANAGER', 'SUPER_ADMIN'] },
-];
+]);
 
 export default function ChildUpdatePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -72,7 +73,7 @@ export default function ChildUpdatePage({ params }: { params: Promise<{ id: stri
       }
       router.push(`/enfants/${id}`);
     } catch (err: any) {
-      setError(err?.message ?? 'Enregistrement impossible');
+      setError(err?.message ?? t("Enregistrement impossible"));
       setBusy(false);
     }
   }
@@ -86,21 +87,21 @@ export default function ChildUpdatePage({ params }: { params: Promise<{ id: stri
         className="inline-flex min-h-[44px] items-center gap-1.5 text-sm text-ink-500 hover:text-ink-800 sm:min-h-0"
       >
         <ArrowLeft className="h-4 w-4" />
-        Retour au dossier
+        {t("Retour au dossier")}
       </Link>
 
       <div>
         <h1 className="page-title">
-          Mise a jour de {child.firstName}
+          {t("Mise a jour de")}{' '}{child.firstName}
         </h1>
         <p className="mt-1 text-sm text-ink-500">
-          Chaque mise à jour crée une entrée dans l’historique, qui ne peut pas être effacée.
+          {t("Chaque mise à jour crée une entrée dans l’historique, qui ne peut pas être effacée.")}
         </p>
       </div>
 
       <form onSubmit={submit} className="card card-pad space-y-4">
         <div>
-          <label className="label">Type de mise à jour</label>
+          <label className="label">{t("Type de mise à jour")}</label>
           <div className="flex flex-wrap gap-2">
             {available.map((k) => (
               <button
@@ -127,13 +128,13 @@ export default function ChildUpdatePage({ params }: { params: Promise<{ id: stri
 
         {(kind === 'VISIT' || kind === 'INCIDENT') && (
           <div>
-            <label className="label">Photos</label>
+            <label className="label">{t("Photos")}</label>
             <label className="btn-outline cursor-pointer">
-              Ajouter une photo
+              {t("Ajouter une photo")}
               <input type="file" accept="image/*" onChange={addPhoto} className="sr-only" />
             </label>
             {photos.length > 0 ? (
-              <p className="mt-2 text-xs text-emerald-600">{photos.length} photo(s) jointe(s)</p>
+              <p className="mt-2 text-xs text-emerald-600">{photos.length}{' '}{t("photo(s) jointe(s)")}</p>
             ) : null}
           </div>
         )}
@@ -147,10 +148,10 @@ export default function ChildUpdatePage({ params }: { params: Promise<{ id: stri
         <div className="flex gap-2">
           <button type="submit" disabled={busy} className="btn-primary">
             {busy ? <Spinner className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-            Enregistrer
+            {t("Enregistrer")}
           </button>
           <Link href={`/enfants/${id}`} className="btn-ghost">
-            Annuler
+            {t("Annuler")}
           </Link>
         </div>
       </form>
@@ -200,12 +201,12 @@ function UpdateFields({
   if (kind === 'HEALTH') {
     return (
       <div className="grid gap-4 sm:grid-cols-2">
-        {text('bloodType', 'Groupe sanguin')}
-        {text('vaccines', 'Vaccins')}
-        {text('illnesses', 'Maladies')}
-        {text('disability', 'Handicap')}
-        <div className="sm:col-span-2">{area('treatments', 'Traitements')}</div>
-        <div className="sm:col-span-2">{area('consultation', 'Consultation')}</div>
+        {text('bloodType', t("Groupe sanguin"))}
+        {text('vaccines', t("Vaccins"))}
+        {text('illnesses', t("Maladies"))}
+        {text('disability', t("Handicap"))}
+        <div className="sm:col-span-2">{area('treatments', t("Traitements"))}</div>
+        <div className="sm:col-span-2">{area('consultation', t("Consultation"))}</div>
       </div>
     );
   }
@@ -213,15 +214,15 @@ function UpdateFields({
   if (kind === 'SCHOOLING') {
     return (
       <div className="grid gap-4 sm:grid-cols-2">
-        {text('school', 'Etablissement')}
-        {text('grade', 'Classe')}
-        {text('term', 'Trimestre')}
-        {text('year', 'Annee scolaire')}
-        {text('average', 'Moyenne', 'number')}
-        {text('fees', 'Frais scolaires', 'number')}
-        <div className="sm:col-span-2">{area('results', 'Resultats')}</div>
+        {text('school', t("Etablissement"))}
+        {text('grade', t("Classe"))}
+        {text('term', t("Trimestre"))}
+        {text('year', t("Annee scolaire"))}
+        {text('average', t("Moyenne"), 'number')}
+        {text('fees', t("Frais scolaires"), 'number')}
+        <div className="sm:col-span-2">{area('results', t("Resultats"))}</div>
         <div className="sm:col-span-2">
-          {area('publicSummary', 'Résumé public (visible par le parrain)')}
+          {area('publicSummary', t("Résumé public (visible par le parrain)"))}
         </div>
       </div>
     );
@@ -237,14 +238,13 @@ function UpdateFields({
             onChange={(e) => set('isInitialAssessment', e.target.checked)}
             className="h-4 w-4 rounded border-ink-300 text-risac-600"
           />
-          Evaluation initiale
+          {t("Evaluation initiale")}
         </label>
-        {area('evaluation', 'Evaluation')}
-        {area('notes', 'Notes du psychologue')}
-        {area('evolution', 'Evolution')}
+        {area('evaluation', t("Evaluation"))}
+        {area('notes', t("Notes du psychologue"))}
+        {area('evolution', t("Evolution"))}
         <p className="rounded-xl bg-violet-50 px-3.5 py-2.5 text-xs text-violet-800">
-          Volet très confidentiel : visible uniquement par le psychologue, l’ambassadeur assigné et
-          l’Auditeur Éthique.
+          {t("Volet très confidentiel : visible uniquement par le psychologue, l’ambassadeur assigné et l’Auditeur Éthique.")}
         </p>
       </div>
     );
@@ -253,11 +253,11 @@ function UpdateFields({
   if (kind === 'VISIT') {
     return (
       <div className="space-y-4">
-        {area('note', 'Compte rendu de la visite')}
-        {text('rating', 'Appreciation sur 5', 'number')}
+        {area('note', t("Compte rendu de la visite"))}
+        {text('rating', t("Appreciation sur 5"), 'number')}
         <div className="grid gap-4 sm:grid-cols-2">
-          {text('latitude', 'Latitude GPS', 'number')}
-          {text('longitude', 'Longitude GPS', 'number')}
+          {text('latitude', t("Latitude GPS"), 'number')}
+          {text('longitude', t("Longitude GPS"), 'number')}
         </div>
       </div>
     );
@@ -265,8 +265,8 @@ function UpdateFields({
 
   return (
     <div className="space-y-4">
-      {text('title', 'Titre')}
-      {area('description', 'Description')}
+      {text('title', t("Titre"))}
+      {area('description', t("Description"))}
     </div>
   );
 }

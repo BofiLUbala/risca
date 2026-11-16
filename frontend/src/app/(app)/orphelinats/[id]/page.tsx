@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/Badge';
 import { PageLoading } from '@/components/ui/Loading';
 import { Tabs } from '@/components/child/Tabs';
 import { OrphanageTabs } from '@/components/orphanage/OrphanageTabs';
+import { t, intlLocale, geoName } from '@/lib/i18n';
+
 
 export default function OrphanageDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -29,19 +31,19 @@ export default function OrphanageDetailPage({ params }: { params: Promise<{ id: 
     try {
       await api.post(`/orphanages/${id}/${path}`, body ?? {});
       mutate();
-      setMsg('Action enregistrée.');
+      setMsg(t("Action enregistrée."));
     } catch (e: any) {
-      setMsg(e?.message ?? 'Action impossible');
+      setMsg(e?.message ?? t("Action impossible"));
     }
   }
 
   const tabs = [
-    { key: 'identite', label: 'Identité' },
-    { key: 'capacite', label: 'Capacité' },
-    { key: 'label', label: 'Labellisation', count: o.labelAudits?.length },
-    { key: 'finances', label: 'Finances' },
-    { key: 'equipe', label: 'Équipe', count: o.members?.length },
-    { key: 'historique', label: 'Historique', count: o.historyEntries?.length },
+    { key: 'identite', label: t("Identité") },
+    { key: 'capacite', label: t("Capacité") },
+    { key: 'label', label: t("Labellisation"), count: o.labelAudits?.length },
+    { key: 'finances', label: t("Finances") },
+    { key: 'equipe', label: t("Équipe"), count: o.members?.length },
+    { key: 'historique', label: t("Historique"), count: o.historyEntries?.length },
   ];
 
   return (
@@ -51,7 +53,7 @@ export default function OrphanageDetailPage({ params }: { params: Promise<{ id: 
         className="inline-flex min-h-[44px] items-center gap-1.5 text-sm text-ink-500 hover:text-ink-800 sm:min-h-0"
       >
         <ArrowLeft className="h-4 w-4" />
-        Retour aux orphelinats
+        {t("Retour aux orphelinats")}
       </Link>
 
       <header className="card card-pad">
@@ -64,16 +66,16 @@ export default function OrphanageDetailPage({ params }: { params: Promise<{ id: 
             </div>
             {o.proposedBy && (
               <p className="mt-1.5 text-xs text-ink-400">
-                Enregistré par {o.proposedBy.firstName} {o.proposedBy.lastName}
-                {o.createdAt ? ` le ${new Date(o.createdAt).toLocaleDateString('fr-FR')}` : ''}
+                {t("Enregistré par")}{' '}{o.proposedBy.firstName} {o.proposedBy.lastName}
+                {o.createdAt ? t(" le {date}", { date: new Date(o.createdAt).toLocaleDateString(intlLocale()) }) : ''}
               </p>
             )}
             <p className="mt-2 flex flex-wrap items-center gap-1.5 text-sm text-ink-500">
               <MapPin className="h-4 w-4" />
               {o.city ? `${o.city}, ` : ''}
-              {o.province.nameFr} - {o.country.nameFr}
+              {geoName(o.province)} - {geoName(o.country)}
               {o.hideExactLocation ? (
-                <span className="chip bg-amber-50 text-amber-700">localisation masquée</span>
+                <span className="chip bg-amber-50 text-amber-700">{t("localisation masquée")}</span>
               ) : null}
             </p>
             {o.description ? (
@@ -85,13 +87,13 @@ export default function OrphanageDetailPage({ params }: { params: Promise<{ id: 
             {isAdmin && o.status !== 'APPROVED' ? (
               <button onClick={() => act('approve')} className="btn-primary">
                 <Check className="h-4 w-4" />
-                Valider la structure
+                {t("Valider la structure")}
               </button>
             ) : null}
             {(isAdmin || user?.role === 'ORPHANAGE_DIRECTOR') && o.labelStatus === 'NONE' ? (
               <button onClick={() => act('label/apply')} className="btn-outline">
                 <BadgeCheck className="h-4 w-4" />
-                Demander la labellisation
+                {t("Demander la labellisation")}
               </button>
             ) : null}
             {isFinance ? (
@@ -99,7 +101,7 @@ export default function OrphanageDetailPage({ params }: { params: Promise<{ id: 
                 onClick={() => act('verify-account', { verified: !o.accountVerified })}
                 className="btn-outline"
               >
-                {o.accountVerified ? 'Annuler la vérification' : 'Vérifier le compte'}
+                {o.accountVerified ? t("Annuler la vérification") : t("Vérifier le compte")}
               </button>
             ) : null}
           </div>

@@ -1,8 +1,12 @@
+'use client';
+
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { Logo } from '@/components/ui/Logo';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { LanguageToggle } from '@/components/ui/LanguageToggle';
 import { PushFirst } from '@/components/auth/PushFirst';
+import { t } from '@/lib/i18n';
 
 /**
  * Pages d'accès (connexion, administrateur, inscription, activation).
@@ -15,9 +19,12 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="mx-auto flex w-full max-w-5xl items-center justify-between">
         <Link href="/" className="link-action -ml-1 px-1">
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          Retour à l&apos;accueil
+          {t("Retour à l'accueil")}
         </Link>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <LanguageToggle />
+          <ThemeToggle />
+        </div>
       </div>
 
       <div className="flex flex-1 items-center justify-center py-4 sm:py-6">
@@ -25,7 +32,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <div className="card border-t-4 border-t-sun-400 p-6 shadow-lift sm:p-7">
             <Link
               href="/"
-              aria-label="RISAC, retour à l’accueil"
+              aria-label={t("RISAC, retour à l’accueil")}
               className="mx-auto mb-5 block w-fit rounded-xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sun-200"
             >
               <Logo className="h-14" />
@@ -33,7 +40,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <PushFirst>{children}</PushFirst>
           </div>
           <p className="mt-4 text-balance text-center text-xs text-ink-500">
-            Réseau International des Structures d&apos;Accueil du Congo
+            {t("Réseau International des Structures d'Accueil du Congo")}
           </p>
         </div>
       </div>

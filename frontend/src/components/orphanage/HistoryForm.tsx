@@ -4,15 +4,17 @@ import { useState } from 'react';
 import { CalendarPlus } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
+import { t, localized } from '@/lib/i18n';
+
 
 /** Nature de l’événement, telle qu’attendue par l’API. */
-const KINDS = [
+const KINDS = localized([
   { value: 'VISIT', label: 'Visite' },
   { value: 'AUDIT', label: 'Audit' },
   { value: 'INCIDENT', label: 'Incident' },
   { value: 'TRAINING', label: 'Formation' },
   { value: 'OTHER', label: 'Autre' },
-];
+]);
 
 /** Rôles autorisés à consigner un événement sur une structure. */
 const WRITERS = [
@@ -57,7 +59,7 @@ export function HistoryForm({ orphanageId, onAdded }: { orphanageId: string; onA
       setOpen(false);
       onAdded();
     } catch (err: any) {
-      setError(err?.message ?? 'L’enregistrement a échoué.');
+      setError(err?.message ?? t("L’enregistrement a échoué."));
     }
     setBusy(false);
   }
@@ -66,7 +68,7 @@ export function HistoryForm({ orphanageId, onAdded }: { orphanageId: string; onA
     return (
       <button type="button" onClick={() => setOpen(true)} className="btn-outline">
         <CalendarPlus className="h-4 w-4" />
-        Consigner un événement
+        {t("Consigner un événement")}
       </button>
     );
   }
@@ -76,7 +78,7 @@ export function HistoryForm({ orphanageId, onAdded }: { orphanageId: string; onA
       <div className="grid gap-3 sm:grid-cols-[160px_minmax(0,1fr)]">
         <div>
           <label htmlFor={`hist-kind-${orphanageId}`} className="label">
-            Nature
+            {t("Nature")}
           </label>
           <select
             id={`hist-kind-${orphanageId}`}
@@ -93,7 +95,7 @@ export function HistoryForm({ orphanageId, onAdded }: { orphanageId: string; onA
         </div>
         <div>
           <label htmlFor={`hist-title-${orphanageId}`} className="label">
-            Intitulé
+            {t("Intitulé")}
           </label>
           <input
             id={`hist-title-${orphanageId}`}
@@ -101,13 +103,13 @@ export function HistoryForm({ orphanageId, onAdded }: { orphanageId: string; onA
             required
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Visite trimestrielle de suivi"
+            placeholder={t("Visite trimestrielle de suivi")}
           />
         </div>
       </div>
 
       <label htmlFor={`hist-desc-${orphanageId}`} className="label mt-3">
-        Compte rendu
+        {t("Compte rendu")}
       </label>
       <textarea
         id={`hist-desc-${orphanageId}`}
@@ -115,7 +117,7 @@ export function HistoryForm({ orphanageId, onAdded }: { orphanageId: string; onA
         className="input"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        placeholder="Ce qui a été constaté sur place"
+        placeholder={t("Ce qui a été constaté sur place")}
       />
 
       {error && (
@@ -126,10 +128,10 @@ export function HistoryForm({ orphanageId, onAdded }: { orphanageId: string; onA
 
       <div className="mt-3 flex flex-wrap gap-2">
         <button type="submit" disabled={!title.trim() || busy} aria-busy={busy} className="btn-primary">
-          {busy ? 'Enregistrement…' : 'Enregistrer'}
+          {busy ? t("Enregistrement…") : t("Enregistrer")}
         </button>
         <button type="button" onClick={() => setOpen(false)} className="btn-ghost">
-          Annuler
+          {t("Annuler")}
         </button>
       </div>
     </form>

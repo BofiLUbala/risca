@@ -12,6 +12,8 @@ import { FeedFilters, type FeedFilterState, type ScopeOption } from '@/component
 import { Avatar } from '@/components/ui/Avatar';
 import { Empty } from '@/components/ui/Empty';
 import { SkeletonList } from '@/components/ui/Loading';
+import { t as tx } from '@/lib/i18n';
+
 
 /** Rôles qui peuvent publier, donc qui ont un onglet « Mes publications ». */
 const AUTHORS = [
@@ -34,10 +36,10 @@ export default function CommunicationPage() {
   const isAuthor = AUTHORS.includes(user?.role ?? '');
 
   const scopes: ScopeOption[] = [
-    ...(isDonor ? ([{ value: 'mine', label: 'Mes enfants' }] as ScopeOption[]) : []),
-    { value: 'all', label: 'Tout le réseau' },
-    ...(isAuthor ? ([{ value: 'authored', label: 'Mes publications' }] as ScopeOption[]) : []),
-    { value: 'favorites', label: 'Favoris' },
+    ...(isDonor ? ([{ value: 'mine', label: tx("Mes enfants") }] as ScopeOption[]) : []),
+    { value: 'all', label: tx("Tout le réseau") },
+    ...(isAuthor ? ([{ value: 'authored', label: tx("Mes publications") }] as ScopeOption[]) : []),
+    { value: 'favorites', label: tx("Favoris") },
   ];
 
   const [filters, setFilters] = useState<FeedFilterState>({
@@ -67,7 +69,7 @@ export default function CommunicationPage() {
 
   return (
     <div className="mx-auto w-full max-w-[620px] space-y-5">
-      <h1 className="sr-only">Espace de communication</h1>
+      <h1 className="sr-only">{tx("Espace de communication")}</h1>
       <FeedFilters value={filters} onChange={setFilters} scopes={scopes} />
 
       {(filters.scope === 'all' || filters.scope === 'mine') && <Composer onPublished={() => mutate()} />}
@@ -75,9 +77,9 @@ export default function CommunicationPage() {
       {filters.scope === 'authored' && data?.totals && (
         <div className="card card-pad grid grid-cols-3 gap-3 text-center">
           {[
-            { label: 'Vues', value: data.totals.views },
-            { label: 'Réactions', value: data.totals.reactions },
-            { label: 'Commentaires', value: data.totals.comments },
+            { label: tx("Vues"), value: data.totals.views },
+            { label: tx("Réactions"), value: data.totals.reactions },
+            { label: tx("Commentaires"), value: data.totals.comments },
           ].map((t) => (
             <div key={t.label}>
               <p className="text-xl font-semibold tabular-nums text-ink-900">{t.value ?? 0}</p>
@@ -93,8 +95,8 @@ export default function CommunicationPage() {
         !data?.length ? (
           <Empty
             icon={<Bookmark className="h-6 w-6" />}
-            title="Aucun favori"
-            description="Le marque-page d’une publication ajoute l’enfant ou le projet ici."
+            title={tx("Aucun favori")}
+            description={tx("Le marque-page d’une publication ajoute l’enfant ou le projet ici.")}
           />
         ) : (
           <ul className="card divide-y divide-ink-100 overflow-hidden">
@@ -107,7 +109,7 @@ export default function CommunicationPage() {
                   <Avatar src={f.child?.publicPhotoUrl} firstName={f.child?.firstName} size="sm" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-ink-900">
-                      {f.child ? f.child.firstName : 'Projet'}
+                      {f.child ? f.child.firstName : tx("Projet")}
                     </p>
                     <p className="truncate meta">{f.child?.publicNeeds ?? f.child?.publicId ?? ''}</p>
                   </div>
@@ -119,11 +121,11 @@ export default function CommunicationPage() {
       ) : !posts.length ? (
         <Empty
           icon={<Newspaper className="h-6 w-6" />}
-          title={filters.scope === 'authored' ? 'Vous n’avez rien publié' : 'Le fil est vide'}
+          title={filters.scope === 'authored' ? tx("Vous n’avez rien publié") : tx("Le fil est vide")}
           description={
             filters.scope === 'authored'
-              ? 'Vos publications et leur audience apparaîtront ici.'
-              : 'Les nouvelles des enfants et des structures apparaîtront ici.'
+              ? tx("Vos publications et leur audience apparaîtront ici.")
+              : tx("Les nouvelles des enfants et des structures apparaîtront ici.")
           }
         />
       ) : (

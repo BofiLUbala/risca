@@ -10,9 +10,11 @@ import { ROLE_LABEL } from '@/lib/roles';
 import { SecuritySection } from '@/components/users/SecuritySection';
 import { PushSection } from '@/components/users/PushSection';
 import { AppearanceSection } from '@/components/users/AppearanceSection';
+import { t, useI18n } from '@/lib/i18n';
 
 export default function ProfilePage() {
   const { user, refresh } = useAuth();
+  const { locale, setLocale } = useI18n();
   const [form, setForm] = useState({ firstName: '', lastName: '', phone: '', locale: 'fr' });
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -37,11 +39,13 @@ export default function ProfilePage() {
     await refresh();
     setBusy(false);
     setSaved(true);
+    // La langue du profil pilote aussi l'interface sur cet appareil.
+    if ((form.locale === 'fr' || form.locale === 'en') && form.locale !== locale) setLocale(form.locale);
   }
 
   return (
     <div className="max-w-3xl space-y-5">
-      <h1 className="page-title">Mon profil</h1>
+      <h1 className="page-title">{t("Mon profil")}</h1>
 
       <section className="card card-pad">
         <AvatarUpload />
@@ -52,7 +56,7 @@ export default function ProfilePage() {
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="fn" className="label">
-              Prénom
+              {t("Prénom")}
             </label>
             <input
               id="fn"
@@ -63,7 +67,7 @@ export default function ProfilePage() {
           </div>
           <div>
             <label htmlFor="ln" className="label">
-              Nom
+              {t("Nom")}
             </label>
             <input
               id="ln"
@@ -74,7 +78,7 @@ export default function ProfilePage() {
           </div>
           <div>
             <label htmlFor="ph" className="label">
-              Téléphone
+              {t("Téléphone")}
             </label>
             <input
               id="ph"
@@ -85,7 +89,7 @@ export default function ProfilePage() {
           </div>
           <div>
             <label htmlFor="loc" className="label">
-              Langue
+              {t("Langue")}
             </label>
             <select
               id="loc"
@@ -94,23 +98,22 @@ export default function ProfilePage() {
               className="input"
               aria-describedby="loc-aide"
             >
-              <option value="fr">Français</option>
+              <option value="fr">{t("Français")}</option>
               {/* Les trois autres langues du plan restent annoncées, mais désactivées
                   tant que leurs traductions n'existent pas : un choix qui ne change
                   rien à l'écran tromperait la personne. */}
-              <option value="en" disabled>
-                Anglais — bientôt disponible
+              <option value="en">
+                {t("Anglais")}
               </option>
               <option value="sw" disabled>
-                Swahili — bientôt disponible
+                {t("Swahili — bientôt disponible")}
               </option>
               <option value="ln" disabled>
-                Lingala — bientôt disponible
+                {t("Lingala — bientôt disponible")}
               </option>
             </select>
             <p id="loc-aide" className="meta mt-1.5">
-              L&apos;interface est disponible en français. Les autres langues prévues au plan
-              arrivent dans une prochaine version.
+              {t("L'interface est disponible en français et en anglais (sélecteur FR / EN en haut de page). Les autres langues prévues au plan arrivent dans une prochaine version.")}
             </p>
           </div>
         </div>
@@ -118,9 +121,9 @@ export default function ProfilePage() {
         <div className="mt-5 flex items-center gap-3">
           <button onClick={save} disabled={busy} className="btn-primary">
             {busy ? <Spinner className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-            Enregistrer
+            {t("Enregistrer")}
           </button>
-          {saved && <span className="text-sm text-emerald-600">Profil enregistré.</span>}
+          {saved && <span className="text-sm text-emerald-600">{t("Profil enregistré.")}</span>}
         </div>
       </section>
 

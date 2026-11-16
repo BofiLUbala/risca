@@ -1,6 +1,8 @@
 import { BadgeCheck, HeartHandshake, ShieldCheck, Users } from 'lucide-react';
+import { localized } from '@/lib/i18n';
 
-export const AXES = [
+
+export const AXES = localized([
   {
     icon: ShieldCheck,
     title: 'Qualite des soins et traumatismes de guerre',
@@ -21,11 +23,11 @@ export const AXES = [
     title: 'Post-majorite, Tremplin vers l’Avenir',
     text: 'Preparation des 16 ans, bourse Tremplin, mentorat et suivi apres la sortie.',
   },
-];
+]);
 
-export const CIRCUIT = [
+export const CIRCUIT = localized([
   { n: '1', t: 'Vous payez', d: 'Page de paiement securisee : mobile money, carte ou PayPal.' },
   { n: '2', t: 'Compte central', d: 'Le montant est affecté a l’enfant, au projet ou au fonds général.' },
   { n: '3', t: 'Décaissement validé', d: 'La structure demande, l’ambassadeur confirme, l’Admin Finance paie.' },
   { n: '4', t: 'Preuve de dépense', d: 'Les factures et photos remontent jusqu à votre espace.' },
-];
+]);

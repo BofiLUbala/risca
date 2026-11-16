@@ -6,6 +6,7 @@ import { Handshake } from 'lucide-react';
 import { fetcher, mediaUrl } from '@/lib/api';
 import { Empty } from '@/components/ui/Empty';
 import { SkeletonList } from '@/components/ui/Loading';
+import { t, geoName } from '@/lib/i18n';
 
 export default function PartnersPage() {
   const { data, isLoading } = useSWR<any[]>('/users/partners', fetcher);
@@ -14,10 +15,10 @@ export default function PartnersPage() {
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight text-ink-950 sm:text-3xl">
-          Partenaires du r&eacute;seau
+          {t("Partenaires du réseau")}
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-500">
-          Organisations qui co-financent les projets et soutiennent les structures d&apos;accueil.
+          {t("Organisations qui co-financent les projets et soutiennent les structures d'accueil.")}
         </p>
       </header>
 
@@ -25,7 +26,7 @@ export default function PartnersPage() {
         {isLoading ? (
           <SkeletonList rows={2} />
         ) : !data?.length ? (
-          <Empty icon={<Handshake className="h-6 w-6" />} title="Aucun partenaire publie" />
+          <Empty icon={<Handshake className="h-6 w-6" />} title={t("Aucun partenaire publie")} />
         ) : (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {data.map((p) => (
@@ -40,7 +41,7 @@ export default function PartnersPage() {
                   </span>
                   <div className="min-w-0">
                     <h2 className="truncate font-semibold text-ink-900">{p.organizationName}</h2>
-                    {p.country && <p className="text-xs text-ink-400">{p.country.nameFr}</p>}
+                    {p.country && <p className="text-xs text-ink-400">{geoName(p.country)}</p>}
                   </div>
                 </div>
                 {p.organizationBio && (
@@ -53,7 +54,7 @@ export default function PartnersPage() {
                     rel="noreferrer"
                     className="mt-3 inline-block text-sm text-risac-600 hover:text-risac-700"
                   >
-                    Voir le site
+                    {t("Voir le site")}
                   </a>
                 )}
               </article>

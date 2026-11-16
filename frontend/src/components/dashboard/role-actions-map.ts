@@ -1,4 +1,6 @@
 import type { Role } from '@/lib/roles';
+import { localized } from '@/lib/i18n';
+
 
 export interface RoleAction {
   href: string;
@@ -8,7 +10,7 @@ export interface RoleAction {
 }
 
 /** Fonctionnalites de chaque acteur, section 11 du plan fonctionnel. */
-export const ROLE_ACTIONS: Record<Role, RoleAction[]> = {
+export const ROLE_ACTIONS: Record<Role, RoleAction[]> = localized({
   SUPER_ADMIN: [
     { href: '/utilisateurs', label: 'Inviter et gérer les comptes', hint: 'Bloquer, suspendre, avertir, forcer la deconnexion', icon: 'UserCog' },
     { href: '/orphelinats', label: 'Valider orphelinats et labellisations', hint: 'Candidatures, audits, badges', icon: 'BadgeCheck' },
@@ -89,4 +91,4 @@ export const ROLE_ACTIONS: Record<Role, RoleAction[]> = {
     { href: '/messages', label: 'Canal partenaires', hint: 'Avec les administrateurs', icon: 'MessageCircle' },
     { href: '/profil', label: 'Fiche de mon organisation', hint: 'Visible dans la liste publique', icon: 'Building' },
   ],
-};
+});

@@ -7,21 +7,22 @@ import { api, fetcher } from '@/lib/api';
 import { Spinner } from '@/components/ui/Loading';
 import { money } from '@/lib/format';
 import { FeeBreakdown } from './FeeBreakdown';
+import { t, localized } from '@/lib/i18n';
 
 const PRESETS = [10, 25, 50, 100];
 
-const SCOPES = [
+const SCOPES = localized([
   { value: 'FULL', label: 'Soutien complet' },
   { value: 'EDUCATION', label: 'Etudes' },
   { value: 'HEALTH', label: 'Santé' },
   { value: 'LIVING', label: 'Vie quotidienne' },
-];
+]);
 
-const RULES = [
+const RULES = localized([
   { value: 'FIXED_MONTHS', label: '12 mois' },
   { value: 'UNTIL_18', label: 'Jusqu a 18 ans' },
   { value: 'END_OF_STUDIES', label: 'Fin des études' },
-];
+]);
 
 /**
  * Les frais sont affiches avant le paiement (section 10.4).
@@ -89,7 +90,7 @@ export function DonatePanel({
         setCheckoutUrl(r.checkout?.checkoutUrl ?? null);
       }
     } catch (e: any) {
-      setError(e?.message ?? 'Paiement impossible');
+      setError(e?.message ?? t("Paiement impossible"));
     }
     setBusy(false);
   }
@@ -97,13 +98,13 @@ export function DonatePanel({
   if (checkoutUrl) {
     return (
       <div ref={readyRef} role="status" className="mt-5 space-y-3 rounded-xl bg-emerald-50 p-4">
-        <p className="text-sm font-medium text-emerald-800">Votre paiement est pret.</p>
+        <p className="text-sm font-medium text-emerald-800">{t("Votre paiement est pret.")}</p>
         <p className="text-xs text-emerald-700">
-          Il s’ouvre sur une page web sécurisée du fournisseur de paiement.
+          {t("Il s’ouvre sur une page web sécurisée du fournisseur de paiement.")}
         </p>
         <a href={checkoutUrl} target="_blank" rel="noreferrer" className="btn-primary w-full">
           <ExternalLink className="h-4 w-4" />
-          Ouvrir la page de paiement
+          {t("Ouvrir la page de paiement")}
         </a>
       </div>
     );
@@ -113,7 +114,7 @@ export function DonatePanel({
     <div className="mt-5 space-y-4">
       <div>
         <label className="label">
-          {mode === 'SPONSORSHIP' ? 'Montant mensuel' : 'Montant du don'}
+          {mode === 'SPONSORSHIP' ? t("Montant mensuel") : t("Montant du don")}
         </label>
         <div className="flex flex-wrap gap-2">
           {PRESETS.map((p) => (
@@ -133,13 +134,13 @@ export function DonatePanel({
             value={amount}
             onChange={(e) => setAmount(Number(e.target.value))}
             className="input flex-1"
-            aria-label="Montant personnalise"
+            aria-label={t("Montant personnalise")}
           />
           <select
             value={currency}
             onChange={(e) => setCurrency(e.target.value)}
             className="input w-28"
-            aria-label="Devise"
+            aria-label={t("Devise")}
           >
             <option value="USD">USD</option>
             <option value="EUR">EUR</option>
@@ -152,7 +153,7 @@ export function DonatePanel({
         <>
           <div>
             <label htmlFor="scope" className="label">
-              Objet du parrainage
+              {t("Objet du parrainage")}
             </label>
             <select id="scope" value={scope} onChange={(e) => setScope(e.target.value)} className="input">
               {SCOPES.map((s) => (
@@ -164,7 +165,7 @@ export function DonatePanel({
           </div>
           <div>
             <label htmlFor="rule" className="label">
-              Duree
+              {t("Duree")}
             </label>
             <select id="rule" value={endRule} onChange={(e) => setEndRule(e.target.value)} className="input">
               {RULES.map((r) => (
@@ -179,13 +180,13 @@ export function DonatePanel({
 
       <div>
         <label htmlFor="prov" className="label">
-          Moyen de paiement
+          {t("Moyen de paiement")}
         </label>
         <select id="prov" value={provider} onChange={(e) => setProvider(e.target.value)} className="input">
           {methods?.map((m) => (
             <option key={m.provider} value={m.provider}>
               {m.provider}
-              {m.configured ? '' : ' (bac a sable)'}
+              {m.configured ? '' : t(" (bac a sable)")}
             </option>
           ))}
         </select>
@@ -198,8 +199,8 @@ export function DonatePanel({
       <button onClick={submit} disabled={busy || amount < 1} className="btn-primary w-full py-3">
         {busy ? <Spinner className="h-4 w-4" /> : null}
         {mode === 'SPONSORSHIP'
-          ? `Parrainer ${childName ?? ''}`.trim()
-          : `Donner ${money(amount, currency)}`}
+          ? t("Parrainer {v0}", { v0: childName ?? '' }).trim()
+          : t("Donner {v0}", { v0: money(amount, currency) })}
       </button>
     </div>
   );

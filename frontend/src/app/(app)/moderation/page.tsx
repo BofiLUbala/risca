@@ -10,6 +10,7 @@ import { Empty } from '@/components/ui/Empty';
 import { SkeletonList } from '@/components/ui/Loading';
 import { dateTime } from '@/lib/format';
 import { ROLE_LABEL } from '@/lib/roles';
+import { t } from '@/lib/i18n';
 
 export default function ModerationPage() {
   const [status, setStatus] = useState('OPEN');
@@ -18,7 +19,7 @@ export default function ModerationPage() {
 
   async function resolve(id: string, decision: 'ACTIONED' | 'DISMISSED') {
     const resolution = await promptDialog(
-      decision === 'ACTIONED' ? 'Mesure prise ?' : 'Motif du classement sans suite ?',
+      decision === 'ACTIONED' ? t("Mesure prise ?") : t("Motif du classement sans suite ?"),
     );
     if (!resolution) return;
     setBusy(id);
@@ -30,19 +31,19 @@ export default function ModerationPage() {
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="page-title">Modération</h1>
-        <select value={status} onChange={(e) => setStatus(e.target.value)} className="input w-48" aria-label="Statut">
-          <option value="OPEN">Ouverts</option>
-          <option value="REVIEWING">En cours</option>
-          <option value="ACTIONED">Traites</option>
-          <option value="DISMISSED">Classes</option>
+        <h1 className="page-title">{t("Modération")}</h1>
+        <select value={status} onChange={(e) => setStatus(e.target.value)} className="input w-48" aria-label={t("Statut")}>
+          <option value="OPEN">{t("Ouverts")}</option>
+          <option value="REVIEWING">{t("En cours")}</option>
+          <option value="ACTIONED">{t("Traites")}</option>
+          <option value="DISMISSED">{t("Classes")}</option>
         </select>
       </div>
 
       {isLoading ? (
         <SkeletonList rows={4} />
       ) : !data?.length ? (
-        <Empty icon={<ShieldAlert className="h-6 w-6" />} title="Aucun signalement" />
+        <Empty icon={<ShieldAlert className="h-6 w-6" />} title={t("Aucun signalement")} />
       ) : (
         <div className="space-y-3">
           {data.map((r) => (
@@ -52,19 +53,19 @@ export default function ModerationPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="font-medium text-ink-900">{r.reason}</p>
                     {r.severity === 'SERIOUS' && (
-                      <span className="chip bg-rose-100 text-rose-700">Grave</span>
+                      <span className="chip bg-rose-100 text-rose-700">{t("Grave")}</span>
                     )}
                     <Badge status={r.status} />
                   </div>
                   <p className="mt-1 text-xs text-ink-400">
-                    {r.targetType} &middot; signale par {r.reporter.firstName} {r.reporter.lastName} (
+                    {r.targetType}{' '}{t("· signale par")}{' '}{r.reporter.firstName} {r.reporter.lastName} (
                     {ROLE_LABEL[r.reporter.role as keyof typeof ROLE_LABEL]}) &middot;{' '}
                     {dateTime(r.createdAt)}
                   </p>
                   {r.details && <p className="mt-2 text-sm text-ink-600">{r.details}</p>}
                   {r.resolution && (
                     <p className="mt-2 rounded-xl bg-ink-50 px-3 py-2 text-sm text-ink-600">
-                      Resolution : {r.resolution}
+                      {t("Resolution :")}{' '}{r.resolution}
                     </p>
                   )}
                 </div>
@@ -73,10 +74,10 @@ export default function ModerationPage() {
               {r.status === 'OPEN' && (
                 <div className="mt-4 flex flex-wrap gap-2 border-t border-ink-100 pt-3">
                   <button onClick={() => resolve(r.id, 'ACTIONED')} disabled={busy === r.id} className="btn-primary">
-                    Traiter
+                    {t("Traiter")}
                   </button>
                   <button onClick={() => resolve(r.id, 'DISMISSED')} disabled={busy === r.id} className="btn-ghost">
-                    Classer sans suite
+                    {t("Classer sans suite")}
                   </button>
                 </div>
               )}

@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Empty } from '@/components/ui/Empty';
 import { SkeletonList, Spinner } from '@/components/ui/Loading';
 import { date, money } from '@/lib/format';
+import { t } from '@/lib/i18n';
 
 export default function DisbursementsPage() {
   const { user } = useAuth();
@@ -30,7 +31,7 @@ export default function DisbursementsPage() {
       await api.post(`/disbursements/${id}/${path}`, body ?? {});
       mutate();
     } catch (e: any) {
-      setError(e?.message ?? 'Action impossible');
+      setError(e?.message ?? t("Action impossible"));
     }
     setBusy(null);
   }
@@ -45,15 +46,15 @@ export default function DisbursementsPage() {
       setShowNew(false);
       mutate();
     } catch (err: any) {
-      setError(err?.message ?? 'Demande impossible');
+      setError(err?.message ?? t("Demande impossible"));
     }
     setBusy(null);
   }
 
   async function addReceipt(id: string) {
-    const name = await promptDialog('Nom du justificatif ?');
+    const name = await promptDialog(t("Nom du justificatif ?"));
     if (!name) return;
-    const amount = await promptDialog('Montant justifie ?');
+    const amount = await promptDialog(t("Montant justifie ?"));
     await act(id, 'receipts', {
       name,
       url: `/uploads/${name.replace(/\s+/g, '-').toLowerCase()}.pdf`,
@@ -66,15 +67,15 @@ export default function DisbursementsPage() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="page-title">Décaissements</h1>
+          <h1 className="page-title">{t("Décaissements")}</h1>
           <p className="mt-1 text-sm text-ink-500">
-            Le chef d’orphelinat demande, l’ambassadeur confirme, l’Admin Finance paie.
+            {t("Le chef d’orphelinat demande, l’ambassadeur confirme, l’Admin Finance paie.")}
           </p>
         </div>
         {isDirector && (
           <button onClick={() => setShowNew((s) => !s)} className="btn-primary">
             <Plus className="h-4 w-4" />
-            Nouvelle demande
+            {t("Nouvelle demande")}
           </button>
         )}
       </div>
@@ -90,7 +91,7 @@ export default function DisbursementsPage() {
           <div className="grid gap-4 sm:grid-cols-[160px_minmax(0,1fr)]">
             <div>
               <label htmlFor="amount" className="label">
-                Montant (USD)
+                {t("Montant (USD)")}
               </label>
               <input
                 id="amount"
@@ -104,7 +105,7 @@ export default function DisbursementsPage() {
             </div>
             <div>
               <label htmlFor="reason" className="label">
-                Motif
+                {t("Motif")}
               </label>
               <input
                 id="reason"
@@ -112,17 +113,17 @@ export default function DisbursementsPage() {
                 value={form.reason}
                 onChange={(e) => setForm({ ...form, reason: e.target.value })}
                 className="input"
-                placeholder="Frais scolaires du trimestre"
+                placeholder={t("Frais scolaires du trimestre")}
               />
             </div>
           </div>
           <div className="flex gap-2">
             <button type="submit" disabled={busy === 'new'} className="btn-primary">
               {busy === 'new' ? <Spinner className="h-4 w-4" /> : null}
-              Envoyer la demande
+              {t("Envoyer la demande")}
             </button>
             <button type="button" onClick={() => setShowNew(false)} className="btn-ghost">
-              Annuler
+              {t("Annuler")}
             </button>
           </div>
         </form>
@@ -133,8 +134,8 @@ export default function DisbursementsPage() {
       ) : !data?.length ? (
         <Empty
           icon={<Banknote className="h-6 w-6" />}
-          title="Aucun décaissement"
-          description="Les demandes de décaissement apparaîtront ici."
+          title={t("Aucun décaissement")}
+          description={t("Les demandes de décaissement apparaîtront ici.")}
         />
       ) : (
         <div className="space-y-3">
@@ -147,8 +148,8 @@ export default function DisbursementsPage() {
                     <Badge status={d.status} />
                   </div>
                   <p className="mt-1 text-xs text-ink-400">
-                    {d.reference} &middot; {d.orphanage.name} &middot; demandée le {date(d.createdAt)}
-                    {d.requestedBy ? ` par ${d.requestedBy.firstName} ${d.requestedBy.lastName}` : ''}
+                    {d.reference} &middot; {d.orphanage.name}{' '}{t("· demandée le")}{' '}{date(d.createdAt)}
+                    {d.requestedBy ? t(" par {firstName} {lastName}", { firstName: d.requestedBy.firstName, lastName: d.requestedBy.lastName }) : ''}
                   </p>
                 </div>
                 <p className="shrink-0 text-lg font-semibold tabular-nums text-ink-900">
@@ -171,17 +172,17 @@ export default function DisbursementsPage() {
                   <>
                     <button onClick={() => act(d.id, 'confirm')} disabled={!!busy} className="btn-primary">
                       <Check className="h-4 w-4" />
-                      Confirmer le besoin
+                      {t("Confirmer le besoin")}
                     </button>
                     <button
                       onClick={async () => {
-                        const reason = await promptDialog('Motif du refus ?');
+                        const reason = await promptDialog(t("Motif du refus ?"));
                         if (reason) act(d.id, 'reject', { reason });
                       }}
                       className="btn-ghost"
                     >
                       <X className="h-4 w-4" />
-                      Refuser
+                      {t("Refuser")}
                     </button>
                   </>
                 )}
@@ -194,16 +195,16 @@ export default function DisbursementsPage() {
                       className="btn-primary"
                     >
                       <Banknote className="h-4 w-4" />
-                      Approuver et payer
+                      {t("Approuver et payer")}
                     </button>
                     <button
                       onClick={async () => {
-                        const reason = await promptDialog('Motif du refus ?');
+                        const reason = await promptDialog(t("Motif du refus ?"));
                         if (reason) act(d.id, 'reject', { reason });
                       }}
                       className="btn-ghost"
                     >
-                      Refuser
+                      {t("Refuser")}
                     </button>
                   </>
                 )}
@@ -211,7 +212,7 @@ export default function DisbursementsPage() {
                 {isDirector && d.status === 'AWAITING_RECEIPTS' && (
                   <button onClick={() => addReceipt(d.id)} className="btn-outline">
                     <FileUp className="h-4 w-4" />
-                    Ajouter un justificatif
+                    {t("Ajouter un justificatif")}
                   </button>
                 )}
               </div>

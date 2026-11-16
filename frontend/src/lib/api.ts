@@ -1,4 +1,6 @@
 'use client';
+import { t } from '@/lib/i18n';
+
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 export const API_ORIGIN = process.env.NEXT_PUBLIC_API_ORIGIN || 'http://localhost:4000';
@@ -25,7 +27,7 @@ export class ApiError extends Error {
   status: number;
   payload: any;
   constructor(status: number, payload: any) {
-    super(payload?.message ?? `Erreur ${status}`);
+    super(payload?.message ?? t("Erreur {status}", { status }));
     this.status = status;
     this.payload = payload;
   }

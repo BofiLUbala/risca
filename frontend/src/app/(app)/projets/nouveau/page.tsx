@@ -8,6 +8,7 @@ import { ArrowLeft, Save } from 'lucide-react';
 import { api, fetcher } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { Spinner } from '@/components/ui/Loading';
+import { t } from '@/lib/i18n';
 
 // Memes roles que la creation cote API (projects.controller) : les autres n'ont rien a faire ici.
 const CREATOR_ROLES = ['ORPHANAGE_DIRECTOR', 'AMBASSADOR', 'REGIONAL_MANAGER', 'SUPER_ADMIN'];
@@ -59,7 +60,7 @@ export default function NewProjectPage() {
       });
       router.push(`/projets/${r.id}`);
     } catch (err: any) {
-      setError(err?.message ?? 'Création impossible');
+      setError(err?.message ?? t("Création impossible"));
       setBusy(false);
     }
   }
@@ -68,20 +69,20 @@ export default function NewProjectPage() {
     <div className="max-w-3xl space-y-5">
       <Link href="/projets" className="inline-flex min-h-[44px] items-center gap-1.5 text-sm text-ink-500 hover:text-ink-800 sm:min-h-0">
         <ArrowLeft className="h-4 w-4" />
-        Retour aux projets
+        {t("Retour aux projets")}
       </Link>
 
       <div>
-        <h1 className="page-title">Nouveau projet</h1>
+        <h1 className="page-title">{t("Nouveau projet")}</h1>
         <p className="mt-1 text-sm text-ink-500">
-          Un projet concernant un enfant doit etre valide par son ambassadeur avant publication.
+          {t("Un projet concernant un enfant doit etre valide par son ambassadeur avant publication.")}
         </p>
       </div>
 
       <form onSubmit={submit} className="card card-pad space-y-4">
         <div>
           <label htmlFor="title" className="label">
-            Titre <span className="text-accent-coral">*</span>
+            {t("Titre")}{' '}<span className="text-accent-coral">*</span>
           </label>
           <input
             id="title"
@@ -89,13 +90,13 @@ export default function NewProjectPage() {
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
             className="input"
-            placeholder="Opération chirurgicale urgente"
+            placeholder={t("Opération chirurgicale urgente")}
           />
         </div>
 
         <div>
           <label htmlFor="desc" className="label">
-            Description <span className="text-accent-coral">*</span>
+            {t("Description")}{' '}<span className="text-accent-coral">*</span>
           </label>
           <textarea
             id="desc"
@@ -110,7 +111,7 @@ export default function NewProjectPage() {
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="child" className="label">
-              Enfant concerne
+              {t("Enfant concerne")}
             </label>
             <select
               id="child"
@@ -118,7 +119,7 @@ export default function NewProjectPage() {
               onChange={(e) => setForm({ ...form, childId: e.target.value })}
               className="input"
             >
-              <option value="">Projet d’orphelinat (sans enfant precis)</option>
+              <option value="">{t("Projet d’orphelinat (sans enfant precis)")}</option>
               {childrenData?.items?.map((c: any) => (
                 <option key={c.id} value={c.id}>
                   {c.firstName} ({c.publicId})
@@ -129,7 +130,7 @@ export default function NewProjectPage() {
 
           <div>
             <label htmlFor="orph" className="label">
-              Orphelinat
+              {t("Orphelinat")}
             </label>
             <select
               id="orph"
@@ -138,7 +139,7 @@ export default function NewProjectPage() {
               disabled={!!form.childId}
               className="input"
             >
-              <option value="">Choisir</option>
+              <option value="">{t("Choisir")}</option>
               {orphanages?.map((o) => (
                 <option key={o.id} value={o.id}>
                   {o.name}
@@ -149,7 +150,7 @@ export default function NewProjectPage() {
 
           <div>
             <label htmlFor="amount" className="label">
-              Montant vise <span className="text-accent-coral">*</span>
+              {t("Montant vise")}{' '}<span className="text-accent-coral">*</span>
             </label>
             <div className="flex gap-2">
               <input
@@ -165,7 +166,7 @@ export default function NewProjectPage() {
                 value={form.currency}
                 onChange={(e) => setForm({ ...form, currency: e.target.value })}
                 className="input w-28"
-                aria-label="Devise"
+                aria-label={t("Devise")}
               >
                 <option value="USD">USD</option>
                 <option value="EUR">EUR</option>
@@ -174,14 +175,14 @@ export default function NewProjectPage() {
             </div>
             {aboveThreshold ? (
               <p className="mt-1.5 text-xs text-amber-700">
-                Au-dessus du seuil de {threshold} USD : une validation du chef regional sera ajoutee.
+                {t("Au-dessus du seuil de")}{' '}{threshold}{' '}{t("USD : une validation du chef regional sera ajoutee.")}
               </p>
             ) : null}
           </div>
 
           <div>
             <label htmlFor="cat" className="label">
-              Catégorie
+              {t("Catégorie")}
             </label>
             <select
               id="cat"
@@ -189,7 +190,7 @@ export default function NewProjectPage() {
               onChange={(e) => setForm({ ...form, category: e.target.value })}
               className="input"
             >
-              <option value="">Choisir</option>
+              <option value="">{t("Choisir")}</option>
               {categories.map((c) => (
                 <option key={c} value={c}>
                   {c}
@@ -200,7 +201,7 @@ export default function NewProjectPage() {
 
           <div>
             <label htmlFor="end" className="label">
-              Date de fin de collecte
+              {t("Date de fin de collecte")}
             </label>
             <input
               id="end"
@@ -221,10 +222,10 @@ export default function NewProjectPage() {
         <div className="flex gap-2">
           <button type="submit" disabled={busy} className="btn-primary">
             {busy ? <Spinner className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-            Créer le brouillon
+            {t("Créer le brouillon")}
           </button>
           <Link href="/projets" className="btn-ghost">
-            Annuler
+            {t("Annuler")}
           </Link>
         </div>
       </form>

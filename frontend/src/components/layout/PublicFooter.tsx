@@ -1,5 +1,8 @@
+'use client';
+
 import Link from 'next/link';
 import { Logo } from '@/components/ui/Logo';
+import { t } from '@/lib/i18n';
 
 export function PublicFooter() {
   return (
@@ -9,67 +12,66 @@ export function PublicFooter() {
           <div>
             <Logo className="h-20" />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-500">
-              Réseau International des Structures d’Accueil du Congo, porté par l’ONG Congo Meilleur
-              ASBL.
+              {t("Réseau International des Structures d’Accueil du Congo, porté par l’ONG Congo Meilleur ASBL.")}
             </p>
           </div>
 
           <div>
-            <p className="text-sm font-semibold text-ink-900">Le réseau</p>
+            <p className="text-sm font-semibold text-ink-900">{t("Le réseau")}</p>
             <ul className="mt-4 space-y-2.5 text-sm text-ink-500">
               <li>
                 <Link href="/enfants-a-soutenir" className="inline-flex min-h-[44px] items-center hover:text-risac-700 sm:min-h-[32px]">
-                  Enfants à soutenir
+                  {t("Enfants à soutenir")}
                 </Link>
               </li>
               <li>
                 <Link href="/projets-ouverts" className="inline-flex min-h-[44px] items-center hover:text-risac-700 sm:min-h-[32px]">
-                  Projets en cours
+                  {t("Projets en cours")}
                 </Link>
               </li>
               <li>
                 <Link href="/structures" className="inline-flex min-h-[44px] items-center hover:text-risac-700 sm:min-h-[32px]">
-                  Orphelinats labellisés
+                  {t("Orphelinats labellisés")}
                 </Link>
               </li>
               <li>
                 <Link href="/partenaires" className="inline-flex min-h-[44px] items-center hover:text-risac-700 sm:min-h-[32px]">
-                  Partenaires
+                  {t("Partenaires")}
                 </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <p className="text-sm font-semibold text-ink-900">Soutenir</p>
+            <p className="text-sm font-semibold text-ink-900">{t("Soutenir")}</p>
             <ul className="mt-4 space-y-2.5 text-sm text-ink-500">
               <li>
                 <Link href="/inscription" className="inline-flex min-h-[44px] items-center hover:text-risac-700 sm:min-h-[32px]">
-                  Devenir bailleur
+                  {t("Devenir bailleur")}
                 </Link>
               </li>
               <li>
                 <Link href="/don-fonds-general" className="inline-flex min-h-[44px] items-center hover:text-risac-700 sm:min-h-[32px]">
-                  Global Congo Children Fund
+                  {t("Global Congo Children Fund")}
                 </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <p className="text-sm font-semibold text-ink-900">Protection de l’enfant</p>
+            <p className="text-sm font-semibold text-ink-900">{t("Protection de l’enfant")}</p>
             <ul className="mt-4 space-y-2.5 text-sm text-ink-500">
-              <li>Consentement photo obligatoire</li>
-              <li>Aucun contact direct bailleur-enfant</li>
-              <li>Localisation masquée en zone à risque</li>
-              <li>Conformité RGPD et CDE</li>
+              <li>{t("Consentement photo obligatoire")}</li>
+              <li>{t("Aucun contact direct bailleur-enfant")}</li>
+              <li>{t("Localisation masquée en zone à risque")}</li>
+              <li>{t("Conformité RGPD et CDE")}</li>
             </ul>
           </div>
         </div>
 
         <div className="mt-10 flex flex-col gap-3 border-t border-ink-100 pt-6 text-xs text-ink-400 sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} RISAC — ONG Congo Meilleur ASBL.</p>
-          <p>Batir un ecosysteme d’excellence, de resilience, de reparation et d’inclusion.</p>
+          <p>© {new Date().getFullYear()}{' '}{t("RISAC — ONG Congo Meilleur ASBL.")}</p>
+          <p>{t("Batir un ecosysteme d’excellence, de resilience, de reparation et d’inclusion.")}</p>
         </div>
       </div>
     </footer>

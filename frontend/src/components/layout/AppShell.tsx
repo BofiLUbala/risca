@@ -13,6 +13,7 @@ import { PushGate } from './PushGate';
 import { PageLoading } from '@/components/ui/Loading';
 import { LayoutPrefsProvider, SIDEBAR_WIDTH, useLayoutPrefs } from '@/lib/layout-prefs';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { t } from '@/lib/i18n';
 
 /**
  * Coquille du tableau de bord : navigation des fonctionnalites a gauche,
@@ -137,7 +138,7 @@ function AppShellInner({ title, children }: { title?: string; children: React.Re
   // La flèche pointe vers où le menu va : vers le bord pour le réduire, vers le contenu pour l'agrandir.
   const pointsLeft = right ? collapsed : !collapsed;
   const EdgeIcon = pointsLeft ? ChevronLeft : ChevronRight;
-  const edgeLabel = collapsed ? 'Agrandir le menu' : 'Réduire le menu';
+  const edgeLabel = collapsed ? t("Agrandir le menu") : t("Réduire le menu");
 
   return (
     <PushGate exempt={user.pushExempt}>
@@ -158,12 +159,12 @@ function AppShellInner({ title, children }: { title?: string; children: React.Re
           <div
             role="separator"
             aria-orientation="vertical"
-            aria-label="Redimensionner le menu (flèches gauche et droite, Entrée pour réduire ou agrandir)"
+            aria-label={t("Redimensionner le menu (flèches gauche et droite, Entrée pour réduire ou agrandir)")}
             aria-valuemin={SIDEBAR_WIDTH.rail}
             aria-valuemax={SIDEBAR_WIDTH.max}
             aria-valuenow={Math.round(shownWidth)}
             tabIndex={0}
-            title="Glisser pour changer la largeur du menu"
+            title={t("Glisser pour changer la largeur du menu")}
             onPointerDown={startDrag}
             onKeyDown={onHandleKey}
             onDoubleClick={toggleCollapsed}
@@ -220,7 +221,7 @@ function AppShellInner({ title, children }: { title?: string; children: React.Re
             open ? 'translate-x-0' : right ? 'translate-x-full' : '-translate-x-full',
           )}
           role="dialog"
-          aria-label="Navigation"
+          aria-label={t("Navigation")}
         >
           <Sidebar onNavigate={() => setOpen(false)} />
         </div>

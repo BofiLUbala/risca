@@ -1,4 +1,7 @@
+'use client';
+
 import clsx from 'clsx';
+import { t } from '@/lib/i18n';
 
 /**
  * Marque officielle RISAC (logo fourni par Congo Meilleur).
@@ -14,7 +17,7 @@ export function Logo({
   className?: string;
   showText?: boolean;
 }) {
-  const alt = 'RISAC, Réseau International des Structures d’Accueil du Congo';
+  const alt = t("RISAC, Réseau International des Structures d’Accueil du Congo");
 
   return showText ? (
     // eslint-disable-next-line @next/next/no-img-element

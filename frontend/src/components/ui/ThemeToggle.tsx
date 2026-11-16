@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
+import { t } from '@/lib/i18n';
 
 const KEY = 'risac.theme';
 
@@ -32,7 +33,7 @@ export function ThemeToggle({ className = '' }: { className?: string }) {
     }
   }
 
-  const label = dark ? 'Passer en mode clair' : 'Passer en mode sombre';
+  const label = dark ? t("Passer en mode clair") : t("Passer en mode sombre");
   return (
     <button
       type="button"

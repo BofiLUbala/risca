@@ -3,6 +3,7 @@
 import { forwardRef, InputHTMLAttributes, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import clsx from 'clsx';
+import { t } from '@/lib/i18n';
 
 /**
  * Champ de mot de passe avec un œil pour afficher ou masquer ce qui est tapé.
@@ -25,7 +26,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, Omit<InputHTMLAttribut
         <button
           type="button"
           onClick={() => setShown((s) => !s)}
-          aria-label={shown ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+          aria-label={shown ? t("Masquer le mot de passe") : t("Afficher le mot de passe")}
           aria-pressed={shown}
           className="absolute right-0 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-xl text-ink-500 transition-colors duration-base hover:text-ink-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-sun-200 motion-reduce:transition-none"
         >

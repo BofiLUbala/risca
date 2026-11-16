@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { HeartHandshake } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { DonatePanel } from './DonatePanel';
+import { t } from '@/lib/i18n';
 
 export function SupportSidebar({ child }: { child: any }) {
   const { user } = useAuth();
@@ -13,7 +14,7 @@ export function SupportSidebar({ child }: { child: any }) {
   return (
     <aside className="lg:sticky lg:top-24 lg:self-start">
       <div className="card card-pad">
-        <h2 className="section-title">Soutenir {child.firstName}</h2>
+        <h2 className="section-title">{t("Soutenir")}{' '}{child.firstName}</h2>
 
         {child.publicNeeds && (
           <p className="mt-2 flex items-start gap-2 rounded-xl bg-risac-50 px-3.5 py-3 text-sm text-risac-800">
@@ -25,10 +26,10 @@ export function SupportSidebar({ child }: { child: any }) {
         {!user ? (
           <div className="mt-5 space-y-2">
             <Link href="/inscription" className="btn-primary w-full py-3">
-              Créer un compte bailleur
+              {t("Créer un compte bailleur")}
             </Link>
             <Link href="/connexion" className="btn-outline w-full py-3">
-              Se connecter
+              {t("Se connecter")}
             </Link>
           </div>
         ) : (
@@ -38,13 +39,13 @@ export function SupportSidebar({ child }: { child: any }) {
                 onClick={() => setMode('ONE_OFF')}
                 className={mode === 'ONE_OFF' ? 'btn-primary flex-1' : 'btn-outline flex-1'}
               >
-                Financer
+                {t("Financer")}
               </button>
               <button
                 onClick={() => setMode('SPONSORSHIP')}
                 className={mode === 'SPONSORSHIP' ? 'btn-primary flex-1' : 'btn-outline flex-1'}
               >
-                Parrainer
+                {t("Parrainer")}
               </button>
             </div>
             {mode && <DonatePanel mode={mode} childId={child.id} childName={child.firstName} />}
@@ -52,8 +53,7 @@ export function SupportSidebar({ child }: { child: any }) {
         )}
 
         <p className="mt-5 border-t border-ink-100 pt-4 text-xs leading-relaxed text-ink-400">
-          Vous ecrivez à l’ambassadeur de l’enfant, jamais à l’enfant lui-même. Chaque dépense est
-          justifiée par une facture ou une photo.
+          {t("Vous ecrivez à l’ambassadeur de l’enfant, jamais à l’enfant lui-même. Chaque dépense est justifiée par une facture ou une photo.")}
         </p>
       </div>
     </aside>

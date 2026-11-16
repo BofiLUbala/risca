@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/Badge';
 import { PageLoading, Spinner } from '@/components/ui/Loading';
 import { dateTime } from '@/lib/format';
 import { ROLE_LABEL } from '@/lib/roles';
+import { t } from '@/lib/i18n';
 
 export default function ValidationDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -31,7 +32,7 @@ export default function ValidationDetailPage({ params }: { params: Promise<{ id:
 
   async function act(action: 'approve' | 'request-changes' | 'reject') {
     if (action !== 'approve' && comment.trim().length < 3) {
-      setError('Un motif est obligatoire pour cette décision.');
+      setError(t("Un motif est obligatoire pour cette décision."));
       return;
     }
     setBusy(action);
@@ -41,7 +42,7 @@ export default function ValidationDetailPage({ params }: { params: Promise<{ id:
       setComment('');
       mutate();
     } catch (e: any) {
-      setError(e?.message ?? 'Action impossible');
+      setError(e?.message ?? t("Action impossible"));
     }
     setBusy(null);
   }
@@ -59,7 +60,7 @@ export default function ValidationDetailPage({ params }: { params: Promise<{ id:
     <div className="space-y-5">
       <Link href="/validations" className="inline-flex min-h-[44px] items-center gap-1.5 text-sm text-ink-500 hover:text-ink-800 sm:min-h-0">
         <ArrowLeft className="h-4 w-4" />
-        Retour à la file
+        {t("Retour à la file")}
       </Link>
 
       <header className="card card-pad">
@@ -69,21 +70,21 @@ export default function ValidationDetailPage({ params }: { params: Promise<{ id:
               {data.entityLabel ?? data.kind}
             </h1>
             <p className="mt-1 text-sm text-ink-500">
-              Demande le {dateTime(data.createdAt)}
-              {data.escalated ? ' - remontee au niveau superieur' : ''}
+              {t("Demande le")}{' '}{dateTime(data.createdAt)}
+              {data.escalated ? t(" - remontee au niveau superieur") : ''}
             </p>
           </div>
           <Badge status={data.status} />
         </div>
         {entityHref && (
           <Link href={entityHref} className="btn-soft mt-4">
-            Ouvrir le dossier concerne
+            {t("Ouvrir le dossier concerne")}
           </Link>
         )}
       </header>
 
       <section className="card card-pad">
-        <h2 className="mb-4 card-title">Circuit de validation</h2>
+        <h2 className="mb-4 card-title">{t("Circuit de validation")}</h2>
         <ol className="relative space-y-4 pl-8">
           <span aria-hidden="true" className="absolute left-[11px] top-2 h-[calc(100%-1rem)] w-px bg-ink-200" />
           {data.steps.map((s: any) => (
@@ -118,7 +119,7 @@ export default function ValidationDetailPage({ params }: { params: Promise<{ id:
                 )}
                 {s.comment && <p className="mt-2 text-sm text-ink-600">{s.comment}</p>}
                 {s.status === 'PENDING' && s.dueAt && (
-                  <p className="mt-1 text-xs text-ink-400">Echeance : {dateTime(s.dueAt)}</p>
+                  <p className="mt-1 text-xs text-ink-400">{t("Echeance :")}{' '}{dateTime(s.dueAt)}</p>
                 )}
               </div>
             </li>
@@ -128,14 +129,14 @@ export default function ValidationDetailPage({ params }: { params: Promise<{ id:
 
       {canDecide && (
         <section className="card card-pad">
-          <h2 className="mb-3 card-title">Votre décision</h2>
+          <h2 className="mb-3 card-title">{t("Votre décision")}</h2>
           {error && (
             <p role="alert" className="mb-3 rounded-xl bg-rose-50 px-3.5 py-2.5 text-sm text-rose-700">
               {error}
             </p>
           )}
           <label htmlFor="comment" className="label">
-            Commentaire (obligatoire pour un refus ou une demande de correction)
+            {t("Commentaire (obligatoire pour un refus ou une demande de correction)")}
           </label>
           <textarea
             id="comment"
@@ -143,20 +144,20 @@ export default function ValidationDetailPage({ params }: { params: Promise<{ id:
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             className="input resize-y"
-            placeholder="Précisez votre décision..."
+            placeholder={t("Précisez votre décision...")}
           />
           <div className="mt-4 flex flex-wrap gap-2">
             <button onClick={() => act('approve')} disabled={!!busy} className="btn-primary">
               {busy === 'approve' ? <Spinner className="h-4 w-4" /> : <Check className="h-4 w-4" />}
-              Valider
+              {t("Valider")}
             </button>
             <button onClick={() => act('request-changes')} disabled={!!busy} className="btn-outline">
               <MessageSquareWarning className="h-4 w-4" />
-              Demander des corrections
+              {t("Demander des corrections")}
             </button>
             <button onClick={() => act('reject')} disabled={!!busy} className="btn-danger">
               <X className="h-4 w-4" />
-              Refuser
+              {t("Refuser")}
             </button>
           </div>
         </section>

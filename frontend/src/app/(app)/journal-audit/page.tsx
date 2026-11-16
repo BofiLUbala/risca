@@ -8,6 +8,7 @@ import { Empty } from '@/components/ui/Empty';
 import { SkeletonList } from '@/components/ui/Loading';
 import { dateTime } from '@/lib/format';
 import { ROLE_LABEL } from '@/lib/roles';
+import { t } from '@/lib/i18n';
 
 export default function AuditLogPage() {
   const [entityType, setEntityType] = useState('');
@@ -23,9 +24,9 @@ export default function AuditLogPage() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="page-title">Journal d’audit</h1>
+          <h1 className="page-title">{t("Journal d’audit")}</h1>
           <p className="mt-1 text-sm text-ink-500">
-            Non modifiable : qui a consulte ou modifie quoi, et quand.
+            {t("Non modifiable : qui a consulte ou modifie quoi, et quand.")}
             {data ? ` ${data.total} entrees.` : ''}
           </p>
         </div>
@@ -36,34 +37,34 @@ export default function AuditLogPage() {
             setSkip(0);
           }}
           className="input w-56"
-          aria-label="Filtrer par entite"
+          aria-label={t("Filtrer par entite")}
         >
-          <option value="">Toutes les entites</option>
-          <option value="User">Utilisateurs</option>
-          <option value="Child">Enfants</option>
-          <option value="Orphanage">Orphelinats</option>
-          <option value="Project">Projets</option>
-          <option value="Donation">Dons</option>
-          <option value="DisbursementRequest">Décaissements</option>
-          <option value="Post">Publications</option>
+          <option value="">{t("Toutes les entites")}</option>
+          <option value="User">{t("Utilisateurs")}</option>
+          <option value="Child">{t("Enfants")}</option>
+          <option value="Orphanage">{t("Orphelinats")}</option>
+          <option value="Project">{t("Projets")}</option>
+          <option value="Donation">{t("Dons")}</option>
+          <option value="DisbursementRequest">{t("Décaissements")}</option>
+          <option value="Post">{t("Publications")}</option>
         </select>
       </div>
 
       {isLoading ? (
         <SkeletonList rows={6} />
       ) : !data?.items?.length ? (
-        <Empty icon={<ScrollText className="h-6 w-6" />} title="Aucune entree" />
+        <Empty icon={<ScrollText className="h-6 w-6" />} title={t("Aucune entree")} />
       ) : (
         <>
-          <div className="card overflow-x-auto" role="region" aria-label="Journal d’audit, tableau défilant" tabIndex={0}>
+          <div className="card overflow-x-auto" role="region" aria-label={t("Journal d’audit, tableau défilant")} tabIndex={0}>
             <table className="w-full min-w-[720px] text-sm">
               <thead className="border-b border-ink-100 bg-ink-50/60 text-left text-table-head text-ink-500">
                 <tr>
-                  <th className="px-5 py-3 font-medium">Date</th>
-                  <th className="px-5 py-3 font-medium">Acteur</th>
-                  <th className="px-5 py-3 font-medium">Action</th>
-                  <th className="px-5 py-3 font-medium">Entite</th>
-                  <th className="px-5 py-3 font-medium">Détails</th>
+                  <th className="px-5 py-3 font-medium">{t("Date")}</th>
+                  <th className="px-5 py-3 font-medium">{t("Acteur")}</th>
+                  <th className="px-5 py-3 font-medium">{t("Action")}</th>
+                  <th className="px-5 py-3 font-medium">{t("Entite")}</th>
+                  <th className="px-5 py-3 font-medium">{t("Détails")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-ink-100">
@@ -83,7 +84,7 @@ export default function AuditLogPage() {
                           </span>
                         </span>
                       ) : (
-                        <span className="text-ink-400">systeme</span>
+                        <span className="text-ink-400">{t("systeme")}</span>
                       )}
                     </td>
                     <td className="px-5 py-3">
@@ -107,17 +108,17 @@ export default function AuditLogPage() {
               disabled={skip === 0}
               className="btn-outline"
             >
-              Precedent
+              {t("Precedent")}
             </button>
             <span className="text-sm text-ink-500">
-              {skip + 1} - {Math.min(skip + take, data.total)} sur {data.total}
+              {skip + 1} - {Math.min(skip + take, data.total)}{' '}{t("sur")}{' '}{data.total}
             </span>
             <button
               onClick={() => setSkip(skip + take)}
               disabled={skip + take >= data.total}
               className="btn-outline"
             >
-              Suivant
+              {t("Suivant")}
             </button>
           </div>
         </>

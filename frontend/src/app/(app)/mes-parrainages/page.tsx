@@ -11,19 +11,20 @@ import { Badge } from '@/components/ui/Badge';
 import { Empty } from '@/components/ui/Empty';
 import { SkeletonList } from '@/components/ui/Loading';
 import { date, money } from '@/lib/format';
+import { t, localized, geoName } from '@/lib/i18n';
 
-const SCOPE_LABEL: Record<string, string> = {
+const SCOPE_LABEL: Record<string, string> = localized({
   EDUCATION: 'Etudes',
   HEALTH: 'Santé',
   LIVING: 'Vie quotidienne',
   FULL: 'Soutien complet',
-};
+});
 
-const RULE_LABEL: Record<string, string> = {
+const RULE_LABEL: Record<string, string> = localized({
   FIXED_MONTHS: 'Duree fixe',
   UNTIL_18: 'Jusqu a 18 ans',
   END_OF_STUDIES: 'Fin des études',
-};
+});
 
 export default function MySponsorshipsPage() {
   const { data, isLoading, mutate } = useSWR<any[]>('/payments/sponsorships/mine', fetcher);
@@ -37,20 +38,20 @@ export default function MySponsorshipsPage() {
       await api.post(`/payments/sponsorships/${id}/${path}`, {});
       mutate();
     } catch (e: any) {
-      setError(e?.message ?? 'Action impossible');
+      setError(e?.message ?? t("Action impossible"));
     }
     setBusy(null);
   }
 
   async function changeAmount(id: string, current: number) {
-    const value = await promptDialog('Nouveau montant mensuel (USD) ?', String(current));
+    const value = await promptDialog(t("Nouveau montant mensuel (USD) ?"), String(current));
     if (!value) return;
     setBusy(id);
     try {
       await api.patch(`/payments/sponsorships/${id}`, { monthlyAmount: Number(value) });
       mutate();
     } catch (e: any) {
-      setError(e?.message ?? 'Modification impossible');
+      setError(e?.message ?? t("Modification impossible"));
     }
     setBusy(null);
   }
@@ -60,16 +61,16 @@ export default function MySponsorshipsPage() {
       await api.post(`/channels/donor/${childId}`, {});
       window.location.href = '/messages';
     } catch (e: any) {
-      setError(e?.message ?? 'Canal indisponible');
+      setError(e?.message ?? t("Canal indisponible"));
     }
   }
 
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="page-title">Mes parrainages</h1>
+        <h1 className="page-title">{t("Mes parrainages")}</h1>
         <p className="mt-1 text-sm text-ink-500">
-          Modifiable, en pause ou annulable a tout moment. Le prelevement est mensuel.
+          {t("Modifiable, en pause ou annulable a tout moment. Le prelevement est mensuel.")}
         </p>
       </div>
 
@@ -84,11 +85,11 @@ export default function MySponsorshipsPage() {
       ) : !data?.length ? (
         <Empty
           icon={<Sparkles className="h-6 w-6" />}
-          title="Aucun parrainage"
-          description="Parrainez un enfant pour soutenir ses études, sa santé ou sa vie quotidienne."
+          title={t("Aucun parrainage")}
+          description={t("Parrainez un enfant pour soutenir ses études, sa santé ou sa vie quotidienne.")}
           action={
             <Link href="/enfants-a-soutenir" className="btn-primary">
-              Choisir un enfant
+              {t("Choisir un enfant")}
             </Link>
           }
         />
@@ -111,16 +112,16 @@ export default function MySponsorshipsPage() {
                   </div>
                   <p className="mt-1 text-xs text-ink-400">
                     {s.child.orphanage?.name}
-                    {s.child.orphanage?.province ? ` - ${s.child.orphanage.province.nameFr}` : ''}
+                    {s.child.orphanage?.province ? ` - ${geoName(s.child.orphanage.province)}` : ''}
                   </p>
                   <p className="mt-2 text-sm text-ink-600">
-                    {money(s.monthlyAmount, s.currency)} par mois &middot;{' '}
+                    {money(s.monthlyAmount, s.currency)}{' '}{t("par mois ·")}{' '}
                     {SCOPE_LABEL[s.scope] ?? s.scope} &middot; {RULE_LABEL[s.endRule] ?? s.endRule}
                   </p>
                   <p className="mt-1 text-xs text-ink-400">
-                    Depuis le {date(s.startDate)}
-                    {s.endDate ? ` - jusqu au ${date(s.endDate)}` : ''}
-                    {s.nextChargeAt ? ` - prochaine echeance le ${date(s.nextChargeAt)}` : ''}
+                    {t("Depuis le")}{' '}{date(s.startDate)}
+                    {s.endDate ? t(" - jusqu au {date}", { date: date(s.endDate) }) : ''}
+                    {s.nextChargeAt ? t(" - prochaine echeance le {date}", { date: date(s.nextChargeAt) }) : ''}
                   </p>
                 </div>
               </div>
@@ -131,45 +132,45 @@ export default function MySponsorshipsPage() {
                   disabled={busy === s.id}
                   className="btn-outline"
                 >
-                  Modifier le montant
+                  {t("Modifier le montant")}
                 </button>
 
                 {s.status === 'ACTIVE' ? (
                   <button onClick={() => act(s.id, 'pause')} disabled={busy === s.id} className="btn-ghost">
                     <Pause className="h-4 w-4" />
-                    Mettre en pause
+                    {t("Mettre en pause")}
                   </button>
                 ) : s.status === 'PAUSED' ? (
                   <button onClick={() => act(s.id, 'resume')} disabled={busy === s.id} className="btn-soft">
                     <Play className="h-4 w-4" />
-                    Reprendre
+                    {t("Reprendre")}
                   </button>
                 ) : null}
 
                 {s.status !== 'CANCELLED' && (
                   <button
                     onClick={async () => {
-                      if (await confirmDialog('Annuler definitivement ce parrainage ?')) act(s.id, 'cancel');
+                      if (await confirmDialog(t("Annuler definitivement ce parrainage ?"))) act(s.id, 'cancel');
                     }}
                     disabled={busy === s.id}
                     className="btn-ghost text-accent-coral"
                   >
                     <X className="h-4 w-4" />
-                    Annuler
+                    {t("Annuler")}
                   </button>
                 )}
 
                 {s.status === 'ACTIVE' && (
                   <button onClick={() => openChannel(s.child.id)} className="btn-soft ml-auto">
                     <MessageCircle className="h-4 w-4" />
-                    Écrire à l’ambassadeur
+                    {t("Écrire à l’ambassadeur")}
                   </button>
                 )}
               </div>
 
               {s.donations?.length > 0 && (
                 <div className="mt-4 border-t border-ink-100 pt-3">
-                  <p className="mb-2 text-xs font-medium text-ink-500">Dernieres echeances</p>
+                  <p className="mb-2 text-xs font-medium text-ink-500">{t("Dernieres echeances")}</p>
                   <div className="flex flex-wrap gap-2">
                     {s.donations.map((d: any) => (
                       <span key={d.id} className="chip bg-ink-100 text-ink-600">

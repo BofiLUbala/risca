@@ -3,6 +3,8 @@
 import clsx from 'clsx';
 import { Check, PanelLeft, PanelRight } from 'lucide-react';
 import { SIDEBAR_COLORS, useLayoutPrefs } from '@/lib/layout-prefs';
+import { t } from '@/lib/i18n';
+
 
 /** Choix de la couleur et du côté du menu latéral, mémorisé sur cet appareil. */
 export function AppearanceSection() {
@@ -10,12 +12,12 @@ export function AppearanceSection() {
 
   return (
     <section className="card card-pad">
-      <h2 className="section-title">Apparence</h2>
-      <p className="meta mt-1">Le choix est enregistré sur cet appareil et s&apos;applique tout de suite.</p>
+      <h2 className="section-title">{t("Apparence")}</h2>
+      <p className="meta mt-1">{t("Le choix est enregistré sur cet appareil et s'applique tout de suite.")}</p>
 
       <fieldset className="mt-5">
-        <legend className="label">Couleur du menu</legend>
-        <div className="flex flex-wrap gap-3" role="radiogroup" aria-label="Couleur du menu">
+        <legend className="label">{t("Couleur du menu")}</legend>
+        <div className="flex flex-wrap gap-3" role="radiogroup" aria-label={t("Couleur du menu")}>
           {SIDEBAR_COLORS.map((c) => {
             const selected = color === c.value;
             return (
@@ -44,12 +46,12 @@ export function AppearanceSection() {
       </fieldset>
 
       <fieldset className="mt-5">
-        <legend className="label">Position du menu</legend>
-        <div className="flex flex-wrap gap-3" role="radiogroup" aria-label="Position du menu">
+        <legend className="label">{t("Position du menu")}</legend>
+        <div className="flex flex-wrap gap-3" role="radiogroup" aria-label={t("Position du menu")}>
           {(
             [
-              { value: 'left', label: 'À gauche', Icon: PanelLeft },
-              { value: 'right', label: 'À droite', Icon: PanelRight },
+              { value: 'left', label: t("À gauche"), Icon: PanelLeft },
+              { value: 'right', label: t("À droite"), Icon: PanelRight },
             ] as const
           ).map(({ value, label, Icon }) => {
             const selected = side === value;

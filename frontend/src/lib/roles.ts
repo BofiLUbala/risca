@@ -1,3 +1,4 @@
+import { localized } from '@/lib/i18n';
 export type Role =
   | 'SUPER_ADMIN'
   | 'ADMIN_FINANCE'
@@ -12,7 +13,7 @@ export type Role =
   | 'DONOR'
   | 'PARTNER';
 
-export const ROLE_LABEL: Record<Role, string> = {
+export const ROLE_LABEL: Record<Role, string> = localized({
   SUPER_ADMIN: 'Super Admin',
   ADMIN_FINANCE: 'Admin Finance',
   MODERATOR: 'Modérateur / Support',
@@ -25,7 +26,7 @@ export const ROLE_LABEL: Record<Role, string> = {
   ORPHANAGE_STAFF: "Personnel de l'orphelinat",
   DONOR: 'Bailleur de fonds',
   PARTNER: 'Partenaire',
-};
+});
 
 /** Rôles qu'un rôle peut inviter (Plan fonctionnel §3) : jamais son supérieur ni un pair. Miroir de backend/src/common/hierarchy.ts. */
 export const INVITABLE: Partial<Record<Role, Role[]>> = {
@@ -35,7 +36,7 @@ export const INVITABLE: Partial<Record<Role, Role[]>> = {
   ORPHANAGE_DIRECTOR: ['ORPHANAGE_STAFF'],
 };
 
-export const STATUS_LABEL: Record<string, string> = {
+export const STATUS_LABEL: Record<string, string> = localized({
   DRAFT: 'Brouillon',
   IN_VALIDATION: 'En validation',
   NEEDS_CORRECTION: 'À corriger',
@@ -82,7 +83,7 @@ export const STATUS_LABEL: Record<string, string> = {
   IN_PROGRESS: 'En cours',
   RESOLVED: 'Résolu',
   PAUSED: 'En pause',
-};
+});
 
 export function statusTone(status?: string): string {
   switch (status) {

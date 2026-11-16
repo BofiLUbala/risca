@@ -12,8 +12,9 @@ import { Empty } from '@/components/ui/Empty';
 import { SkeletonList } from '@/components/ui/Loading';
 import { date } from '@/lib/format';
 import { FollowUpAlerts } from '@/components/child/FollowUpAlerts';
+import { t, localized, geoName } from '@/lib/i18n';
 
-const STATUSES = [
+const STATUSES = localized([
   { value: '', label: 'Tous les statuts' },
   { value: 'DRAFT', label: 'Brouillon' },
   { value: 'IN_VALIDATION', label: 'En validation' },
@@ -21,7 +22,7 @@ const STATUSES = [
   { value: 'ACTIVE', label: 'Actif' },
   { value: 'TRANSFERRED', label: 'Transféré' },
   { value: 'AFTERCARE', label: 'Suivi après la sortie' },
-];
+]);
 
 export default function ChildrenPage() {
   const { user } = useAuth();
@@ -41,15 +42,15 @@ export default function ChildrenPage() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="page-title">Enfants</h1>
+          <h1 className="page-title">{t("Enfants")}</h1>
           <p className="mt-1 text-sm text-ink-500">
-            {data ? `${data.total} dossier(s) dans votre périmètre` : 'Chargement…'}
+            {data ? t("{total} dossier(s) dans votre périmètre", { total: data.total }) : t("Chargement…")}
           </p>
         </div>
         {canCreate && (
           <Link href="/enfants/nouveau" className="btn-primary">
             <Plus className="h-4 w-4" />
-            Nouvel enfant
+            {t("Nouvel enfant")}
           </Link>
         )}
       </div>
@@ -62,16 +63,16 @@ export default function ChildrenPage() {
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Rechercher un prénom ou un identifiant"
+            placeholder={t("Rechercher un prénom ou un identifiant")}
             className="input pl-10"
-            aria-label="Rechercher"
+            aria-label={t("Rechercher")}
           />
         </div>
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
           className="input sm:w-56"
-          aria-label="Filtrer par statut"
+          aria-label={t("Filtrer par statut")}
         >
           {STATUSES.map((s) => (
             <option key={s.value} value={s.value}>
@@ -86,8 +87,8 @@ export default function ChildrenPage() {
       ) : !data?.items?.length ? (
         <Empty
           icon={<Users className="h-6 w-6" />}
-          title="Aucun dossier"
-          description="Aucun enfant ne correspond a ces criteres dans votre périmètre."
+          title={t("Aucun dossier")}
+          description={t("Aucun enfant ne correspond a ces criteres dans votre périmètre.")}
         />
       ) : (
         <div className="card divide-y divide-ink-100 overflow-hidden">
@@ -106,15 +107,15 @@ export default function ChildrenPage() {
                 </div>
                 <p className="mt-0.5 truncate text-xs text-ink-500">
                   {c.orphanage.name}
-                  {c.orphanage.province ? ` - ${c.orphanage.province.nameFr}` : ''}
+                  {c.orphanage.province ? ` - ${geoName(c.orphanage.province)}` : ''}
                   {c.assignments?.[0]
                     ? ` - ${c.assignments[0].ambassador.firstName} ${c.assignments[0].ambassador.lastName}`
-                    : ' - aucun ambassadeur'}
+                    : t(" - aucun ambassadeur")}
                 </p>
               </div>
 
               <div className="hidden shrink-0 text-right sm:block">
-                <p className="text-xs text-ink-400">{c._count.timeline} evenements</p>
+                <p className="text-xs text-ink-400">{c._count.timeline}{' '}{t("evenements")}</p>
                 <p className="text-xs text-ink-400">{date(c.createdAt)}</p>
               </div>
 

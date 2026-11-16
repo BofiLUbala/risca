@@ -6,6 +6,7 @@ import useSWR from 'swr';
 import { Star, UserMinus, UserPlus } from 'lucide-react';
 import { api, fetcher } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
+import { t, geoName } from '@/lib/i18n';
 
 const MANAGERS = ['SUPER_ADMIN', 'NATIONAL_MANAGER', 'REGIONAL_MANAGER'];
 
@@ -47,26 +48,26 @@ export function AmbassadorLinks({
       setIsPrimary(false);
       onChange();
     } catch (e: any) {
-      setError(e?.message ?? 'Le rattachement a échoué.');
+      setError(e?.message ?? t("Le rattachement a échoué."));
     }
     setBusy(false);
   }
 
   async function unlink(id: string, name: string) {
-    if (!await confirmDialog(`Retirer ${name} de cette structure ?`)) return;
+    if (!await confirmDialog(t("Retirer {name} de cette structure ?", { name }))) return;
     setError(null);
     try {
       await api.del(`/orphanages/${orphanageId}/ambassadors/${id}`);
       onChange();
     } catch (e: any) {
-      setError(e?.message ?? 'Le retrait a échoué.');
+      setError(e?.message ?? t("Le retrait a échoué."));
     }
   }
 
   return (
     <div>
       {linked.length === 0 ? (
-        <p className="text-sm text-ink-400">Aucun ambassadeur rattaché.</p>
+        <p className="text-sm text-ink-400">{t("Aucun ambassadeur rattaché.")}</p>
       ) : (
         <ul className="space-y-1.5">
           {linked.map((l: any) => {
@@ -77,7 +78,7 @@ export function AmbassadorLinks({
                 {l.isPrimary && (
                   <span className="chip bg-risac-50 text-risac-700">
                     <Star className="h-3 w-3" aria-hidden />
-                    Principal
+                    {t("Principal")}
                   </span>
                 )}
                 {allowed && (
@@ -85,7 +86,7 @@ export function AmbassadorLinks({
                     type="button"
                     onClick={() => unlink(l.ambassadorId, name)}
                     className="btn-ghost h-8 w-8 shrink-0 p-0"
-                    aria-label={`Retirer ${name}`}
+                    aria-label={t("Retirer {name}", { name })}
                   >
                     <UserMinus className="h-3.5 w-3.5" />
                   </button>
@@ -99,7 +100,7 @@ export function AmbassadorLinks({
       {allowed && (
         <div className="mt-4 border-t border-ink-100 pt-4">
           <label htmlFor={`link-amb-${orphanageId}`} className="label">
-            Rattacher un ambassadeur
+            {t("Rattacher un ambassadeur")}
           </label>
           <div className="flex flex-wrap gap-2">
             <select
@@ -109,13 +110,13 @@ export function AmbassadorLinks({
               onChange={(e) => setAmbassadorId(e.target.value)}
               disabled={isLoading}
             >
-              <option value="">{isLoading ? 'Chargement…' : 'Choisir un ambassadeur'}</option>
+              <option value="">{isLoading ? t("Chargement…") : t("Choisir un ambassadeur")}</option>
               {ambassadors
                 ?.filter((a) => !linkedIds.has(a.id))
                 .map((a) => (
                   <option key={a.id} value={a.id}>
                     {a.firstName} {a.lastName}
-                    {a.province?.nameFr ? ` · ${a.province.nameFr}` : ''}
+                    {geoName(a.province) ? ` · ${geoName(a.province)}` : ''}
                   </option>
                 ))}
             </select>
@@ -127,13 +128,13 @@ export function AmbassadorLinks({
               className="btn-primary"
             >
               <UserPlus className="h-4 w-4" />
-              Rattacher
+              {t("Rattacher")}
             </button>
           </div>
 
           <label className="mt-2 flex items-center gap-2 text-sm text-ink-600">
             <input type="checkbox" checked={isPrimary} onChange={(e) => setIsPrimary(e.target.checked)} />
-            Ambassadeur principal de la structure
+            {t("Ambassadeur principal de la structure")}
           </label>
 
           {error && (

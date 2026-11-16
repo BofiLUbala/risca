@@ -4,6 +4,7 @@ import useSWR from 'swr';
 import { Info } from 'lucide-react';
 import { fetcher } from '@/lib/api';
 import { money } from '@/lib/format';
+import { t } from '@/lib/i18n';
 
 /** Frais de fonctionnement transparents affiches avant le paiement. */
 export function FeeBreakdown({ amount, currency }: { amount: number; currency: string }) {
@@ -18,25 +19,25 @@ export function FeeBreakdown({ amount, currency }: { amount: number; currency: s
     <div className="rounded-xl bg-ink-50 px-4 py-3 text-sm">
       <p className="flex items-center gap-1.5 text-xs font-medium text-ink-500">
         <Info className="h-3.5 w-3.5" />
-        Transparence des frais
+        {t("Transparence des frais")}
       </p>
       <dl className="mt-2 space-y-1 text-xs">
         <div className="flex justify-between">
-          <dt className="text-ink-500">Votre versement</dt>
+          <dt className="text-ink-500">{t("Votre versement")}</dt>
           <dd className="tabular-nums text-ink-800">{money(quote.amount, quote.currency)}</dd>
         </div>
         {currency !== 'USD' && (
           <div className="flex justify-between">
-            <dt className="text-ink-500">Equivalent USD</dt>
+            <dt className="text-ink-500">{t("Equivalent USD")}</dt>
             <dd className="tabular-nums text-ink-800">{money(quote.amountUsd)}</dd>
           </div>
         )}
         <div className="flex justify-between">
-          <dt className="text-ink-500">Frais ({quote.feePercent} %)</dt>
+          <dt className="text-ink-500">{t("Frais (")}{quote.feePercent} %)</dt>
           <dd className="tabular-nums text-ink-800">{money(quote.feeAmount)}</dd>
         </div>
         <div className="flex justify-between border-t border-ink-200 pt-1 font-medium">
-          <dt className="text-ink-700">Montant affecté</dt>
+          <dt className="text-ink-700">{t("Montant affecté")}</dt>
           <dd className="tabular-nums text-ink-900">{money(quote.netAmount)}</dd>
         </div>
       </dl>

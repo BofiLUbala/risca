@@ -6,6 +6,7 @@ import { api, fetcher } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { INVITABLE, ROLE_LABEL, type Role } from '@/lib/roles';
 import { CountrySelect, ProvinceSelect } from '@/components/geo/GeoSelects';
+import { t } from '@/lib/i18n';
 
 /** Valeur spéciale de la liste des orphelinats : « créer un nouvel orphelinat ». */
 const NEW_ORPHANAGE = '__new__';
@@ -75,7 +76,7 @@ export function InviteForm({ onInvited }: { onInvited: () => void }) {
     let orphanageId = form.orphanageId;
     if (creatingOrphanage) {
       if (!form.countryId || !form.provinceId) {
-        setError('Choisissez le pays et la province : le nouvel orphelinat y sera créé.');
+        setError(t("Choisissez le pays et la province : le nouvel orphelinat y sera créé."));
         return;
       }
       try {
@@ -92,11 +93,11 @@ export function InviteForm({ onInvited }: { onInvited: () => void }) {
         await mutateOrphanages();
         setOrphanageNote(
           user?.role === 'SUPER_ADMIN'
-            ? `Orphelinat « ${created.name} » créé.`
-            : `Orphelinat « ${created.name} » créé. Il doit encore être validé par un chef régional ou le Super Admin.`,
+            ? t("Orphelinat « {name} » créé.", { name: created.name })
+            : t("Orphelinat « {name} » créé. Il doit encore être validé par un chef régional ou le Super Admin.", { name: created.name }),
         );
       } catch (err: any) {
-        setError(err?.message ?? 'Création de l’orphelinat impossible');
+        setError(err?.message ?? t("Création de l’orphelinat impossible"));
         return;
       }
     }
@@ -116,7 +117,7 @@ export function InviteForm({ onInvited }: { onInvited: () => void }) {
       setInvitedEmail(form.email);
       onInvited();
     } catch (err: any) {
-      setError(err?.message ?? 'Invitation impossible');
+      setError(err?.message ?? t("Invitation impossible"));
     }
   }
 
@@ -125,7 +126,7 @@ export function InviteForm({ onInvited }: { onInvited: () => void }) {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div>
           <label htmlFor="iemail" className="label">
-            E-mail
+            {t("E-mail")}
           </label>
           <input
             id="iemail"
@@ -138,7 +139,7 @@ export function InviteForm({ onInvited }: { onInvited: () => void }) {
         </div>
         <div>
           <label htmlFor="ifn" className="label">
-            Prénom
+            {t("Prénom")}
           </label>
           <input
             id="ifn"
@@ -150,7 +151,7 @@ export function InviteForm({ onInvited }: { onInvited: () => void }) {
         </div>
         <div>
           <label htmlFor="iln" className="label">
-            Nom
+            {t("Nom")}
           </label>
           <input
             id="iln"
@@ -162,7 +163,7 @@ export function InviteForm({ onInvited }: { onInvited: () => void }) {
         </div>
         <div>
           <label htmlFor="irole" className="label">
-            Rôle
+            {t("Rôle")}
           </label>
           <select
             id="irole"
@@ -182,7 +183,7 @@ export function InviteForm({ onInvited }: { onInvited: () => void }) {
         </div>
         <div>
           <label htmlFor="ictry" className="label">
-            Pays
+            {t("Pays")}
           </label>
           <CountrySelect
             id="ictry"
@@ -192,7 +193,7 @@ export function InviteForm({ onInvited }: { onInvited: () => void }) {
         </div>
         <div>
           <label htmlFor="iprov" className="label">
-            Province
+            {t("Province")}
           </label>
           <ProvinceSelect
             id="iprov"
@@ -205,7 +206,7 @@ export function InviteForm({ onInvited }: { onInvited: () => void }) {
         {needsOrphanage && (
           <div>
             <label htmlFor="iorph" className="label">
-              Orphelinat
+              {t("Orphelinat")}
             </label>
             <select
               id="iorph"
@@ -214,13 +215,13 @@ export function InviteForm({ onInvited }: { onInvited: () => void }) {
               className="input"
               required
             >
-              <option value="">Choisir</option>
+              <option value="">{t("Choisir")}</option>
               {orphanages?.map((o) => (
                 <option key={o.id} value={o.id}>
                   {o.name}
                 </option>
               ))}
-              {canCreateOrphanage && <option value={NEW_ORPHANAGE}>+ Nouvel orphelinat (pas encore dans la liste)</option>}
+              {canCreateOrphanage && <option value={NEW_ORPHANAGE}>{t("+ Nouvel orphelinat (pas encore dans la liste)")}</option>}
             </select>
           </div>
         )}
@@ -229,7 +230,7 @@ export function InviteForm({ onInvited }: { onInvited: () => void }) {
           <>
             <div>
               <label htmlFor="iorphname" className="label">
-                Nom du nouvel orphelinat
+                {t("Nom du nouvel orphelinat")}
               </label>
               <input
                 id="iorphname"
@@ -238,16 +239,16 @@ export function InviteForm({ onInvited }: { onInvited: () => void }) {
                 className="input"
                 required
                 minLength={3}
-                placeholder="Ex. Orphelinat Espoir"
+                placeholder={t("Ex. Orphelinat Espoir")}
                 aria-describedby="iorphname-aide"
               />
               <p id="iorphname-aide" className="meta mt-1.5">
-                Il sera créé dans le pays et la province choisis ci-dessus.
+                {t("Il sera créé dans le pays et la province choisis ci-dessus.")}
               </p>
             </div>
             <div>
               <label htmlFor="iorphcity" className="label">
-                Ville <span className="font-normal text-ink-500">(facultatif)</span>
+                {t("Ville")}{' '}<span className="font-normal text-ink-500">{t("(facultatif)")}</span>
               </label>
               <input
                 id="iorphcity"
@@ -262,7 +263,7 @@ export function InviteForm({ onInvited }: { onInvited: () => void }) {
         {needsFunction && (
           <div>
             <label htmlFor="ifunc" className="label">
-              Fonction
+              {t("Fonction")}
             </label>
             <select
               id="ifunc"
@@ -271,11 +272,11 @@ export function InviteForm({ onInvited }: { onInvited: () => void }) {
               className="input"
               required
             >
-              <option value="">Choisir</option>
-              <option value="PSYCHOLOGIST">Psychologue</option>
-              <option value="EDUCATOR">Educateur</option>
-              <option value="NURSE">Infirmier</option>
-              <option value="SOCIAL_WORKER">Assistant social</option>
+              <option value="">{t("Choisir")}</option>
+              <option value="PSYCHOLOGIST">{t("Psychologue")}</option>
+              <option value="EDUCATOR">{t("Educateur")}</option>
+              <option value="NURSE">{t("Infirmier")}</option>
+              <option value="SOCIAL_WORKER">{t("Assistant social")}</option>
             </select>
           </div>
         )}
@@ -289,24 +290,23 @@ export function InviteForm({ onInvited }: { onInvited: () => void }) {
       {error && <p className="rounded-xl bg-rose-50 px-3.5 py-2.5 text-sm text-rose-700">{error}</p>}
       {link && emailSent && (
         <div role="status" className="rounded-xl bg-emerald-50 px-3.5 py-3 text-sm text-emerald-800">
-          <p className="font-medium">Invitation envoyée à {invitedEmail}.</p>
+          <p className="font-medium">{t("Invitation envoyée à")}{' '}{invitedEmail}.</p>
           <p className="mt-1 text-xs">
-            Elle reçoit un code à 6 chiffres (valable 15 minutes) et un lien d’activation (valable 72 h). Pour
-            activer son compte, elle doit saisir le code sur la page d’activation.
+            {t("Elle reçoit un code à 6 chiffres (valable 15 minutes) et un lien d’activation (valable 72 h). Pour activer son compte, elle doit saisir le code sur la page d’activation.")}
           </p>
         </div>
       )}
       {link && !emailSent && (
         <div role="alert" className="rounded-xl bg-amber-50 px-3.5 py-3 text-sm text-amber-800">
-          <p className="font-medium">Le compte est créé, mais l’e-mail n’a pas pu être envoyé à {invitedEmail}.</p>
+          <p className="font-medium">{t("Le compte est créé, mais l’e-mail n’a pas pu être envoyé à")}{' '}{invitedEmail}.</p>
           <p className="mt-1 text-xs">
-            Vérifiez l’adresse puis utilisez « Renvoyer le code » dans la liste des utilisateurs.
+            {t("Vérifiez l’adresse puis utilisez « Renvoyer le code » dans la liste des utilisateurs.")}
           </p>
         </div>
       )}
 
       <button type="submit" className="btn-primary">
-        Envoyer l’invitation
+        {t("Envoyer l’invitation")}
       </button>
     </form>
   );

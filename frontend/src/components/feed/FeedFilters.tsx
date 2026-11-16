@@ -4,6 +4,7 @@ import useSWR from 'swr';
 import { CountrySelect } from '@/components/geo/GeoSelects';
 import clsx from 'clsx';
 import { fetcher } from '@/lib/api';
+import { t as tx, localized } from '@/lib/i18n';
 
 export type FeedScope = 'all' | 'mine' | 'authored' | 'favorites';
 
@@ -19,14 +20,14 @@ export interface ScopeOption {
 }
 
 /** Filtres du fil (section 8.3) : type de publication, pays, périmètre. */
-const TYPES = [
+const TYPES = localized([
   { value: '', label: 'Tout' },
   { value: 'NEWS', label: 'Nouvelles' },
   { value: 'URGENT_NEED', label: 'Besoins urgents' },
   { value: 'SPONSORSHIP_CALL', label: 'Appels au parrainage' },
   { value: 'VIDEO_PROGRESS', label: 'Progres' },
   { value: 'THANKS', label: 'Remerciements' },
-];
+]);
 
 export function FeedFilters({
   value,
@@ -43,7 +44,7 @@ export function FeedFilters({
   return (
     <div className="sticky top-16 z-20 -mx-4 space-y-3 border-b border-ink-100 bg-ink-50/90 px-4 py-3 backdrop-blur-md sm:mx-0 sm:rounded-2xl sm:border sm:border-ink-200/70 sm:bg-white sm:px-4">
       {scopes.length > 1 && (
-        <div className="flex rounded-xl bg-ink-100 p-1" role="tablist" aria-label="Périmètre du fil">
+        <div className="flex rounded-xl bg-ink-100 p-1" role="tablist" aria-label={tx("Périmètre du fil")}>
           {scopes.map((s) => (
             <button
               key={s.value}
@@ -81,7 +82,7 @@ export function FeedFilters({
         <CountrySelect
           value={value.countryId}
           onChange={(id) => onChange({ ...value, countryId: id })}
-          allLabel="Tous les pays"
+          allLabel={tx("Tous les pays")}
           className="ml-auto w-52 shrink-0"
         />
       </div>

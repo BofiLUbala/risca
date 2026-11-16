@@ -12,6 +12,7 @@ import { PageLoading } from '@/components/ui/Loading';
 import { Field } from '@/components/child/Tabs';
 import { dateTime } from '@/lib/format';
 import { ROLE_LABEL } from '@/lib/roles';
+import { t } from '@/lib/i18n';
 
 export default function ReportDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -26,9 +27,9 @@ export default function ReportDetailPage({ params }: { params: Promise<{ id: str
   if (!r) {
     return (
       <div className="card card-pad">
-        <p className="text-sm text-ink-500">Signalement introuvable ou deja traite.</p>
+        <p className="text-sm text-ink-500">{t("Signalement introuvable ou deja traite.")}</p>
         <Link href="/moderation" className="btn-soft mt-4">
-          Retour à la modération
+          {t("Retour à la modération")}
         </Link>
       </div>
     );
@@ -36,7 +37,7 @@ export default function ReportDetailPage({ params }: { params: Promise<{ id: str
 
   async function resolve(status: 'ACTIONED' | 'DISMISSED') {
     const resolution = await promptDialog(
-      status === 'ACTIONED' ? 'Mesure prise ?' : 'Motif du classement sans suite ?',
+      status === 'ACTIONED' ? t("Mesure prise ?") : t("Motif du classement sans suite ?"),
     );
     if (!resolution) return;
     setBusy(true);
@@ -51,19 +52,19 @@ export default function ReportDetailPage({ params }: { params: Promise<{ id: str
   async function moderatePost(action: 'hide' | 'restore') {
     let body: { reason?: string } = {};
     if (action === 'hide') {
-      const reason = await promptDialog('Motif du masquage (transmis à l’auteur) ?');
+      const reason = await promptDialog(t("Motif du masquage (transmis à l’auteur) ?"));
       if (!reason?.trim()) return;
       body = { reason: reason.trim() };
-    } else if (!await confirmDialog('Rétablir cette publication dans le fil ?')) {
+    } else if (!await confirmDialog(t("Rétablir cette publication dans le fil ?"))) {
       return;
     }
     setBusy(true);
     setPostNotice(null);
     try {
       await api.post(`/posts/${r.targetId}/${action}`, body);
-      setPostNotice({ ok: true, text: action === 'hide' ? 'Publication masquée.' : 'Publication rétablie.' });
+      setPostNotice({ ok: true, text: action === 'hide' ? t("Publication masquée.") : t("Publication rétablie.") });
     } catch (e: any) {
-      setPostNotice({ ok: false, text: e?.message ?? 'Action impossible.' });
+      setPostNotice({ ok: false, text: e?.message ?? t("Action impossible.") });
     }
     setBusy(false);
   }
@@ -86,7 +87,7 @@ export default function ReportDetailPage({ params }: { params: Promise<{ id: str
         className="inline-flex min-h-[44px] items-center gap-1.5 text-sm text-ink-500 hover:text-ink-800 sm:min-h-0"
       >
         <ArrowLeft className="h-4 w-4" />
-        Retour à la modération
+        {t("Retour à la modération")}
       </Link>
 
       <header className="card card-pad">
@@ -99,7 +100,7 @@ export default function ReportDetailPage({ params }: { params: Promise<{ id: str
           </div>
           <div className="flex flex-wrap gap-2">
             {r.severity === 'SERIOUS' ? (
-              <span className="chip bg-rose-100 text-rose-700">Signalement grave</span>
+              <span className="chip bg-rose-100 text-rose-700">{t("Signalement grave")}</span>
             ) : null}
             <Badge status={r.status} />
           </div>
@@ -107,40 +108,39 @@ export default function ReportDetailPage({ params }: { params: Promise<{ id: str
 
         {targetHref ? (
           <Link href={targetHref} className="btn-soft mt-4">
-            Ouvrir le contenu signale
+            {t("Ouvrir le contenu signale")}
           </Link>
         ) : null}
       </header>
 
       <section className="card card-pad">
-        <h2 className="mb-3 card-title">Détail</h2>
+        <h2 className="mb-3 card-title">{t("Détail")}</h2>
         <dl>
           <Field
-            label="Signalé par"
+            label={t("Signalé par")}
             value={`${r.reporter.firstName} ${r.reporter.lastName} (${ROLE_LABEL[r.reporter.role as keyof typeof ROLE_LABEL]})`}
           />
-          <Field label="Détails" value={r.details} />
+          <Field label={t("Détails")} value={r.details} />
           <Field
-            label="Traite par"
+            label={t("Traite par")}
             value={r.handler ? `${r.handler.firstName} ${r.handler.lastName}` : null}
           />
-          <Field label="Resolution" value={r.resolution} />
+          <Field label={t("Resolution")} value={r.resolution} />
         </dl>
       </section>
 
       {canModeratePost ? (
         <section className="card card-pad">
-          <h2 className="mb-1 card-title">Publication signalée</h2>
+          <h2 className="mb-1 card-title">{t("Publication signalée")}</h2>
           <p className="mb-3 text-sm text-ink-500">
-            Clore le signalement ne retire pas la publication du fil : masquez-la ici si elle doit
-            disparaître, ou rétablissez-la si le masquage était injustifié.
+            {t("Clore le signalement ne retire pas la publication du fil : masquez-la ici si elle doit disparaître, ou rétablissez-la si le masquage était injustifié.")}
           </p>
           <div className="flex flex-wrap gap-2">
             <button onClick={() => moderatePost('hide')} disabled={busy} className="btn-danger">
-              Masquer la publication
+              {t("Masquer la publication")}
             </button>
             <button onClick={() => moderatePost('restore')} disabled={busy} className="btn-outline">
-              Rétablir la publication
+              {t("Rétablir la publication")}
             </button>
           </div>
           {postNotice ? (
@@ -156,13 +156,13 @@ export default function ReportDetailPage({ params }: { params: Promise<{ id: str
 
       {r.status === 'OPEN' ? (
         <section className="card card-pad">
-          <h2 className="mb-3 card-title">Décision</h2>
+          <h2 className="mb-3 card-title">{t("Décision")}</h2>
           <div className="flex flex-wrap gap-2">
             <button onClick={() => resolve('ACTIONED')} disabled={busy} className="btn-primary">
-              Traiter
+              {t("Traiter")}
             </button>
             <button onClick={() => resolve('DISMISSED')} disabled={busy} className="btn-ghost">
-              Classer sans suite
+              {t("Classer sans suite")}
             </button>
           </div>
         </section>

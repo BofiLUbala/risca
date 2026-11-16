@@ -10,6 +10,7 @@ import { api, fetcher, setTokens } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { Spinner } from '@/components/ui/Loading';
 import { PasswordInput } from '@/components/ui/PasswordInput';
+import { t } from '@/lib/i18n';
 
 interface Country {
   id: string;
@@ -52,8 +53,8 @@ export default function RegisterPage() {
         setStep('verify');
         setInfo(
           res.emailSent === false && !res.devOtp
-            ? 'Votre compte est créé, mais l’e-mail n’a pas pu être envoyé. Utilisez « Renvoyer le code ».'
-            : `Un code à 6 chiffres vient d’être envoyé à ${form.email}.`,
+            ? t("Votre compte est créé, mais l’e-mail n’a pas pu être envoyé. Utilisez « Renvoyer le code ».")
+            : t("Un code à 6 chiffres vient d’être envoyé à {email}.", { email: form.email }),
         );
         setBusy(false);
         return;
@@ -62,7 +63,7 @@ export default function RegisterPage() {
       await refresh();
       router.push('/tableau-de-bord');
     } catch (err: any) {
-      setError(err?.message ?? 'Inscription impossible');
+      setError(err?.message ?? t("Inscription impossible"));
       setBusy(false);
     }
   }
@@ -78,7 +79,7 @@ export default function RegisterPage() {
       await refresh();
       router.push('/tableau-de-bord');
     } catch (err: any) {
-      setError(err?.message ?? 'Vérification impossible');
+      setError(err?.message ?? t("Vérification impossible"));
       setBusy(false);
     }
   }
@@ -88,19 +89,18 @@ export default function RegisterPage() {
     setInfo(null);
     try {
       await api.post('/auth/verify-email/resend', { email: form.email });
-      setInfo('Si l’adresse est en attente de confirmation, un nouveau code vient d’être envoyé.');
+      setInfo(t("Si l’adresse est en attente de confirmation, un nouveau code vient d’être envoyé."));
     } catch (err: any) {
-      setError(err?.message ?? 'Envoi impossible');
+      setError(err?.message ?? t("Envoi impossible"));
     }
   }
 
   if (step === 'verify') {
     return (
       <div>
-        <h1 className="text-balance text-center text-xl font-semibold tracking-tight text-ink-950 sm:text-2xl">Confirmez votre adresse</h1>
+        <h1 className="text-balance text-center text-xl font-semibold tracking-tight text-ink-950 sm:text-2xl">{t("Confirmez votre adresse")}</h1>
         <p className="mt-1 text-pretty text-center text-sm text-ink-500">
-          Saisissez le code &agrave; 6 chiffres envoy&eacute; &agrave; <strong>{form.email}</strong> pour activer
-          votre compte.
+          {t("Saisissez le code à 6 chiffres envoyé à")}{' '}<strong>{form.email}</strong>{' '}{t("pour activer votre compte.")}
         </p>
 
         <form onSubmit={onVerify} className="mt-6 space-y-4" noValidate>
@@ -118,7 +118,7 @@ export default function RegisterPage() {
 
           <div>
             <label htmlFor="otp" className="label">
-              Code de v&eacute;rification
+              {t("Code de vérification")}
             </label>
             <input
               id="otp"
@@ -132,16 +132,16 @@ export default function RegisterPage() {
               className="input text-center text-lg tracking-[0.5em]"
             />
             <p className="mt-1.5 text-xs text-ink-400">
-              Valable 15 minutes.{' '}
+              {t("Valable 15 minutes.")}{' '}
               <button type="button" onClick={resendCode} className="font-medium text-risac-600 hover:text-risac-700">
-                Renvoyer le code
+                {t("Renvoyer le code")}
               </button>
             </p>
           </div>
 
           <button type="submit" disabled={busy || otp.length !== 6} className="btn-primary w-full py-3">
             {busy ? <Spinner className="h-4 w-4" /> : null}
-            Activer mon compte
+            {t("Activer mon compte")}
           </button>
         </form>
       </div>
@@ -150,10 +150,9 @@ export default function RegisterPage() {
 
   return (
     <div>
-      <h1 className="text-balance text-center text-xl font-semibold tracking-tight text-ink-950 sm:text-2xl">Devenir bailleur</h1>
+      <h1 className="text-balance text-center text-xl font-semibold tracking-tight text-ink-950 sm:text-2xl">{t("Devenir bailleur")}</h1>
       <p className="mt-1 text-pretty text-center text-sm text-ink-500">
-        Soutenez un enfant ou un projet, et suivez chaque d&eacute;pense jusqu&apos;&agrave; sa
-        preuve.
+        {t("Soutenez un enfant ou un projet, et suivez chaque dépense jusqu'à sa preuve.")}
       </p>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-4" noValidate>
@@ -170,7 +169,7 @@ export default function RegisterPage() {
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="firstName" className="label">
-              Pr&eacute;nom
+              {t("Prénom")}
             </label>
             <input
               id="firstName"
@@ -182,7 +181,7 @@ export default function RegisterPage() {
           </div>
           <div>
             <label htmlFor="lastName" className="label">
-              Nom
+              {t("Nom")}
             </label>
             <input
               id="lastName"
@@ -196,7 +195,7 @@ export default function RegisterPage() {
 
         <div>
           <label htmlFor="email" className="label">
-            Adresse e-mail
+            {t("Adresse e-mail")}
           </label>
           <input
             id="email"
@@ -211,7 +210,7 @@ export default function RegisterPage() {
 
         <div>
           <label htmlFor="password" className="label">
-            Mot de passe
+            {t("Mot de passe")}
           </label>
           <PasswordInput
             id="password"
@@ -222,29 +221,29 @@ export default function RegisterPage() {
             onChange={(e) => set('password', e.target.value)}
             className="input"
           />
-          <p className="mt-1.5 text-xs text-ink-400">Au moins 8 caract&egrave;res.</p>
+          <p className="mt-1.5 text-xs text-ink-400">{t("Au moins 8 caractères.")}</p>
         </div>
 
         <div>
           <label htmlFor="countryId" className="label">
-            Pays de r&eacute;sidence
+            {t("Pays de résidence")}
           </label>
           <CountrySelect id="countryId" value={form.countryId} onChange={(id) => set('countryId', id)} />
           <p className="mt-1.5 text-xs text-ink-400">
-            D&eacute;termine les moyens de paiement qui vous sont propos&eacute;s.
+            {t("Détermine les moyens de paiement qui vous sont proposés.")}
           </p>
         </div>
 
         <button type="submit" disabled={busy} className="btn-primary w-full py-3">
           {busy ? <Spinner className="h-4 w-4" /> : null}
-          Cr&eacute;er mon compte
+          {t("Créer mon compte")}
         </button>
       </form>
 
       <p className="mt-8 text-sm text-ink-500">
-        Vous avez d&eacute;j&agrave; un compte ?{' '}
+        {t("Vous avez déjà un compte ?")}{' '}
         <Link href="/connexion" className="inline-flex min-h-[44px] items-center font-medium text-risac-700 hover:text-risac-800 sm:min-h-0">
-          Se connecter
+          {t("Se connecter")}
         </Link>
       </p>
     </div>

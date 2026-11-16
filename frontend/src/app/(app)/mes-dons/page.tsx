@@ -11,6 +11,8 @@ import { Stat } from '@/components/ui/Stat';
 import { Empty } from '@/components/ui/Empty';
 import { SkeletonList } from '@/components/ui/Loading';
 import { date, money, num } from '@/lib/format';
+import { t } from '@/lib/i18n';
+
 
 export default function MyDonationsPage() {
   const { data: donations, isLoading, mutate } = useSWR<any[]>('/payments/donations/mine', fetcher);
@@ -38,23 +40,23 @@ export default function MyDonationsPage() {
    * est en exécution ou que les fonds ont été décaissés.
    */
   async function withdraw(d: any) {
-    const label = d.project?.title ?? 'ce projet';
-    if (!await confirmDialog(`Retirer votre don de ${label} ?`)) return;
+    const label = d.project?.title ?? t("ce projet");
+    if (!await confirmDialog(t("Retirer votre don de {label} ?", { label }))) return;
     setWithdrawing(d.id);
     setNotice(null);
     try {
       await api.post(`/payments/donations/${d.id}/withdraw`, {});
-      setNotice({ ok: true, text: 'Votre don a été retiré. Le remboursement suit le circuit habituel.' });
+      setNotice({ ok: true, text: t("Votre don a été retiré. Le remboursement suit le circuit habituel.") });
       mutate();
     } catch (e: any) {
-      setNotice({ ok: false, text: e?.message ?? 'Le retrait a échoué.' });
+      setNotice({ ok: false, text: e?.message ?? t("Le retrait a échoué.") });
     }
     setWithdrawing(null);
   }
 
   return (
     <div className="space-y-5">
-      <h1 className="page-title">Mes dons</h1>
+      <h1 className="page-title">{t("Mes dons")}</h1>
 
       {notice && (
         <p
@@ -69,25 +71,25 @@ export default function MyDonationsPage() {
 
       {impact && (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <Stat label="Total donné" value={money(impact.totalDonatedUsd)} tone="mint" icon={<HeartHandshake className="h-5 w-5" />} />
-          <Stat label="Dons effectués" value={num(impact.donationCount)} tone="primary" />
-          <Stat label="Enfants soutenus" value={num(impact.childrenSupported)} tone="primary" />
-          <Stat label="Projets soutenus" value={num(impact.projectsSupported)} tone="amber" />
+          <Stat label={t("Total donné")} value={money(impact.totalDonatedUsd)} tone="mint" icon={<HeartHandshake className="h-5 w-5" />} />
+          <Stat label={t("Dons effectués")} value={num(impact.donationCount)} tone="primary" />
+          <Stat label={t("Enfants soutenus")} value={num(impact.childrenSupported)} tone="primary" />
+          <Stat label={t("Projets soutenus")} value={num(impact.projectsSupported)} tone="amber" />
         </div>
       )}
 
       <section>
-        <h2 className="mb-3 card-title">Historique</h2>
+        <h2 className="mb-3 card-title">{t("Historique")}</h2>
         {isLoading ? (
           <SkeletonList rows={4} />
         ) : !donations?.length ? (
           <Empty
             icon={<HeartHandshake className="h-6 w-6" />}
-            title="Aucun don pour le moment"
-            description="Vos dons et leurs reçus apparaîtront ici."
+            title={t("Aucun don pour le moment")}
+            description={t("Vos dons et leurs reçus apparaîtront ici.")}
             action={
               <Link href="/enfants-a-soutenir" className="btn-primary">
-                Soutenir un enfant
+                {t("Soutenir un enfant")}
               </Link>
             }
           />
@@ -98,7 +100,7 @@ export default function MyDonationsPage() {
                 <Badge status={d.status} />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-ink-800">
-                    {d.child?.firstName ?? d.project?.title ?? 'Fonds général'}
+                    {d.child?.firstName ?? d.project?.title ?? t("Fonds général")}
                   </p>
                   <p className="text-xs text-ink-400">
                     {d.reference} &middot; {date(d.createdAt)} &middot; {d.provider}
@@ -108,13 +110,13 @@ export default function MyDonationsPage() {
                   {money(d.amount, d.currency)}
                 </p>
                 {d.status === 'SUCCEEDED' && (
-                  <button onClick={() => downloadReceipt(d.id)} className="btn-ghost h-9 px-2.5" aria-label="Télécharger le reçu">
+                  <button onClick={() => downloadReceipt(d.id)} className="btn-ghost h-9 px-2.5" aria-label={t("Télécharger le reçu")}>
                     <Download className="h-4 w-4" />
                   </button>
                 )}
                 {d.status === 'PENDING' && d.checkoutUrl && (
                   <a href={d.checkoutUrl} className="btn-soft h-9">
-                    Finaliser
+                    {t("Finaliser")}
                   </a>
                 )}
                 {d.status === 'SUCCEEDED' && d.projectId && (
@@ -125,7 +127,7 @@ export default function MyDonationsPage() {
                     className="btn-outline h-9 px-3 text-xs"
                   >
                     <Undo2 className="h-3.5 w-3.5" />
-                    {withdrawing === d.id ? 'Retrait…' : 'Retirer'}
+                    {withdrawing === d.id ? t("Retrait…") : t("Retirer")}
                   </button>
                 )}
               </div>
@@ -135,10 +137,10 @@ export default function MyDonationsPage() {
       </section>
 
       <section>
-        <h2 className="mb-3 card-title">Preuves de dépense</h2>
+        <h2 className="mb-3 card-title">{t("Preuves de dépense")}</h2>
         {!proofs?.length ? (
           <div className="card card-pad text-sm text-ink-400">
-            Les justificatifs apparaîtront ici une fois les fonds depenses par la structure.
+            {t("Les justificatifs apparaîtront ici une fois les fonds depenses par la structure.")}
           </div>
         ) : (
           <div className="space-y-3">

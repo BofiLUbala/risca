@@ -6,14 +6,15 @@ import { AlertTriangle, ImagePlus, Loader2, Send, X } from 'lucide-react';
 import { api, fetcher, mediaUrl, uploadFile } from '@/lib/api';
 import { Avatar } from '@/components/ui/Avatar';
 import { useAuth } from '@/lib/auth-context';
+import { t as tx, localized } from '@/lib/i18n';
 
-const TYPES = [
+const TYPES = localized([
   { value: 'NEWS', label: 'Nouvelle' },
   { value: 'URGENT_NEED', label: 'Besoin urgent' },
   { value: 'VIDEO_PROGRESS', label: 'Progres en video' },
   { value: 'THANKS', label: 'Remerciement' },
   { value: 'SPONSORSHIP_CALL', label: 'Appel au parrainage' },
-];
+]);
 
 /** Composer inspire des fils sociaux : texte, photos, verification avant publication. */
 export function Composer({ onPublished }: { onPublished: () => void }) {
@@ -57,7 +58,7 @@ export function Composer({ onPublished }: { onPublished: () => void }) {
       const up = await uploadFile(file);
       setPhotos((p) => [...p, up.url]);
     } catch (err: any) {
-      setError(err?.message ?? 'Téléversement impossible');
+      setError(err?.message ?? tx("Téléversement impossible"));
     }
     setUploading(false);
   }
@@ -81,7 +82,7 @@ export function Composer({ onPublished }: { onPublished: () => void }) {
     } catch (err: any) {
       const v = err?.payload?.violations;
       if (v?.length) setViolations(v);
-      setError(err?.payload?.message ?? err?.message ?? 'Publication impossible');
+      setError(err?.payload?.message ?? err?.message ?? tx("Publication impossible"));
     }
     setBusy(false);
   }
@@ -98,8 +99,8 @@ export function Composer({ onPublished }: { onPublished: () => void }) {
         className="card flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:border-risac-200 sm:px-5"
       >
         <Avatar src={user.avatarUrl} firstName={user.firstName} lastName={user.lastName} size="sm" />
-        <span className="flex-1 text-sm text-ink-400">Partager une nouvelle...</span>
-        <span className="btn-soft h-9 px-3 text-xs">Publier</span>
+        <span className="flex-1 text-sm text-ink-400">{tx("Partager une nouvelle...")}</span>
+        <span className="btn-soft h-9 px-3 text-xs">{tx("Publier")}</span>
       </button>
     );
   }
@@ -108,14 +109,14 @@ export function Composer({ onPublished }: { onPublished: () => void }) {
     <div className="card card-pad space-y-4">
       <div className="flex items-center gap-3">
         <Avatar src={user.avatarUrl} firstName={user.firstName} lastName={user.lastName} size="sm" />
-        <p className="flex-1 text-sm font-medium text-ink-800">Nouvelle publication</p>
-        <button onClick={() => setOpen(false)} className="btn-ghost h-8 w-8 p-0" aria-label="Fermer">
+        <p className="flex-1 text-sm font-medium text-ink-800">{tx("Nouvelle publication")}</p>
+        <button onClick={() => setOpen(false)} className="btn-ghost h-8 w-8 p-0" aria-label={tx("Fermer")}>
           <X className="h-4 w-4" />
         </button>
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <select value={type} onChange={(e) => setType(e.target.value)} className="input sm:w-56" aria-label="Type">
+        <select value={type} onChange={(e) => setType(e.target.value)} className="input sm:w-56" aria-label={tx("Type")}>
           {TYPES.map((t) => (
             <option key={t.value} value={t.value}>
               {t.label}
@@ -128,9 +129,9 @@ export function Composer({ onPublished }: { onPublished: () => void }) {
             value={childId}
             onChange={(e) => setChildId(e.target.value)}
             className="input flex-1"
-            aria-label="Enfant concerne"
+            aria-label={tx("Enfant concerne")}
           >
-            <option value="">Publication generale</option>
+            <option value="">{tx("Publication generale")}</option>
             {children.map((c: any) => (
               <option key={c.id} value={c.id}>
                 {c.firstName} ({c.publicId})
@@ -145,15 +146,15 @@ export function Composer({ onPublished }: { onPublished: () => void }) {
         value={content}
         onChange={(e) => check(e.target.value)}
         className="input resize-y"
-        placeholder="Racontez la nouvelle. Le nom de famille, l’adresse exacte et les donnees medicales sont bloques automatiquement."
-        aria-label="Contenu"
+        placeholder={tx("Racontez la nouvelle. Le nom de famille, l’adresse exacte et les donnees medicales sont bloques automatiquement.")}
+        aria-label={tx("Contenu")}
       />
 
       {violations.length > 0 && (
         <div role="alert" className="rounded-xl bg-amber-50 px-4 py-3">
           <p className="flex items-center gap-2 text-sm font-medium text-amber-800">
             <AlertTriangle className="h-4 w-4" />
-            Vérification automatique
+            {tx("Vérification automatique")}
           </p>
           <ul className="mt-2 space-y-1 text-xs text-amber-700">
             {violations.map((v, i) => (
@@ -175,7 +176,7 @@ export function Composer({ onPublished }: { onPublished: () => void }) {
               <button
                 onClick={() => setPhotos((list) => list.filter((x) => x !== p))}
                 className="absolute -right-1.5 -top-1.5 grid h-6 w-6 place-items-center rounded-full bg-ink-900 text-white"
-                aria-label="Retirer"
+                aria-label={tx("Retirer")}
               >
                 <X className="h-3 w-3" />
               </button>
@@ -193,7 +194,7 @@ export function Composer({ onPublished }: { onPublished: () => void }) {
       <div className="flex items-center justify-between gap-3">
         <label className="btn-outline cursor-pointer">
           {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
-          Photo
+          {tx("Photo")}
           <input type="file" accept="image/*" onChange={addPhoto} className="sr-only" />
         </label>
 
@@ -203,13 +204,13 @@ export function Composer({ onPublished }: { onPublished: () => void }) {
           className="btn-primary"
         >
           <Send className="h-4 w-4" />
-          Publier
+          {tx("Publier")}
         </button>
       </div>
 
       {photos.length > 0 && (
         <p className="text-xs text-ink-400">
-          Le consentement photo de l’enfant doit etre signe, sinon la publication sera refusee.
+          {tx("Le consentement photo de l’enfant doit etre signe, sinon la publication sera refusee.")}
         </p>
       )}
     </div>

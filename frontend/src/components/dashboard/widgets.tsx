@@ -6,6 +6,7 @@ import clsx from 'clsx';
 import { ChevronDown } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { money, num, percent, relative } from '@/lib/format';
+import { t } from '@/lib/i18n';
 
 const COLLAPSE_KEY = 'risac.dash.collapsed.v1';
 export const COLLAPSE_EVENT = 'risac:dash-collapse';
@@ -81,7 +82,7 @@ export function SectionTitle({
             className={clsx('h-4 w-4 shrink-0 text-ink-500 transition-transform duration-base motion-reduce:transition-none', collapsed && '-rotate-90')}
             aria-hidden="true"
           />
-          <span className="sr-only">{collapsed ? 'Développer la section' : 'Réduire la section'}</span>
+          <span className="sr-only">{collapsed ? t("Développer la section") : t("Réduire la section")}</span>
         </button>
       </h2>
       {action}
@@ -204,8 +205,8 @@ export function QueueItem({ request }: { request: any }) {
         </span>
         <span className="mt-0.5 block text-xs text-ink-400">
           {relative(request.createdAt)}
-          {current ? ` · étape ${current.order}` : ''}
-          {request.escalated ? ' · remonte au niveau superieur' : ''}
+          {current ? t(" · étape {order}", { order: current.order }) : ''}
+          {request.escalated ? t(" · remonte au niveau superieur") : ''}
         </span>
       </span>
     </Link>

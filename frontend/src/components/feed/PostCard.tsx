@@ -10,15 +10,16 @@ import { Avatar } from '@/components/ui/Avatar';
 import { SafeImage } from '@/components/ui/SafeImage';
 import { relative, money, percent } from '@/lib/format';
 import { ROLE_LABEL } from '@/lib/roles';
+import { t, localized } from '@/lib/i18n';
 
-const TYPE_LABEL: Record<string, string> = {
+const TYPE_LABEL: Record<string, string> = localized({
   NEWS: 'Nouvelle',
   URGENT_NEED: 'Besoin urgent',
   VIDEO_PROGRESS: 'Progres en video',
   THANKS: 'Remerciement',
   SPONSORSHIP_CALL: 'Appel au parrainage',
   ORPHANAGE_NEWS: 'Nouvelle de la structure',
-};
+});
 
 export function PostCard({ post, onChange }: { post: any; onChange?: () => void }) {
   const { user } = useAuth();
@@ -52,7 +53,7 @@ export function PostCard({ post, onChange }: { post: any; onChange?: () => void 
       setComment('');
     } catch (err: any) {
       const v = err?.payload?.violations?.[0];
-      setError(v ? v.message : (err?.message ?? 'Commentaire refuse'));
+      setError(v ? v.message : (err?.message ?? t("Commentaire refuse")));
     }
   }
 
@@ -65,7 +66,7 @@ export function PostCard({ post, onChange }: { post: any; onChange?: () => void 
       });
       setFavorited(r.favorited);
     } catch (e: any) {
-      setError(e?.message ?? 'Le favori n’a pas pu être enregistré.');
+      setError(e?.message ?? t("Le favori n’a pas pu être enregistré."));
     }
   }
 
@@ -76,7 +77,7 @@ export function PostCard({ post, onChange }: { post: any; onChange?: () => void 
       const r = await api.post<{ subscribed: boolean }>(`/posts/subscribe/${post.child.id}`, {});
       setSubscribed(r.subscribed);
     } catch (e: any) {
-      setError(e?.message ?? 'L’abonnement a échoué.');
+      setError(e?.message ?? t("L’abonnement a échoué."));
     }
   }
 
@@ -88,23 +89,23 @@ export function PostCard({ post, onChange }: { post: any; onChange?: () => void 
       setShared(true);
       window.setTimeout(() => setShared(false), 2000);
     } catch {
-      setError('Le lien n’a pas pu être copié.');
+      setError(t("Le lien n’a pas pu être copié."));
     }
   }
 
   /** Masquage d’un commentaire par le modérateur. */
   async function hideComment(id: string) {
-    if (!await confirmDialog('Masquer ce commentaire ?')) return;
+    if (!await confirmDialog(t("Masquer ce commentaire ?"))) return;
     try {
       await api.post(`/posts/comments/${id}/hide`, {});
       setComments((list: any[]) => list.filter((c) => c.id !== id));
     } catch (e: any) {
-      setError(e?.message ?? 'Le commentaire n’a pas pu être masqué.');
+      setError(e?.message ?? t("Le commentaire n’a pas pu être masqué."));
     }
   }
 
   async function report() {
-    const reason = await promptDialog('Motif du signalement ?');
+    const reason = await promptDialog(t("Motif du signalement ?"));
     if (!reason) return;
     await api.post('/moderation/reports', { targetType: 'POST', targetId: post.id, reason });
     onChange?.();
@@ -147,7 +148,7 @@ export function PostCard({ post, onChange }: { post: any; onChange?: () => void 
           </p>
         </div>
         <span className="chip bg-risac-50 text-risac-700">{TYPE_LABEL[post.type] ?? post.type}</span>
-        <button onClick={report} className="btn-ghost h-8 w-8 p-0" aria-label="Signaler">
+        <button onClick={report} className="btn-ghost h-8 w-8 p-0" aria-label={t("Signaler")}>
           <MoreHorizontal className="h-4 w-4" />
         </button>
       </header>
@@ -170,7 +171,7 @@ export function PostCard({ post, onChange }: { post: any; onChange?: () => void 
               />
             </div>
             <p className="mt-2 text-xs text-risac-700">
-              {money(post.project.collectedAmount, post.project.currency)} sur{' '}
+              {money(post.project.collectedAmount, post.project.currency)}{' '}{t("sur")}{' '}
               {money(post.project.targetAmount, post.project.currency)}
             </p>
           </Link>
@@ -198,7 +199,7 @@ export function PostCard({ post, onChange }: { post: any; onChange?: () => void 
               onClick={toggleFavorite}
               className={`btn-ghost h-9 gap-1.5 px-2.5 ${favorited ? 'text-risac-700' : ''}`}
               aria-pressed={favorited ?? false}
-              aria-label={favorited ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+              aria-label={favorited ? t("Retirer des favoris") : t("Ajouter aux favoris")}
             >
               <Bookmark className={`h-4 w-4 ${favorited ? 'fill-current' : ''}`} />
             </button>
@@ -208,7 +209,7 @@ export function PostCard({ post, onChange }: { post: any; onChange?: () => void 
               onClick={toggleSubscribe}
               className={`btn-ghost h-9 gap-1.5 px-2.5 ${subscribed ? 'text-risac-700' : ''}`}
               aria-pressed={subscribed ?? false}
-              aria-label={subscribed ? 'Se désabonner des nouvelles' : 'Suivre les nouvelles'}
+              aria-label={subscribed ? t("Se désabonner des nouvelles") : t("Suivre les nouvelles")}
             >
               {subscribed ? <BellOff className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
             </button>
@@ -217,15 +218,15 @@ export function PostCard({ post, onChange }: { post: any; onChange?: () => void 
             <button
               onClick={copyLink}
               className="btn-ghost h-9 gap-1.5 px-2.5"
-              aria-label="Copier le lien public"
+              aria-label={t("Copier le lien public")}
             >
               <Link2 className="h-4 w-4" />
-              {shared && <span className="text-xs">Copie</span>}
+              {shared && <span className="text-xs">{t("Copie")}</span>}
             </button>
           )}
           {post.child && (
             <Link href={`/enfants-a-soutenir/${post.child.id}`} className="btn-soft ml-auto h-9">
-              Soutenir
+              {t("Soutenir")}
             </Link>
           )}
         </div>
@@ -250,7 +251,7 @@ export function PostCard({ post, onChange }: { post: any; onChange?: () => void 
                   <button
                     onClick={() => hideComment(c.id)}
                     className="btn-ghost h-8 w-8 shrink-0 p-0"
-                    aria-label={`Masquer le commentaire de ${c.author?.firstName ?? 'cet utilisateur'}`}
+                    aria-label={t("Masquer le commentaire de {v0}", { v0: c.author?.firstName ?? t("cet utilisateur") })}
                   >
                     <EyeOff className="h-3.5 w-3.5" />
                   </button>
@@ -269,12 +270,12 @@ export function PostCard({ post, onChange }: { post: any; onChange?: () => void 
               <input
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder="Écrire un commentaire..."
+                placeholder={t("Écrire un commentaire...")}
                 className="input flex-1"
-                aria-label="Commentaire"
+                aria-label={t("Commentaire")}
               />
               <button type="submit" disabled={!comment.trim()} className="btn-primary px-4">
-                Envoyer
+                {t("Envoyer")}
               </button>
             </form>
           </div>

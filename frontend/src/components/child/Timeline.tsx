@@ -10,8 +10,9 @@ import { fetcher, mediaUrl } from '@/lib/api';
 import { dateTime } from '@/lib/format';
 import { SkeletonList } from '@/components/ui/Loading';
 import { Empty } from '@/components/ui/Empty';
+import { t, localized } from '@/lib/i18n';
 
-const TYPE_META: Record<string, { label: string; icon: any; tone: string }> = {
+const TYPE_META: Record<string, { label: string; icon: any; tone: string }> = localized({
   ADMISSION: { label: 'Admission', icon: Home, tone: 'bg-risac-100 text-risac-700' },
   HEALTH: { label: 'Santé', icon: HeartPulse, tone: 'bg-rose-100 text-rose-700' },
   PSYCHOTRAUMA: { label: 'Psychotrauma', icon: Brain, tone: 'bg-violet-100 text-violet-700' },
@@ -27,14 +28,14 @@ const TYPE_META: Record<string, { label: string; icon: any; tone: string }> = {
   INCIDENT: { label: 'Incident', icon: ShieldAlert, tone: 'bg-rose-100 text-rose-700' },
   DOSSIER_UPDATE: { label: 'Mise à jour', icon: FileText, tone: 'bg-ink-100 text-ink-700' },
   STATUS_CHANGE: { label: 'Statut', icon: RefreshCw, tone: 'bg-ink-100 text-ink-700' },
-};
+});
 
 export function Timeline({ childId }: { childId: string }) {
   const { data, isLoading } = useSWR<any[]>(`/children/${childId}/timeline`, fetcher);
 
   if (isLoading) return <SkeletonList rows={4} />;
   if (!data?.length) {
-    return <Empty title="Historique vide" description="Aucun événement enregistré pour le moment." />;
+    return <Empty title={t("Historique vide")} description={t("Aucun événement enregistré pour le moment.")} />;
   }
 
   return (
@@ -60,8 +61,8 @@ export function Timeline({ childId }: { childId: string }) {
               )}
               <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-ink-400">
                 <span className="chip bg-ink-100 text-ink-600">{meta.label}</span>
-                {e.isPublic && <span className="chip bg-emerald-50 text-emerald-700">public</span>}
-                {e.correctsId && <span className="chip bg-amber-50 text-amber-700">correction</span>}
+                {e.isPublic && <span className="chip bg-emerald-50 text-emerald-700">{t("public")}</span>}
+                {e.correctsId && <span className="chip bg-amber-50 text-amber-700">{t("correction")}</span>}
                 {e.author && (
                   <span>
                     {e.author.firstName} {e.author.lastName}

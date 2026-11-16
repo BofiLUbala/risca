@@ -6,12 +6,13 @@ import { BellRing, Laptop, Smartphone } from 'lucide-react';
 import { fetcher } from '@/lib/api';
 import { dateTime } from '@/lib/format';
 import { isPushConfigured, isPushSupported, pushPermission, registerWebPush } from '@/lib/push';
+import { t, localized } from '@/lib/i18n';
 
-const PLATFORM_LABEL: Record<string, string> = {
+const PLATFORM_LABEL: Record<string, string> = localized({
   WEB: 'Navigateur',
   ANDROID: 'Android',
   IOS: 'iPhone ou iPad',
-};
+});
 
 /**
  * Notifications push : autorisation du navigateur et liste des appareils
@@ -39,13 +40,13 @@ export function PushSection() {
     setPermission(pushPermission());
     setNotice(
       ok
-        ? { ok: true, text: 'Ce navigateur recevra désormais les alertes RISAC.' }
+        ? { ok: true, text: t("Ce navigateur recevra désormais les alertes RISAC.") }
         : {
             ok: false,
             text:
               pushPermission() === 'denied'
-                ? 'Autorisation refusée. Réactivez les notifications pour ce site dans les réglages du navigateur.'
-                : 'L’activation n’a pas abouti. Vérifiez la configuration Firebase.',
+                ? t("Autorisation refusée. Réactivez les notifications pour ce site dans les réglages du navigateur.")
+                : t("L’activation n’a pas abouti. Vérifiez la configuration Firebase."),
           },
     );
     mutate();
@@ -56,32 +57,30 @@ export function PushSection() {
     <section className="card card-pad">
       <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold text-ink-900">
         <BellRing className="h-4 w-4" />
-        Notifications push
+        {t("Notifications push")}
       </h2>
 
       {!configured ? (
         <p className="text-sm text-ink-500">
-          Les notifications push ne sont pas configurées sur cette installation. Les alertes restent
-          consultables dans la cloche en haut de page.
+          {t("Les notifications push ne sont pas configurées sur cette installation. Les alertes restent consultables dans la cloche en haut de page.")}
         </p>
       ) : !supported ? (
         <p className="text-sm text-ink-500">
-          Ce navigateur ne gère pas les notifications push. Les alertes restent consultables dans la
-          cloche en haut de page.
+          {t("Ce navigateur ne gère pas les notifications push. Les alertes restent consultables dans la cloche en haut de page.")}
         </p>
       ) : (
         <>
           <p className="mb-4 text-sm text-ink-500">
             {permission === 'granted'
-              ? 'Ce navigateur est autorisé à afficher les alertes, même onglet fermé.'
+              ? t("Ce navigateur est autorisé à afficher les alertes, même onglet fermé.")
               : permission === 'denied'
-                ? 'Les notifications sont bloquées pour ce site dans les réglages du navigateur.'
-                : 'Recevez les validations, les décaissements et les alertes de suivi sans garder l’onglet ouvert.'}
+                ? t("Les notifications sont bloquées pour ce site dans les réglages du navigateur.")
+                : t("Recevez les validations, les décaissements et les alertes de suivi sans garder l’onglet ouvert.")}
           </p>
 
           {permission !== 'granted' && permission !== 'denied' && (
             <button onClick={enable} disabled={busy} aria-busy={busy} className="btn-primary">
-              {busy ? 'Activation…' : 'Activer sur ce navigateur'}
+              {busy ? t("Activation…") : t("Activer sur ce navigateur")}
             </button>
           )}
         </>
@@ -100,7 +99,7 @@ export function PushSection() {
 
       {!!devices?.length && (
         <div className="mt-5 border-t border-ink-100 pt-4">
-          <h3 className="card-title mb-2">Appareils enregistrés</h3>
+          <h3 className="card-title mb-2">{t("Appareils enregistrés")}</h3>
           <ul className="divide-y divide-ink-50">
             {devices.map((d) => (
               <li key={d.id} className="flex items-center gap-3 py-2.5">
@@ -115,14 +114,14 @@ export function PushSection() {
                   </p>
                   <p className="truncate meta">
                     {d.label ? `${d.label} · ` : ''}
-                    vu {dateTime(d.lastSeenAt)}
+                    {t("vu")}{' '}{dateTime(d.lastSeenAt)}
                   </p>
                 </div>
               </li>
             ))}
           </ul>
           <p className="meta mt-2">
-            Un appareil se retire depuis l’appareil lui-même, en se déconnectant.
+            {t("Un appareil se retire depuis l’appareil lui-même, en se déconnectant.")}
           </p>
         </div>
       )}

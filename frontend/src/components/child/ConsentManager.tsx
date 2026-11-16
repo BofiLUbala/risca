@@ -7,6 +7,7 @@ import { api } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { date } from '@/lib/format';
 import { Field } from '@/components/child/Tabs';
+import { t } from '@/lib/i18n';
 
 // Rôles qui peuvent consigner un consentement : ceux qui ont un droit d'écriture
 // sur le dossier. L'Auditeur Éthique reste en lecture seule.
@@ -44,20 +45,20 @@ export function ConsentManager({ child, onChange }: { child: any; onChange: () =
       setChildSigned(false);
       onChange();
     } catch (err: any) {
-      setError(err?.message ?? "L'enregistrement a échoué.");
+      setError(err?.message ?? t("L'enregistrement a échoué."));
     }
     setBusy(false);
   }
 
   async function revoke(id: string) {
-    if (!await confirmDialog('Révoquer ce consentement ? Les publications avec photo seront bloquées.')) return;
+    if (!await confirmDialog(t("Révoquer ce consentement ? Les publications avec photo seront bloquées."))) return;
     setBusy(true);
     setError(null);
     try {
       await api.post(`/children/consents/${id}/revoke`, {});
       onChange();
     } catch (err: any) {
-      setError(err?.message ?? 'La révocation a échoué.');
+      setError(err?.message ?? t("La révocation a échoué."));
     }
     setBusy(false);
   }
@@ -66,7 +67,7 @@ export function ConsentManager({ child, onChange }: { child: any; onChange: () =
     <div className="space-y-4">
       {!hasValid && (
         <div className="card card-pad text-sm text-amber-700">
-          Aucun consentement valide. Toute publication avec photo ou vidéo est bloquée.
+          {t("Aucun consentement valide. Toute publication avec photo ou vidéo est bloquée.")}
         </div>
       )}
 
@@ -76,10 +77,10 @@ export function ConsentManager({ child, onChange }: { child: any; onChange: () =
             <p className="font-medium text-ink-900">{c.kind}</p>
             <div className="flex items-center gap-2">
               {c.revokedAt ? (
-                <span className="chip bg-rose-50 text-rose-700">révoqué le {date(c.revokedAt)}</span>
+                <span className="chip bg-rose-50 text-rose-700">{t("révoqué le")}{' '}{date(c.revokedAt)}</span>
               ) : (
                 <>
-                  <span className="chip bg-emerald-50 text-emerald-700">valide</span>
+                  <span className="chip bg-emerald-50 text-emerald-700">{t("valide")}</span>
                   {canWrite && (
                     <button
                       type="button"
@@ -88,7 +89,7 @@ export function ConsentManager({ child, onChange }: { child: any; onChange: () =
                       className="btn-ghost text-rose-700"
                     >
                       <ShieldOff className="h-4 w-4" />
-                      Révoquer
+                      {t("Révoquer")}
                     </button>
                   )}
                 </>
@@ -96,9 +97,9 @@ export function ConsentManager({ child, onChange }: { child: any; onChange: () =
             </div>
           </div>
           <dl className="mt-2">
-            <Field label="Tuteur" value={c.guardianName} />
-            <Field label="Signé par le tuteur le" value={date(c.guardianSignedAt)} />
-            <Field label="Signé par l'enfant le" value={date(c.childSignedAt)} />
+            <Field label={t("Tuteur")} value={c.guardianName} />
+            <Field label={t("Signé par le tuteur le")} value={date(c.guardianSignedAt)} />
+            <Field label={t("Signé par l'enfant le")} value={date(c.childSignedAt)} />
           </dl>
         </section>
       ))}
@@ -107,11 +108,11 @@ export function ConsentManager({ child, onChange }: { child: any; onChange: () =
         <form onSubmit={record} className="card card-pad space-y-4">
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-risac-600" />
-            <h2 className="card-title">Enregistrer un consentement photo et vidéo</h2>
+            <h2 className="card-title">{t("Enregistrer un consentement photo et vidéo")}</h2>
           </div>
           <div>
             <label htmlFor="consent-guardian" className="label">
-              Nom du tuteur ou du représentant légal
+              {t("Nom du tuteur ou du représentant légal")}
             </label>
             <input
               id="consent-guardian"
@@ -129,10 +130,10 @@ export function ConsentManager({ child, onChange }: { child: any; onChange: () =
               checked={childSigned}
               onChange={(e) => setChildSigned(e.target.checked)}
             />
-            L'enfant a lui-même donné son accord, selon son âge.
+            {t("L'enfant a lui-même donné son accord, selon son âge.")}
           </label>
           <p className="text-xs text-ink-500">
-            Le tuteur a signé le formulaire papier. Vous attestez l'avoir vu : votre nom est conservé comme témoin.
+            {t("Le tuteur a signé le formulaire papier. Vous attestez l'avoir vu : votre nom est conservé comme témoin.")}
           </p>
           {error && (
             <p role="alert" className="text-sm text-rose-700">
@@ -140,7 +141,7 @@ export function ConsentManager({ child, onChange }: { child: any; onChange: () =
             </p>
           )}
           <button type="submit" disabled={busy || guardianName.trim().length < 2} className="btn-primary">
-            {busy ? 'Enregistrement…' : 'Enregistrer le consentement'}
+            {busy ? t("Enregistrement…") : t("Enregistrer le consentement")}
           </button>
         </form>
       )}

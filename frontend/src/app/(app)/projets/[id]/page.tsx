@@ -10,6 +10,8 @@ import { useAuth } from '@/lib/auth-context';
 import { Badge } from '@/components/ui/Badge';
 import { PageLoading } from '@/components/ui/Loading';
 import { ProjectBody } from '@/components/project/ProjectBody';
+import { t } from '@/lib/i18n';
+
 
 export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -39,16 +41,16 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
    */
   async function setStatus(status: string) {
     const needsReason = status === 'CANCELLED';
-    const reason = needsReason ? await promptDialog('Motif de l’annulation ?') : undefined;
+    const reason = needsReason ? await promptDialog(t("Motif de l’annulation ?")) : undefined;
     if (needsReason && !reason) return;
     setBusy(true);
     setMsg(null);
     try {
       await api.patch(`/projects/${id}/status`, { status, reason: reason ?? undefined });
       mutate();
-      setMsg('État du projet mis à jour.');
+      setMsg(t("État du projet mis à jour."));
     } catch (e: any) {
-      setMsg(e?.message ?? 'Changement d’état impossible');
+      setMsg(e?.message ?? t("Changement d’état impossible"));
     }
     setBusy(false);
   }
@@ -59,9 +61,9 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     try {
       await api.post(`/projects/${id}/${path}`, body ?? {});
       mutate();
-      setMsg('Action enregistrée.');
+      setMsg(t("Action enregistrée."));
     } catch (e: any) {
-      setMsg(e?.message ?? 'Action impossible');
+      setMsg(e?.message ?? t("Action impossible"));
     }
     setBusy(false);
   }
@@ -70,7 +72,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
     <div className="space-y-5">
       <Link href="/projets" className="inline-flex min-h-[44px] items-center gap-1.5 text-sm text-ink-500 hover:text-ink-800 sm:min-h-0">
         <ArrowLeft className="h-4 w-4" />
-        Retour aux projets
+        {t("Retour aux projets")}
       </Link>
 
       <header className="card card-pad">
@@ -92,12 +94,12 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             {canSubmit ? (
               <button onClick={() => act('submit')} disabled={busy} className="btn-primary">
                 <Send className="h-4 w-4" />
-                Soumettre a validation
+                {t("Soumettre a validation")}
               </button>
             ) : null}
             {canPublish ? (
               <button onClick={() => act('publish')} disabled={busy} className="btn-primary">
-                Publier
+                {t("Publier")}
               </button>
             ) : null}
             {canSetStatus ? (
@@ -106,25 +108,25 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
                 disabled={busy}
                 onChange={(e) => e.target.value && setStatus(e.target.value)}
                 className="input w-auto min-w-[190px]"
-                aria-label="Changer l’état du projet"
+                aria-label={t("Changer l’état du projet")}
               >
-                <option value="">Changer l&apos;état</option>
-                <option value="IN_EXECUTION">Travaux en cours</option>
-                <option value="COMPLETED">Projet terminé</option>
-                <option value="CLOSED">Projet clôturé</option>
-                <option value="CANCELLED">Annuler le projet</option>
+                <option value="">{t("Changer l'état")}</option>
+                <option value="IN_EXECUTION">{t("Travaux en cours")}</option>
+                <option value="COMPLETED">{t("Projet terminé")}</option>
+                <option value="CLOSED">{t("Projet clôturé")}</option>
+                <option value="CANCELLED">{t("Annuler le projet")}</option>
               </select>
             ) : null}
             {canFreeze && project.status !== 'FROZEN' ? (
               <button
                 onClick={async () => {
-                  const reason = await promptDialog('Motif du gel ?');
+                  const reason = await promptDialog(t("Motif du gel ?"));
                   if (reason) act('freeze', { reason });
                 }}
                 className="btn-ghost text-accent-coral"
               >
                 <Lock className="h-4 w-4" />
-                Geler
+                {t("Geler")}
               </button>
             ) : null}
           </div>
@@ -138,7 +140,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
         {project.frozenReason ? (
           <p className="mt-4 rounded-xl bg-rose-50 px-4 py-2.5 text-sm text-rose-700">
-            Projet gele : {project.frozenReason}
+            {t("Projet gele :")}{' '}{project.frozenReason}
           </p>
         ) : null}
 
@@ -147,7 +149,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
             href={`/validations/${project.pendingApproval.id}`}
             className="mt-4 block rounded-xl border border-risac-200 bg-risac-50/70 px-4 py-3 text-sm text-risac-800 hover:bg-risac-50"
           >
-            Circuit de validation en cours &middot; étape {project.pendingApproval.currentStepOrder}
+            {t("Circuit de validation en cours · étape")}{' '}{project.pendingApproval.currentStepOrder}
           </Link>
         ) : null}
       </header>

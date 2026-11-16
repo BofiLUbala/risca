@@ -7,6 +7,8 @@ import { UserMinus, UserPlus, Users } from 'lucide-react';
 import { api, fetcher } from '@/lib/api';
 import { Avatar } from '@/components/ui/Avatar';
 import { ROLE_LABEL, type Role } from '@/lib/roles';
+import { t } from '@/lib/i18n';
+
 
 /**
  * Membres d’un canal : liste, ajout et retrait. Reserve au Super Admin, au
@@ -31,19 +33,19 @@ export function ChannelMembers({ channelId, onClose }: { channelId: string; onCl
       setAddId('');
       mutate();
     } catch (e: any) {
-      setError(e?.message ?? 'L’ajout a échoué.');
+      setError(e?.message ?? t("L’ajout a échoué."));
     }
     setBusy(false);
   }
 
   async function remove(userId: string, name: string) {
-    if (!await confirmDialog(`Retirer ${name} de ce canal ?`)) return;
+    if (!await confirmDialog(t("Retirer {name} de ce canal ?", { name }))) return;
     setError(null);
     try {
       await api.del(`/channels/${channelId}/members/${userId}`);
       mutate();
     } catch (e: any) {
-      setError(e?.message ?? 'Le retrait a échoué.');
+      setError(e?.message ?? t("Le retrait a échoué."));
     }
   }
 
@@ -52,16 +54,16 @@ export function ChannelMembers({ channelId, onClose }: { channelId: string; onCl
       <div className="flex items-center gap-2 border-b border-ink-100 px-4 py-3">
         <Users className="h-4 w-4 text-ink-400" aria-hidden />
         <h2 className="flex-1 text-sm font-semibold text-ink-900">
-          Membres{channel ? ` (${channel.members?.length ?? 0})` : ''}
+          {t("Membres")}{channel ? ` (${channel.members?.length ?? 0})` : ''}
         </h2>
         <button type="button" onClick={onClose} className="btn-ghost px-2 text-xs">
-          Fermer
+          {t("Fermer")}
         </button>
       </div>
 
       <div className="border-b border-ink-100 p-3">
         <label htmlFor="add-member" className="label">
-          Ajouter un membre
+          {t("Ajouter un membre")}
         </label>
         <div className="flex gap-2">
           <select
@@ -70,7 +72,7 @@ export function ChannelMembers({ channelId, onClose }: { channelId: string; onCl
             value={addId}
             onChange={(e) => setAddId(e.target.value)}
           >
-            <option value="">Choisir une personne</option>
+            <option value="">{t("Choisir une personne")}</option>
             {users
               ?.filter((u) => !memberIds.has(u.id))
               .map((u) => (
@@ -81,7 +83,7 @@ export function ChannelMembers({ channelId, onClose }: { channelId: string; onCl
           </select>
           <button type="button" onClick={add} disabled={!addId || busy} aria-busy={busy} className="btn-primary px-3">
             <UserPlus className="h-4 w-4" />
-            <span className="sr-only">Ajouter</span>
+            <span className="sr-only">{t("Ajouter")}</span>
           </button>
         </div>
         {error && (
@@ -92,7 +94,7 @@ export function ChannelMembers({ channelId, onClose }: { channelId: string; onCl
       </div>
 
       <ul className="flex-1 divide-y divide-ink-50 overflow-y-auto">
-        {isLoading && <li className="p-4 text-xs text-ink-400">Chargement…</li>}
+        {isLoading && <li className="p-4 text-xs text-ink-400">{t("Chargement…")}</li>}
         {channel?.members?.map((m: any) => (
           <li key={m.userId} className="flex items-center gap-2.5 px-4 py-2.5">
             <Avatar src={m.user?.avatarUrl} firstName={m.user?.firstName} lastName={m.user?.lastName} size="xs" />
@@ -102,14 +104,14 @@ export function ChannelMembers({ channelId, onClose }: { channelId: string; onCl
               </p>
               <p className="truncate meta">
                 {ROLE_LABEL[m.user?.role as Role]}
-                {m.canWrite === false ? ' · lecture seule' : ''}
+                {m.canWrite === false ? t(" · lecture seule") : ''}
               </p>
             </div>
             <button
               type="button"
               onClick={() => remove(m.userId, `${m.user?.firstName} ${m.user?.lastName}`)}
               className="btn-ghost h-8 w-8 shrink-0 p-0"
-              aria-label={`Retirer ${m.user?.firstName} ${m.user?.lastName}`}
+              aria-label={t("Retirer {firstName} {lastName}", { firstName: m.user?.firstName, lastName: m.user?.lastName })}
             >
               <UserMinus className="h-3.5 w-3.5" />
             </button>

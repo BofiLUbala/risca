@@ -13,6 +13,8 @@ import { date, money, num } from '@/lib/format';
 import { useAuth } from '@/lib/auth-context';
 import { ManualTransferForm } from '@/components/finance/ManualTransferForm';
 import { DonationActions } from '@/components/finance/DonationActions';
+import { t } from '@/lib/i18n';
+
 
 export default function FinancePage() {
   const { user } = useAuth();
@@ -32,7 +34,7 @@ export default function FinancePage() {
 
   /** Prélèvement des parrainages mensuels échus (POST /payments/sponsorships/run-charges). */
   async function runCharges() {
-    if (!await confirmDialog('Lancer les prélèvements des parrainages échus ?')) return;
+    if (!await confirmDialog(t("Lancer les prélèvements des parrainages échus ?"))) return;
     setCharging(true);
     setChargeNotice(null);
     try {
@@ -40,12 +42,12 @@ export default function FinancePage() {
       const done = r?.charged ?? r?.count ?? 0;
       setChargeNotice({
         ok: true,
-        text: done ? `${done} parrainage(s) prélevé(s).` : 'Aucun parrainage n’était échu.',
+        text: done ? t("{done} parrainage(s) prélevé(s).", { done }) : t("Aucun parrainage n’était échu."),
       });
       refreshDonations();
       recheck();
     } catch (e: any) {
-      setChargeNotice({ ok: false, text: e?.message ?? 'Le prélèvement a échoué.' });
+      setChargeNotice({ ok: false, text: e?.message ?? t("Le prélèvement a échoué.") });
     }
     setCharging(false);
   }
@@ -63,11 +65,11 @@ export default function FinancePage() {
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="page-title">Flux financiers</h1>
+        <h1 className="page-title">{t("Flux financiers")}</h1>
         {canOperate && (
           <button type="button" onClick={runCharges} disabled={charging} aria-busy={charging} className="btn-outline">
             <PlayCircle className="h-4 w-4" />
-            {charging ? 'Prélèvement…' : 'Lancer les prélèvements'}
+            {charging ? t("Prélèvement…") : t("Lancer les prélèvements")}
           </button>
         )}
       </div>
@@ -85,13 +87,13 @@ export default function FinancePage() {
 
       {summary && (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <Stat label="Compte central" value={money(summary.centralBalance)} tone="primary" icon={<Wallet className="h-5 w-5" />} />
-          <Stat label="Fonds général" value={money(summary.generalFundBalance)} tone="mint" icon={<Wallet className="h-5 w-5" />} />
-          <Stat label="Frais prélevés" value={money(summary.feesCollected)} tone="amber" icon={<Wallet className="h-5 w-5" />} />
+          <Stat label={t("Compte central")} value={money(summary.centralBalance)} tone="primary" icon={<Wallet className="h-5 w-5" />} />
+          <Stat label={t("Fonds général")} value={money(summary.generalFundBalance)} tone="mint" icon={<Wallet className="h-5 w-5" />} />
+          <Stat label={t("Frais prélevés")} value={money(summary.feesCollected)} tone="amber" icon={<Wallet className="h-5 w-5" />} />
           <Stat
-            label="Total décaissé"
+            label={t("Total décaissé")}
             value={money(summary.totalDisbursed)}
-            hint={`${num(summary.disbursementCount)} décaissements`}
+            hint={t("{v0} décaissements", { v0: num(summary.disbursementCount) })}
             icon={<Wallet className="h-5 w-5" />}
           />
         </div>
@@ -99,9 +101,9 @@ export default function FinancePage() {
 
       <Tabs
         tabs={[
-          { key: 'comptes', label: 'Comptes', count: accounts?.length },
-          { key: 'dons', label: 'Dons', count: donations?.total },
-          { key: 'rapprochement', label: 'Rapprochement' },
+          { key: 'comptes', label: t("Comptes"), count: accounts?.length },
+          { key: 'dons', label: t("Dons"), count: donations?.total },
+          { key: 'rapprochement', label: t("Rapprochement") },
         ]}
         active={tab}
         onChange={setTab}
@@ -124,7 +126,7 @@ export default function FinancePage() {
                   <span className="min-w-0 flex-1 truncate text-sm font-medium text-ink-800">
                     {a.label}
                   </span>
-                  <span className="shrink-0 text-xs text-ink-400">{a._count.entries} ecritures</span>
+                  <span className="shrink-0 text-xs text-ink-400">{a._count.entries}{' '}{t("ecritures")}</span>
                   <span className="shrink-0 text-sm font-semibold tabular-nums text-ink-900">
                     {money(a.balance, a.currency)}
                   </span>
@@ -146,7 +148,7 @@ export default function FinancePage() {
                 <Badge status={d.status} />
                 <div className="min-w-0 flex-1 basis-[calc(100%-6rem)] sm:basis-0">
                   <p className="truncate text-sm font-medium text-ink-800">
-                    {d.child?.firstName ?? d.project?.title ?? 'Fonds général'}
+                    {d.child?.firstName ?? d.project?.title ?? t("Fonds général")}
                   </p>
                   <p className="break-words text-xs text-ink-400 sm:truncate">
                     {d.reference} &middot; {d.provider} &middot; {date(d.createdAt)}
@@ -156,7 +158,7 @@ export default function FinancePage() {
                   <p className="text-sm font-semibold tabular-nums text-ink-900">
                     {money(d.amount, d.currency)}
                   </p>
-                  <p className="text-xs text-ink-400">net {money(d.netAmount)}</p>
+                  <p className="text-xs text-ink-400">{t("net")}{' '}{money(d.netAmount)}</p>
                 </div>
                 {canOperate && <DonationActions donation={d} onDone={() => refreshDonations()} />}
               </div>
@@ -174,19 +176,19 @@ export default function FinancePage() {
               }`}
             >
               {reconcile.balanced
-                ? `Comptes equilibres : ${reconcile.accountsChecked} comptes verifies`
-                : `${reconcile.discrepancies.length} ecart(s) detecte(s)`}
+                ? t("Comptes equilibres : {accountsChecked} comptes verifies", { accountsChecked: reconcile.accountsChecked })
+                : t("{length} ecart(s) detecte(s)", { length: reconcile.discrepancies.length })}
             </div>
             <button onClick={() => recheck()} className="btn-outline">
               <RefreshCw className="h-4 w-4" />
-              Relancer
+              {t("Relancer")}
             </button>
           </div>
           {reconcile.discrepancies.map((d: any) => (
             <div key={d.accountId} className="rounded-xl bg-rose-50/60 px-4 py-3 text-sm">
               <p className="font-medium text-ink-800">{d.label}</p>
               <p className="mt-0.5 text-xs text-ink-500">
-                solde stocke {money(d.stored)} / somme des ecritures {money(d.computed)}
+                {t("solde stocke")}{' '}{money(d.stored)}{' '}{t("/ somme des ecritures")}{' '}{money(d.computed)}
               </p>
             </div>
           ))}
@@ -198,18 +200,18 @@ export default function FinancePage() {
 
 function EntryTable({ entries }: { entries: any[] }) {
   if (!entries.length) {
-    return <p className="bg-ink-50 px-5 py-3 text-xs text-ink-400">Aucune ecriture.</p>;
+    return <p className="bg-ink-50 px-5 py-3 text-xs text-ink-400">{t("Aucune ecriture.")}</p>;
   }
   return (
-    <div className="overflow-x-auto bg-ink-50 px-5 py-3" role="region" aria-label="Détail des comptes, tableau défilant" tabIndex={0}>
+    <div className="overflow-x-auto bg-ink-50 px-5 py-3" role="region" aria-label={t("Détail des comptes, tableau défilant")} tabIndex={0}>
       <table className="w-full min-w-[520px] text-xs">
         <thead>
           <tr className="text-left text-ink-400">
-            <th className="pb-2 font-medium">Date</th>
-            <th className="pb-2 font-medium">Type</th>
-            <th className="pb-2 font-medium">Libelle</th>
-            <th className="pb-2 text-right font-medium">Montant</th>
-            <th className="pb-2 text-right font-medium">Solde</th>
+            <th className="pb-2 font-medium">{t("Date")}</th>
+            <th className="pb-2 font-medium">{t("Type")}</th>
+            <th className="pb-2 font-medium">{t("Libelle")}</th>
+            <th className="pb-2 text-right font-medium">{t("Montant")}</th>
+            <th className="pb-2 text-right font-medium">{t("Solde")}</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-ink-200/60">

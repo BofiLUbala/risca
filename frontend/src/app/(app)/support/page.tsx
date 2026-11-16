@@ -9,14 +9,15 @@ import { Badge } from '@/components/ui/Badge';
 import { Empty } from '@/components/ui/Empty';
 import { SkeletonList } from '@/components/ui/Loading';
 import { dateTime } from '@/lib/format';
+import { t as tx, localized } from '@/lib/i18n';
 
-const CATEGORIES = [
+const CATEGORIES = localized([
   { value: 'ACTIVATION', label: 'Activation du compte' },
   { value: 'PASSWORD', label: 'Mot de passe' },
   { value: 'PAYMENT', label: 'Paiement' },
   { value: 'BUG', label: 'Problème technique' },
   { value: 'OTHER', label: 'Autre' },
-];
+]);
 
 export default function SupportPage() {
   const { user } = useAuth();
@@ -49,14 +50,14 @@ export default function SupportPage() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="page-title">Support</h1>
+          <h1 className="page-title">{tx("Support")}</h1>
           <p className="mt-1 text-sm text-ink-500">
-            {isSupport ? 'File des tickets du réseau' : 'Vos demandes d’assistance'}
+            {isSupport ? tx("File des tickets du réseau") : tx("Vos demandes d’assistance")}
           </p>
         </div>
         <button onClick={() => setOpen((s) => !s)} className="btn-primary">
           <Plus className="h-4 w-4" />
-          Nouveau ticket
+          {tx("Nouveau ticket")}
         </button>
       </div>
 
@@ -65,7 +66,7 @@ export default function SupportPage() {
           <div className="grid gap-4 sm:grid-cols-[200px_minmax(0,1fr)]">
             <div>
               <label htmlFor="cat" className="label">
-                Catégorie
+                {tx("Catégorie")}
               </label>
               <select
                 id="cat"
@@ -82,7 +83,7 @@ export default function SupportPage() {
             </div>
             <div>
               <label htmlFor="subject" className="label">
-                Sujet
+                {tx("Sujet")}
               </label>
               <input
                 id="subject"
@@ -95,7 +96,7 @@ export default function SupportPage() {
           </div>
           <div>
             <label htmlFor="body" className="label">
-              Description
+              {tx("Description")}
             </label>
             <textarea
               id="body"
@@ -107,7 +108,7 @@ export default function SupportPage() {
             />
           </div>
           <button type="submit" className="btn-primary">
-            Envoyer
+            {tx("Envoyer")}
           </button>
         </form>
       )}
@@ -115,7 +116,7 @@ export default function SupportPage() {
       {isLoading ? (
         <SkeletonList rows={4} />
       ) : !data?.length ? (
-        <Empty icon={<LifeBuoy className="h-6 w-6" />} title="Aucun ticket" />
+        <Empty icon={<LifeBuoy className="h-6 w-6" />} title={tx("Aucun ticket")} />
       ) : (
         <div className="space-y-3">
           {data.map((t) => (
@@ -153,9 +154,9 @@ export default function SupportPage() {
                       <input
                         value={reply}
                         onChange={(e) => setReply(e.target.value)}
-                        placeholder="Votre réponse..."
+                        placeholder={tx("Votre réponse...")}
                         className="input flex-1"
-                        aria-label="Réponse"
+                        aria-label={tx("Réponse")}
                       />
                       <button type="submit" className="btn-primary px-4">
                         <Send className="h-4 w-4" />
@@ -171,7 +172,7 @@ export default function SupportPage() {
                       }}
                       className="btn-outline"
                     >
-                      Marquer comme resolu
+                      {tx("Marquer comme resolu")}
                     </button>
                   )}
                 </div>

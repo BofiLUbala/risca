@@ -8,6 +8,7 @@ import { Empty } from '@/components/ui/Empty';
 import { BroadcastForm } from '@/components/notifications/BroadcastForm';
 import { SkeletonList } from '@/components/ui/Loading';
 import { relative } from '@/lib/format';
+import { t } from '@/lib/i18n';
 
 export default function NotificationsPage() {
   const { data, isLoading, mutate } = useSWR<any[]>('/notifications', fetcher);
@@ -25,10 +26,10 @@ export default function NotificationsPage() {
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="page-title">Notifications</h1>
+        <h1 className="page-title">{t("Notifications")}</h1>
         <button onClick={readAll} className="btn-outline">
           <CheckCheck className="h-4 w-4" />
-          Tout marquer comme lu
+          {t("Tout marquer comme lu")}
         </button>
       </div>
 
@@ -37,7 +38,7 @@ export default function NotificationsPage() {
       {isLoading ? (
         <SkeletonList rows={5} />
       ) : !data?.length ? (
-        <Empty icon={<Bell className="h-6 w-6" />} title="Aucune notification" />
+        <Empty icon={<Bell className="h-6 w-6" />} title={t("Aucune notification")} />
       ) : (
         <div className="card divide-y divide-ink-100 overflow-hidden">
           {data.map((n) => {

@@ -10,6 +10,7 @@ import { Empty } from '@/components/ui/Empty';
 import { SkeletonList } from '@/components/ui/Loading';
 import { dateTime } from '@/lib/format';
 import { ROLE_LABEL, type Role } from '@/lib/roles';
+import { t, localized } from '@/lib/i18n';
 
 type Person = { id: string; firstName: string; lastName: string; email: string; role: Role; adminRank: number | null };
 type Letter = {
@@ -35,13 +36,13 @@ const PATHS: Partial<Record<Role, Role[]>> = {
   AMBASSADOR: ['REGIONAL_MANAGER'],
 };
 
-const STATUS: Record<Letter['status'], { label: string; tone: string }> = {
+const STATUS: Record<Letter['status'], { label: string; tone: string }> = localized({
   SUBMITTED: { label: 'Chez le Super Admin n°1', tone: 'bg-amber-50 text-amber-800' },
   FORWARDED: { label: 'Transmise, en lecture', tone: 'bg-sky-50 text-sky-800' },
   APPROVED: { label: 'Validée : promotion ouverte', tone: 'bg-emerald-50 text-emerald-800' },
   REJECTED: { label: 'Refusée', tone: 'bg-rose-50 text-rose-700' },
   EXECUTED: { label: 'Promotion faite', tone: 'bg-ink-100 text-ink-700' },
-};
+});
 
 const name = (p?: Person | null) => (p ? `${p.firstName} ${p.lastName}` : '—');
 const rank = (p?: Person | null) => (p?.role === 'SUPER_ADMIN' && p.adminRank ? ` n°${p.adminRank}` : '');
@@ -67,7 +68,7 @@ export default function LettresPage() {
       setNotice({ ok: true, text: success });
       await mutate();
     } catch (e: any) {
-      setNotice({ ok: false, text: e?.message ?? 'Action impossible' });
+      setNotice({ ok: false, text: e?.message ?? t("Action impossible") });
     }
     setBusy(false);
   }
@@ -78,17 +79,17 @@ export default function LettresPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="page-title">Lettres de promotion</h1>
+          <h1 className="page-title">{t("Lettres de promotion")}</h1>
           <p className="mt-1 max-w-2xl text-sm text-ink-500">
             {isRegional
-              ? 'Pour promouvoir un agent, écrivez d’abord une lettre : elle part chez le Super Admin n°1, qui la tranche ou la transmet au n°2 ou au n°3. Une fois validée, l’espace de promotion s’ouvre.'
-              : 'Lettres reçues des chefs régionaux. Après lecture, validez ou refusez. Le Super Admin n°1 peut aussi transmettre une lettre au n°2 ou au n°3.'}
+              ? t("Pour promouvoir un agent, écrivez d’abord une lettre : elle part chez le Super Admin n°1, qui la tranche ou la transmet au n°2 ou au n°3. Une fois validée, l’espace de promotion s’ouvre.")
+              : t("Lettres reçues des chefs régionaux. Après lecture, validez ou refusez. Le Super Admin n°1 peut aussi transmettre une lettre au n°2 ou au n°3.")}
           </p>
         </div>
         {isRegional && (
           <button type="button" onClick={() => setWriting(true)} className="btn-primary">
             <FileText className="h-4 w-4" aria-hidden="true" />
-            Écrire une lettre
+            {t("Écrire une lettre")}
           </button>
         )}
       </div>
@@ -103,26 +104,26 @@ export default function LettresPage() {
         <section aria-labelledby="h-promo" className="card card-pad border-emerald-200 bg-emerald-50/40">
           <h2 id="h-promo" className="flex items-center gap-2 text-sm font-semibold text-emerald-900">
             <UserCheck className="h-4 w-4" aria-hidden="true" />
-            Espace de promotion
+            {t("Espace de promotion")}
           </h2>
-          <p className="mt-1 text-xs text-emerald-900/80">Ces lettres sont validées : vous pouvez promouvoir.</p>
+          <p className="mt-1 text-xs text-emerald-900/80">{t("Ces lettres sont validées : vous pouvez promouvoir.")}</p>
           <ul className="mt-3 divide-y divide-emerald-100">
             {approved.map((l) => (
               <li key={l.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-ink-900">{name(l.candidate)}</p>
                   <p className="text-xs text-ink-600">
-                    {ROLE_LABEL[l.candidate.role]} → <strong>{ROLE_LABEL[l.requestedRole]}</strong> · validée par {name(l.decidedBy)}
+                    {ROLE_LABEL[l.candidate.role]} → <strong>{ROLE_LABEL[l.requestedRole]}</strong>{' '}{t("· validée par")}{' '}{name(l.decidedBy)}
                     {rank(l.decidedBy)}
                   </p>
                 </div>
                 <button
                   type="button"
                   disabled={busy}
-                  onClick={() => act(`/promotions/letters/${l.id}/execute`, {}, `${name(l.candidate)} est promu : ${ROLE_LABEL[l.requestedRole]}.`)}
+                  onClick={() => act(`/promotions/letters/${l.id}/execute`, {}, t("{name} est promu : {role}.", { name: name(l.candidate), role: ROLE_LABEL[l.requestedRole] }))}
                   className="btn-primary px-3 text-xs"
                 >
-                  Promouvoir
+                  {t("Promouvoir")}
                 </button>
               </li>
             ))}
@@ -138,7 +139,7 @@ export default function LettresPage() {
             </div>
           ) : !letters?.length ? (
             <div className="p-6">
-              <Empty icon={<FileText className="h-6 w-6" />} title="Aucune lettre" description={isRegional ? 'Écrivez votre première lettre de promotion.' : 'Aucune lettre à lire pour le moment.'} />
+              <Empty icon={<FileText className="h-6 w-6" />} title={t("Aucune lettre")} description={isRegional ? t("Écrivez votre première lettre de promotion.") : t("Aucune lettre à lire pour le moment.")} />
             </div>
           ) : (
             <ul className="divide-y divide-ink-100">
@@ -165,16 +166,16 @@ export default function LettresPage() {
 
         <section className="card card-pad min-h-[280px]" aria-live="polite">
           {!open ? (
-            <Empty icon={<FileText className="h-6 w-6" />} title="Choisissez une lettre" description="Sélectionnez une lettre pour la lire." />
+            <Empty icon={<FileText className="h-6 w-6" />} title={t("Choisissez une lettre")} description={t("Sélectionnez une lettre pour la lire.")} />
           ) : (
             <LetterView
               letter={open}
               isPrimary={isPrimary}
               isAdmin={isAdmin}
               busy={busy}
-              onForward={(toUserId) => act(`/promotions/letters/${open.id}/forward`, { toUserId }, 'Lettre transmise.')}
+              onForward={(toUserId) => act(`/promotions/letters/${open.id}/forward`, { toUserId }, t("Lettre transmise."))}
               onDecide={(approve, note) =>
-                act(`/promotions/letters/${open.id}/decide`, { approve, note }, approve ? 'Lettre validée : le chef régional peut promouvoir.' : 'Lettre refusée.')
+                act(`/promotions/letters/${open.id}/decide`, { approve, note }, approve ? t("Lettre validée : le chef régional peut promouvoir.") : t("Lettre refusée."))
               }
             />
           )}
@@ -186,7 +187,7 @@ export default function LettresPage() {
           onClose={() => setWriting(false)}
           onSent={async (id) => {
             setWriting(false);
-            setNotice({ ok: true, text: 'Lettre envoyée au Super Admin n°1.' });
+            setNotice({ ok: true, text: t("Lettre envoyée au Super Admin n°1.") });
             await mutate();
             setOpenId(id);
           }}
@@ -223,21 +224,21 @@ function LetterView({
         <span className={clsx('inline-block rounded-full px-2 py-0.5 text-[11px] font-medium', STATUS[letter.status].tone)}>{STATUS[letter.status].label}</span>
         <h2 className="mt-2 text-base font-semibold text-ink-900">{letter.subject}</h2>
         <p className="mt-1 text-xs text-ink-500">
-          De {name(letter.author)} · {dateTime(letter.createdAt)}
-          {letter.assignee ? ` · lecture : ${name(letter.assignee)}${rank(letter.assignee)}` : ''}
+          {t("De")}{' '}{name(letter.author)} · {dateTime(letter.createdAt)}
+          {letter.assignee ? t(" · lecture : {v0}{v1}", { v0: name(letter.assignee), v1: rank(letter.assignee) }) : ''}
         </p>
       </header>
 
       <dl className="grid gap-3 rounded-xl bg-ink-50 p-3.5 text-sm sm:grid-cols-2">
         <div>
-          <dt className="text-xs text-ink-500">Candidat</dt>
+          <dt className="text-xs text-ink-500">{t("Candidat")}</dt>
           <dd className="font-medium text-ink-900">{name(letter.candidate)}</dd>
         </div>
         <div>
-          <dt className="text-xs text-ink-500">Promotion demandée</dt>
+          <dt className="text-xs text-ink-500">{t("Promotion demandée")}</dt>
           <dd className="font-medium text-ink-900">
             {letter.status === 'EXECUTED'
-              ? `Promu : ${ROLE_LABEL[letter.requestedRole]}`
+              ? t("Promu : {v0}", { v0: ROLE_LABEL[letter.requestedRole] })
               : `${ROLE_LABEL[letter.candidate.role]} → ${ROLE_LABEL[letter.requestedRole]}`}
           </dd>
         </div>
@@ -247,8 +248,8 @@ function LetterView({
 
       {letter.decidedAt && (
         <p className="rounded-xl border border-ink-100 p-3.5 text-sm text-ink-700">
-          <strong>{letter.status === 'REJECTED' ? 'Refusée' : 'Validée'}</strong> par {name(letter.decidedBy)}
-          {rank(letter.decidedBy)} le {dateTime(letter.decidedAt)}.{letter.decisionNote ? ` « ${letter.decisionNote} »` : ''}
+          <strong>{letter.status === 'REJECTED' ? t("Refusée") : t("Validée")}</strong>{' '}{t("par")}{' '}{name(letter.decidedBy)}
+          {rank(letter.decidedBy)}{' '}{t("le")}{' '}{dateTime(letter.decidedAt)}.{letter.decisionNote ? ` « ${letter.decisionNote} »` : ''}
         </p>
       )}
 
@@ -258,36 +259,36 @@ function LetterView({
             <div className="flex flex-wrap items-end gap-2">
               <div className="min-w-[200px] flex-1">
                 <label htmlFor="fw" className="label">
-                  Transmettre à
+                  {t("Transmettre à")}
                 </label>
                 <select id="fw" className="input" value={to} onChange={(e) => setTo(e.target.value)}>
-                  <option value="">Choisir un Super Admin</option>
+                  <option value="">{t("Choisir un Super Admin")}</option>
                   {targets.map((a) => (
                     <option key={a.id} value={a.id}>
-                      Super Admin n°{a.adminRank} · {a.firstName} {a.lastName}
+                      {t("Super Admin n°")}{a.adminRank} · {a.firstName} {a.lastName}
                     </option>
                   ))}
                 </select>
               </div>
               <button type="button" disabled={!to || busy} onClick={() => onForward(to)} className="btn-outline">
                 <Send className="h-4 w-4" aria-hidden="true" />
-                Transmettre
+                {t("Transmettre")}
               </button>
             </div>
           )}
           <div>
             <label htmlFor="dn" className="label">
-              Note (obligatoire pour un refus)
+              {t("Note (obligatoire pour un refus)")}
             </label>
             <textarea id="dn" rows={2} className="input" value={note} onChange={(e) => setNote(e.target.value)} />
           </div>
           <div className="flex flex-wrap gap-2">
             <button type="button" disabled={busy} onClick={() => onDecide(true, note)} className="btn-primary">
               <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-              Valider
+              {t("Valider")}
             </button>
             <button type="button" disabled={busy || !note.trim()} onClick={() => onDecide(false, note)} className="btn-outline text-rose-700">
-              Refuser
+              {t("Refuser")}
             </button>
           </div>
         </div>
@@ -312,15 +313,15 @@ function WriteLetter({ onClose, onSent }: { onClose: () => void; onSent: (id: st
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!candidateId || !requestedRole) return setError('Choisissez le candidat et le rôle demandé.');
-    if (!subject.trim()) return setError('Donnez un objet à la lettre.');
-    if (body.trim().length < 30) return setError('Expliquez le motif dans la lettre (30 caractères au moins).');
+    if (!candidateId || !requestedRole) return setError(t("Choisissez le candidat et le rôle demandé."));
+    if (!subject.trim()) return setError(t("Donnez un objet à la lettre."));
+    if (body.trim().length < 30) return setError(t("Expliquez le motif dans la lettre (30 caractères au moins)."));
     setBusy(true);
     try {
       const l = await api.post<{ id: string }>('/promotions/letters', { candidateId, requestedRole, subject: subject.trim(), body: body.trim() });
       onSent(l.id);
     } catch (err: any) {
-      setError(err?.message ?? 'Envoi impossible');
+      setError(err?.message ?? t("Envoi impossible"));
       setBusy(false);
     }
   }
@@ -330,7 +331,7 @@ function WriteLetter({ onClose, onSent }: { onClose: () => void; onSent: (id: st
       <form onSubmit={submit} className="card flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden" noValidate>
         <header className="border-b border-ink-100 px-5 py-3.5">
           <h2 id="wl-title" className="text-sm font-semibold text-ink-900">
-            Lettre au Super Admin
+            {t("Lettre au Super Admin")}
           </h2>
         </header>
         <div className="space-y-4 overflow-y-auto px-5 py-4">
@@ -342,7 +343,7 @@ function WriteLetter({ onClose, onSent }: { onClose: () => void; onSent: (id: st
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label htmlFor="wl-cand" className="label">
-                Agent à promouvoir
+                {t("Agent à promouvoir")}
               </label>
               <select
                 id="wl-cand"
@@ -353,7 +354,7 @@ function WriteLetter({ onClose, onSent }: { onClose: () => void; onSent: (id: st
                   setRequestedRole('');
                 }}
               >
-                <option value="">Choisir</option>
+                <option value="">{t("Choisir")}</option>
                 {candidates.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.firstName} {c.lastName} · {ROLE_LABEL[c.role as Role]}
@@ -363,10 +364,10 @@ function WriteLetter({ onClose, onSent }: { onClose: () => void; onSent: (id: st
             </div>
             <div>
               <label htmlFor="wl-role" className="label">
-                Rôle demandé
+                {t("Rôle demandé")}
               </label>
               <select id="wl-role" className="input" value={requestedRole} onChange={(e) => setRequestedRole(e.target.value)} disabled={!candidate}>
-                <option value="">Choisir</option>
+                <option value="">{t("Choisir")}</option>
                 {roles.map((r) => (
                   <option key={r} value={r}>
                     {ROLE_LABEL[r]}
@@ -377,23 +378,23 @@ function WriteLetter({ onClose, onSent }: { onClose: () => void; onSent: (id: st
           </div>
           <div>
             <label htmlFor="wl-subject" className="label">
-              Objet
+              {t("Objet")}
             </label>
             <input id="wl-subject" className="input" value={subject} onChange={(e) => setSubject(e.target.value)} maxLength={120} />
           </div>
           <div>
             <label htmlFor="wl-body" className="label">
-              Votre lettre
+              {t("Votre lettre")}
             </label>
-            <textarea id="wl-body" rows={8} className="input" value={body} onChange={(e) => setBody(e.target.value)} placeholder="Présentez le parcours de l’agent et expliquez pourquoi il mérite cette promotion." />
+            <textarea id="wl-body" rows={8} className="input" value={body} onChange={(e) => setBody(e.target.value)} placeholder={t("Présentez le parcours de l’agent et expliquez pourquoi il mérite cette promotion.")} />
           </div>
         </div>
         <footer className="flex justify-end gap-2 border-t border-ink-100 px-5 py-3.5">
           <button type="button" onClick={onClose} className="btn-ghost">
-            Annuler
+            {t("Annuler")}
           </button>
           <button type="submit" disabled={busy} className="btn-primary">
-            {busy ? 'Envoi…' : 'Envoyer la lettre'}
+            {busy ? t("Envoi…") : t("Envoyer la lettre")}
           </button>
         </footer>
       </form>

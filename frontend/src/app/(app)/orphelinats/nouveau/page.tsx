@@ -9,6 +9,8 @@ import { api, fetcher } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { Spinner } from '@/components/ui/Loading';
 import { CountrySelect, ProvinceSelect } from '@/components/geo/GeoSelects';
+import { t, geoName } from '@/lib/i18n';
+
 
 /** Chef regional ou Agent propose, puis le Super Admin valide (section 4). */
 export default function NewOrphanagePage() {
@@ -63,7 +65,7 @@ export default function NewOrphanagePage() {
       });
       router.push(`/orphelinats/${r.id}`);
     } catch (err: any) {
-      setError(err?.message ?? 'Proposition impossible');
+      setError(err?.message ?? t("Proposition impossible"));
       setBusy(false);
     }
   }
@@ -75,21 +77,20 @@ export default function NewOrphanagePage() {
         className="inline-flex min-h-[44px] items-center gap-1.5 text-sm text-ink-500 hover:text-ink-800 sm:min-h-0"
       >
         <ArrowLeft className="h-4 w-4" />
-        Retour aux orphelinats
+        {t("Retour aux orphelinats")}
       </Link>
 
       <div>
-        <h1 className="page-title">Proposer un orphelinat</h1>
+        <h1 className="page-title">{t("Proposer un orphelinat")}</h1>
         <p className="mt-1 text-sm text-ink-500">
-          La structure est creee en proposition, puis verifiee par le chef regional et validée par le
-          Super Admin.
+          {t("La structure est creee en proposition, puis verifiee par le chef regional et validée par le Super Admin.")}
         </p>
       </div>
 
       <form onSubmit={submit} className="card card-pad space-y-4">
         <div>
           <label htmlFor="name" className="label">
-            Nom de la structure <span className="text-accent-coral">*</span>
+            {t("Nom de la structure")}{' '}<span className="text-accent-coral">*</span>
           </label>
           <input
             id="name"
@@ -104,11 +105,11 @@ export default function NewOrphanagePage() {
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="ctry" className="label">
-              Pays <span className="text-accent-coral">*</span>
+              {t("Pays")}{' '}<span className="text-accent-coral">*</span>
             </label>
             {lockCountry ? (
               <p id="ctry" className="input bg-ink-50 text-ink-700">
-                {user?.country?.nameFr}
+                {geoName(user?.country)}
               </p>
             ) : (
               <CountrySelect
@@ -120,11 +121,11 @@ export default function NewOrphanagePage() {
           </div>
           <div>
             <label htmlFor="prov" className="label">
-              Province <span className="text-accent-coral">*</span>
+              {t("Province")}{' '}<span className="text-accent-coral">*</span>
             </label>
             {lockProvince ? (
               <p id="prov" className="input bg-ink-50 text-ink-700">
-                {user?.province?.nameFr}
+                {geoName(user?.province)}
               </p>
             ) : (
               <ProvinceSelect
@@ -138,7 +139,7 @@ export default function NewOrphanagePage() {
           </div>
           <div>
             <label htmlFor="city" className="label">
-              Ville
+              {t("Ville")}
             </label>
             <input
               id="city"
@@ -149,7 +150,7 @@ export default function NewOrphanagePage() {
           </div>
           <div>
             <label htmlFor="commune" className="label">
-              Commune
+              {t("Commune")}
             </label>
             <input
               id="commune"
@@ -160,7 +161,7 @@ export default function NewOrphanagePage() {
           </div>
           <div>
             <label htmlFor="legal" className="label">
-              Statut juridique
+              {t("Statut juridique")}
             </label>
             <input
               id="legal"
@@ -171,7 +172,7 @@ export default function NewOrphanagePage() {
           </div>
           <div>
             <label htmlFor="lic" className="label">
-              Numéro d’agrement
+              {t("Numéro d’agrement")}
             </label>
             <input
               id="lic"
@@ -182,7 +183,7 @@ export default function NewOrphanagePage() {
           </div>
           <div>
             <label htmlFor="tp" className="label">
-              Places totales
+              {t("Places totales")}
             </label>
             <input
               id="tp"
@@ -195,7 +196,7 @@ export default function NewOrphanagePage() {
           </div>
           <div>
             <label htmlFor="op" className="label">
-              Places occupées
+              {t("Places occupées")}
             </label>
             <input
               id="op"
@@ -210,7 +211,7 @@ export default function NewOrphanagePage() {
 
         <div>
           <label htmlFor="desc" className="label">
-            Description
+            {t("Description")}
           </label>
           <textarea
             id="desc"
@@ -222,7 +223,7 @@ export default function NewOrphanagePage() {
         </div>
 
         <p className="rounded-xl bg-risac-50 px-3.5 py-2.5 text-xs text-risac-800">
-          En zone à risque, la position exacte sera automatiquement masquée au public.
+          {t("En zone à risque, la position exacte sera automatiquement masquée au public.")}
         </p>
 
         {error ? (
@@ -234,10 +235,10 @@ export default function NewOrphanagePage() {
         <div className="flex gap-2">
           <button type="submit" disabled={busy} className="btn-primary">
             {busy ? <Spinner className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-            Proposer la structure
+            {t("Proposer la structure")}
           </button>
           <Link href="/orphelinats" className="btn-ghost">
-            Annuler
+            {t("Annuler")}
           </Link>
         </div>
       </form>

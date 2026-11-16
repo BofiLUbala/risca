@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { HeartHandshake, MapPin, Sparkles } from 'lucide-react';
 import { mediaUrl } from '@/lib/api';
 import { SafeImage } from '@/components/ui/SafeImage';
+import { t, geoName } from '@/lib/i18n';
 
 export interface PublicChild {
   id: string;
@@ -50,17 +51,17 @@ export function ChildCard({ child, headingLevel = 'h3' }: { child: PublicChild; 
 
         <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
           {child.warOrphan && (
-            <span className="chip bg-surface/90 text-risac-700 backdrop-blur">Orphelin de guerre</span>
+            <span className="chip bg-surface/90 text-risac-700 backdrop-blur">{t("Orphelin de guerre")}</span>
           )}
           {child.displaced && (
-            <span className="chip bg-surface/90 text-ink-700 backdrop-blur">Déplacé</span>
+            <span className="chip bg-surface/90 text-ink-700 backdrop-blur">{t("Déplacé")}</span>
           )}
         </div>
 
         {!child.hasSponsor && (
           <span className="absolute right-3 top-3 chip bg-accent-amber/95 text-white">
             <Sparkles className="h-3 w-3" />
-            Sans parrain
+            {t("Sans parrain")}
           </span>
         )}
       </div>
@@ -68,14 +69,14 @@ export function ChildCard({ child, headingLevel = 'h3' }: { child: PublicChild; 
       <div className="card-pad">
         <div className="flex items-baseline justify-between gap-2">
           <Heading className="truncate text-base font-semibold text-ink-900">{child.firstName}</Heading>
-          {child.age != null && <span className="shrink-0 text-sm text-ink-500">{child.age} ans</span>}
+          {child.age != null && <span className="shrink-0 text-sm text-ink-500">{child.age}{' '}{t("ans")}</span>}
         </div>
 
         <p className="mt-1 flex items-center gap-1.5 text-xs text-ink-400">
           <MapPin className="h-3.5 w-3.5 shrink-0" />
           <span className="truncate">
             {child.region}
-            {child.orphanage?.country ? ` · ${child.orphanage.country.nameFr}` : ''}
+            {child.orphanage?.country ? ` · ${geoName(child.orphanage.country)}` : ''}
           </span>
         </p>
 

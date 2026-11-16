@@ -5,6 +5,7 @@ import useSWR from 'swr';
 import { UserCheck } from 'lucide-react';
 import { api, fetcher } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
+import { t, geoName } from '@/lib/i18n';
 
 const ASSIGNERS = ['SUPER_ADMIN', 'NATIONAL_MANAGER', 'REGIONAL_MANAGER'];
 
@@ -44,7 +45,7 @@ export function AssignAmbassador({
       setAmbassadorId('');
       onDone();
     } catch (e: any) {
-      setError(e?.message ?? "L'affectation a échoué.");
+      setError(e?.message ?? t("L'affectation a échoué."));
     }
     setBusy(false);
   }
@@ -53,7 +54,7 @@ export function AssignAmbassador({
     return (
       <button type="button" onClick={() => setOpen(true)} className="btn-outline">
         <UserCheck className="h-4 w-4" />
-        {current ? "Changer d'ambassadeur" : 'Assigner un ambassadeur'}
+        {current ? t("Changer d'ambassadeur") : t("Assigner un ambassadeur")}
       </button>
     );
   }
@@ -61,7 +62,7 @@ export function AssignAmbassador({
   return (
     <div className="w-full rounded-xl border border-risac-200 bg-risac-50/60 p-4 sm:w-96">
       <label htmlFor="assign-amb" className="label">
-        Ambassadeur responsable
+        {t("Ambassadeur responsable")}
       </label>
       <select
         id="assign-amb"
@@ -70,20 +71,20 @@ export function AssignAmbassador({
         onChange={(e) => setAmbassadorId(e.target.value)}
         disabled={isLoading}
       >
-        <option value="">{isLoading ? 'Chargement…' : 'Choisir un ambassadeur'}</option>
+        <option value="">{isLoading ? t("Chargement…") : t("Choisir un ambassadeur")}</option>
         {ambassadors?.map((a) => (
           <option key={a.id} value={a.id}>
             {a.firstName} {a.lastName}
-            {a.province?.nameFr ? ` · ${a.province.nameFr}` : ''} · {a._count?.assignments ?? 0} enfant(s)
+            {geoName(a.province) ? ` · ${geoName(a.province)}` : ''} · {a._count?.assignments ?? 0}{' '}{t("enfant(s)")}
           </option>
         ))}
       </select>
       {!isLoading && ambassadors?.length === 0 && (
-        <p className="mt-2 text-xs text-amber-700">Aucun ambassadeur actif dans votre périmètre.</p>
+        <p className="mt-2 text-xs text-amber-700">{t("Aucun ambassadeur actif dans votre périmètre.")}</p>
       )}
       {current && (
         <p className="mt-2 text-xs text-ink-500">
-          Remplace {current.firstName} {current.lastName}. L'historique de l'enfant garde la trace du changement.
+          {t("Remplace")}{' '}{current.firstName} {current.lastName}{t(". L'historique de l'enfant garde la trace du changement.")}
         </p>
       )}
       {error && (
@@ -93,10 +94,10 @@ export function AssignAmbassador({
       )}
       <div className="mt-3 flex gap-2">
         <button type="button" onClick={assign} disabled={!ambassadorId || busy} className="btn-primary">
-          {busy ? 'Affectation…' : 'Confirmer'}
+          {busy ? t("Affectation…") : t("Confirmer")}
         </button>
         <button type="button" onClick={() => setOpen(false)} className="btn-ghost">
-          Annuler
+          {t("Annuler")}
         </button>
       </div>
     </div>

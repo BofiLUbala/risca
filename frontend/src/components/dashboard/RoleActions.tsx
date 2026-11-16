@@ -5,6 +5,7 @@ import * as Icons from 'lucide-react';
 import type { Role } from '@/lib/roles';
 import { ROLE_ACTIONS } from './role-actions-map';
 import { SectionTitle } from './widgets';
+import { t } from '@/lib/i18n';
 
 function Icon({ name }: { name: string }) {
   const C = (Icons as any)[name] ?? Icons.Circle;
@@ -18,7 +19,7 @@ export function RoleActions({ role }: { role: Role }) {
 
   return (
     <section>
-      <SectionTitle>Mes fonctionnalités</SectionTitle>
+      <SectionTitle>{t("Mes fonctionnalités")}</SectionTitle>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {actions.map((a) => (
           <Link

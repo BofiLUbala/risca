@@ -14,8 +14,9 @@ import { SkeletonList } from '@/components/ui/Loading';
 import { relative } from '@/lib/format';
 import { ChannelMembers } from '@/components/messages/ChannelMembers';
 import { NewChannel } from '@/components/messages/NewChannel';
+import { t, localized } from '@/lib/i18n';
 
-const CHANNEL_LABEL: Record<string, string> = {
+const CHANNEL_LABEL: Record<string, string> = localized({
   GENERAL: 'Général',
   AMBASSADOR_REGIONAL: 'Ambassadeurs de la région',
   AMBASSADOR_NATIONAL: 'Ambassadeurs du pays',
@@ -23,7 +24,7 @@ const CHANNEL_LABEL: Record<string, string> = {
   DONOR_AMBASSADOR: 'Parrainage',
   REGIONAL: 'Région',
   PARTNERS: 'Partenaires',
-};
+});
 
 export default function MessagesPage() {
   const { user } = useAuth();
@@ -113,7 +114,7 @@ export default function MessagesPage() {
       void mutate();
     } catch (err: any) {
       const v = err?.payload?.violations?.[0];
-      setError(v ? v.message : (err?.payload?.message ?? err?.message ?? 'Envoi impossible'));
+      setError(v ? v.message : (err?.payload?.message ?? err?.message ?? t("Envoi impossible")));
     }
   }
 
@@ -126,7 +127,7 @@ export default function MessagesPage() {
       const r = await api.get<any[]>(`/channels/${activeId}/search?q=${encodeURIComponent(query.trim())}`);
       setResults(r);
     } catch (err: any) {
-      setError(err?.message ?? 'La recherche a échoué.');
+      setError(err?.message ?? t("La recherche a échoué."));
     }
     setSearching(false);
   }
@@ -137,41 +138,41 @@ export default function MessagesPage() {
       await api.post(`/channels/messages/${m.id}/pin`, { pinned: !m.pinned });
       setMessages((list) => list.map((x) => (x.id === m.id ? { ...x, pinned: !m.pinned } : x)));
     } catch (err: any) {
-      setError(err?.message ?? 'L’épinglage a échoué.');
+      setError(err?.message ?? t("L’épinglage a échoué."));
     }
   }
 
   /** Masquage d un message par le modérateur. */
   async function hideMessage(m: any) {
-    const reason = await promptDialog('Motif du masquage ?');
+    const reason = await promptDialog(t("Motif du masquage ?"));
     if (!reason) return;
     try {
       await api.post(`/channels/messages/${m.id}/hide`, { reason });
       setMessages((list) => list.map((x) => (x.id === m.id ? { ...x, hidden: true, hiddenReason: reason } : x)));
     } catch (err: any) {
-      setError(err?.message ?? 'Le masquage a échoué.');
+      setError(err?.message ?? t("Le masquage a échoué."));
     }
   }
 
   return (
     <div className="grid h-[calc(100vh-10rem)] gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">
-      <aside aria-label="Canaux de discussion" className={clsx('card flex flex-col overflow-hidden', activeId && 'hidden lg:flex')}>
+      <aside aria-label={t("Canaux de discussion")} className={clsx('card flex flex-col overflow-hidden', activeId && 'hidden lg:flex')}>
         <div className="space-y-2.5 border-b border-ink-100 px-4 py-3">
           <div className="flex items-center justify-between gap-2">
             <h1 className="text-sm font-semibold text-ink-900">
-              {allChannels && isModerator ? 'Tous les canaux' : 'Mes canaux'}
+              {allChannels && isModerator ? t("Tous les canaux") : t("Mes canaux")}
             </h1>
             {canManageMembers && (
               <button type="button" onClick={() => setCreating(true)} className="btn-primary min-h-[36px] px-3 text-xs">
-                Nouveau canal
+                {t("Nouveau canal")}
               </button>
             )}
           </div>
           {isModerator && (
-            <div className="flex rounded-xl bg-ink-100 p-1" role="tablist" aria-label="Périmètre des canaux">
+            <div className="flex rounded-xl bg-ink-100 p-1" role="tablist" aria-label={t("Périmètre des canaux")}>
               {[
-                { value: false, label: 'Mes canaux' },
-                { value: true, label: 'Tout le réseau' },
+                { value: false, label: t("Mes canaux") },
+                { value: true, label: t("Tout le réseau") },
               ].map((o) => (
                 <button
                   key={String(o.value)}
@@ -199,18 +200,18 @@ export default function MessagesPage() {
             </div>
           ) : listError ? (
             <div className="p-4 text-sm text-rose-700" role="alert">
-              Les canaux n’ont pas pu être chargés.{' '}
+              {t("Les canaux n’ont pas pu être chargés.")}{' '}
               <button type="button" onClick={() => mutate()} className="font-medium underline">
-                Réessayer
+                {t("Réessayer")}
               </button>
             </div>
           ) : !channels?.length ? (
             <div className="p-6 text-center text-sm text-ink-500">
-              <p className="font-medium text-ink-700">Aucun canal pour le moment</p>
+              <p className="font-medium text-ink-700">{t("Aucun canal pour le moment")}</p>
               <p className="mt-1">
                 {canManageMembers
-                  ? 'Créez un canal et choisissez ses membres pour lancer la discussion.'
-                  : 'Un responsable doit vous ajouter à un canal pour que vous puissiez écrire.'}
+                  ? t("Créez un canal et choisissez ses membres pour lancer la discussion.")
+                  : t("Un responsable doit vous ajouter à un canal pour que vous puissiez écrire.")}
               </p>
             </div>
           ) : (
@@ -253,8 +254,8 @@ export default function MessagesPage() {
           <div className="grid flex-1 place-items-center p-6">
             <Empty
               icon={<MessageCircle className="h-6 w-6" />}
-              title="Choisissez un canal"
-              description="Selectionnez une conversation pour afficher les messages."
+              title={t("Choisissez un canal")}
+              description={t("Selectionnez une conversation pour afficher les messages.")}
             />
           </div>
         ) : (
@@ -263,21 +264,21 @@ export default function MessagesPage() {
               <button
                 onClick={() => setActiveId(null)}
                 className="btn-ghost h-8 w-8 p-0 lg:hidden"
-                aria-label="Retour"
+                aria-label={t("Retour")}
               >
                 <ArrowLeft className="h-4 w-4" />
               </button>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold text-ink-900">{active.name}</p>
                 <p className="truncate text-xs text-ink-400">
-                  {CHANNEL_LABEL[active.type]} &middot; {active._count?.members ?? 0} membres
+                  {CHANNEL_LABEL[active.type]} &middot; {active._count?.members ?? 0}{' '}{t("membres")}
                   {active.moderated ? ' - modere' : ''}
                 </p>
               </div>
               {active.type === 'DONOR_AMBASSADOR' && (
                 <span className="chip bg-amber-50 text-amber-700">
                   <Lock className="h-3 w-3" />
-                  Sans coordonnees
+                  {t("Sans coordonnees")}
                 </span>
               )}
               {canManageMembers && (
@@ -285,7 +286,7 @@ export default function MessagesPage() {
                   onClick={() => setShowMembers((v) => !v)}
                   className="btn-ghost h-8 w-8 shrink-0 p-0"
                   aria-expanded={showMembers}
-                  aria-label="Membres du canal"
+                  aria-label={t("Membres du canal")}
                 >
                   <Users className="h-4 w-4" />
                 </button>
@@ -301,9 +302,9 @@ export default function MessagesPage() {
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Rechercher dans ce canal"
+                  placeholder={t("Rechercher dans ce canal")}
                   className="input h-9 pl-9 text-sm"
-                  aria-label="Rechercher dans ce canal"
+                  aria-label={t("Rechercher dans ce canal")}
                 />
               </div>
               <button
@@ -312,7 +313,7 @@ export default function MessagesPage() {
                 aria-busy={searching}
                 className="btn-outline h-9 px-3 text-xs"
               >
-                {searching ? 'Recherche…' : 'Chercher'}
+                {searching ? t("Recherche…") : t("Chercher")}
               </button>
               {results && (
                 <button
@@ -322,7 +323,7 @@ export default function MessagesPage() {
                     setQuery('');
                   }}
                   className="btn-ghost h-9 w-9 shrink-0 p-0"
-                  aria-label="Fermer la recherche"
+                  aria-label={t("Fermer la recherche")}
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -333,7 +334,7 @@ export default function MessagesPage() {
               <div className="border-b border-ink-100 bg-risac-50/60 px-4 py-2">
                 <p className="meta flex items-center gap-1.5">
                   <Pin className="h-3 w-3" aria-hidden />
-                  {pinned.length} message(s) épinglé(s)
+                  {pinned.length}{' '}{t("message(s) épinglé(s)")}
                 </p>
                 <ul className="mt-1 space-y-1">
                   {pinned.map((m) => (
@@ -349,8 +350,8 @@ export default function MessagesPage() {
               <div className="flex-1 space-y-2 overflow-y-auto px-4 py-4">
                 <p className="meta">
                   {results.length === 0
-                    ? 'Aucun message ne correspond.'
-                    : `${results.length} message(s) trouvé(s), du plus récent au plus ancien`}
+                    ? t("Aucun message ne correspond.")
+                    : t("{length} message(s) trouvé(s), du plus récent au plus ancien", { length: results.length })}
                 </p>
                 {results.map((m) => (
                   <div key={m.id} className="rounded-xl border border-ink-100 px-3 py-2">
@@ -379,7 +380,7 @@ export default function MessagesPage() {
                           {m.pinned && (
                             <span className="ml-1.5 inline-flex items-center gap-1 text-risac-700">
                               <Pin className="h-3 w-3" aria-hidden />
-                              épinglé
+                              {t("épinglé")}
                             </span>
                           )}
                         </p>
@@ -393,7 +394,7 @@ export default function MessagesPage() {
                           {m.content}
                         </div>
                         {m.hidden && m.hiddenReason && (
-                          <p className="mt-0.5 text-xs text-rose-700">Masqué : {m.hiddenReason}</p>
+                          <p className="mt-0.5 text-xs text-rose-700">{t("Masqué :")}{' '}{m.hiddenReason}</p>
                         )}
                       </div>
 
@@ -403,7 +404,7 @@ export default function MessagesPage() {
                           onClick={() => togglePin(m)}
                           className="btn-ghost h-7 w-7 p-0"
                           aria-pressed={!!m.pinned}
-                          aria-label={m.pinned ? 'Retirer l’épingle' : 'Épingler ce message'}
+                          aria-label={m.pinned ? t("Retirer l’épingle") : t("Épingler ce message")}
                         >
                           {m.pinned ? <PinOff className="h-3.5 w-3.5" /> : <Pin className="h-3.5 w-3.5" />}
                         </button>
@@ -411,7 +412,7 @@ export default function MessagesPage() {
                           <button
                             onClick={() => hideMessage(m)}
                             className="btn-ghost h-7 w-7 p-0"
-                            aria-label="Masquer ce message"
+                            aria-label={t("Masquer ce message")}
                           >
                             <EyeOff className="h-3.5 w-3.5" />
                           </button>
@@ -438,10 +439,10 @@ export default function MessagesPage() {
               <input
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
-                placeholder={active.canWrite === false ? 'Canal en lecture seule' : 'Votre message...'}
+                placeholder={active.canWrite === false ? t("Canal en lecture seule") : t("Votre message...")}
                 disabled={active.canWrite === false}
                 className="input flex-1"
-                aria-label="Message"
+                aria-label={t("Message")}
               />
               <button type="submit" disabled={!draft.trim()} className="btn-primary px-4">
                 <Send className="h-4 w-4" />
@@ -452,7 +453,7 @@ export default function MessagesPage() {
       </section>
 
       {showMembers && activeId && (
-        <aside className="card animate-fade-up overflow-hidden" aria-label="Membres du canal">
+        <aside className="card animate-fade-up overflow-hidden" aria-label={t("Membres du canal")}>
           <ChannelMembers channelId={activeId} onClose={() => setShowMembers(false)} />
         </aside>
       )}
