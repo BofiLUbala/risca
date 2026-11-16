@@ -28,7 +28,7 @@ export function AppShell(props: { title?: string; children: React.ReactNode }) {
 
 function AppShellInner({ title, children }: { title?: string; children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  const { side } = useLayoutPrefs();
+  const { side, collapsed, toggleCollapsed } = useLayoutPrefs();
   const right = side === 'right';
   const router = useRouter();
   const pathname = usePathname();
@@ -75,12 +75,14 @@ function AppShellInner({ title, children }: { title?: string; children: React.Re
     <div className={clsx('flex min-h-screen bg-surface', right && 'flex-row-reverse')}>
       <aside
         className={clsx(
-          'hidden w-[264px] shrink-0 lg:block',
+          // Largeur animée : le contenu (flex-1) récupère la place libérée.
+          'hidden shrink-0 transition-[width] duration-base ease-standard motion-reduce:transition-none lg:block',
+          collapsed ? 'w-[72px]' : 'w-[264px]',
           right ? 'border-l border-ink-100' : 'border-r border-ink-100',
         )}
       >
         <div className="sticky top-0 h-screen">
-          <Sidebar />
+          <Sidebar collapsed={collapsed} onToggleCollapse={toggleCollapsed} />
         </div>
       </aside>
 

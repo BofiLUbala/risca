@@ -26,16 +26,31 @@ interface Prefs {
 const KEY = 'risac.layout.v1';
 const DEFAULTS: Prefs = { color: 'navy', side: 'left' };
 
+/** Menu réduit à une colonne d'icônes (grand écran uniquement). Clé à part : réglage indépendant. */
+const COLLAPSED_KEY = 'risac.sidebar.collapsed.v1';
+
 interface Ctx extends Prefs {
+  collapsed: boolean;
   setColor: (c: SidebarColor) => void;
   setSide: (s: SidebarSide) => void;
+  toggleCollapsed: () => void;
 }
 
 const LayoutPrefsContext = createContext<Ctx>({
   ...DEFAULTS,
+  collapsed: false,
   setColor: () => {},
   setSide: () => {},
+  toggleCollapsed: () => {},
 });
+
+function readCollapsed(): boolean {
+  try {
+    return window.localStorage.getItem(COLLAPSED_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
 
 function read(): Prefs {
   try {
@@ -53,10 +68,24 @@ function read(): Prefs {
 
 export function LayoutPrefsProvider({ children }: { children: ReactNode }) {
   const [prefs, setPrefs] = useState<Prefs>(DEFAULTS);
+  const [collapsed, setCollapsed] = useState(false);
 
   // Lecture après le premier rendu pour rester identique au rendu serveur.
   useEffect(() => {
     setPrefs(read());
+    setCollapsed(readCollapsed());
+  }, []);
+
+  const toggleCollapsed = useCallback(() => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      try {
+        window.localStorage.setItem(COLLAPSED_KEY, next ? '1' : '0');
+      } catch {
+        /* stockage indisponible : le choix reste valable pour la session */
+      }
+      return next;
+    });
   }, []);
 
   const update = useCallback((patch: Partial<Prefs>) => {
@@ -74,10 +103,12 @@ export function LayoutPrefsProvider({ children }: { children: ReactNode }) {
   const value = useMemo<Ctx>(
     () => ({
       ...prefs,
+      collapsed,
       setColor: (color) => update({ color }),
       setSide: (side) => update({ side }),
+      toggleCollapsed,
     }),
-    [prefs, update],
+    [prefs, update, collapsed, toggleCollapsed],
   );
 
   return <LayoutPrefsContext.Provider value={value}>{children}</LayoutPrefsContext.Provider>;
