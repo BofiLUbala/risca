@@ -384,4 +384,5 @@ export const EN: Record<string, string> = {
   "Version de l’application": "App version",
   "RISAC {app}": "RISAC {app}",
   "build {build}": "build {build}",
+  "vous@exemple.org": "you@example.org",
 };

@@ -100,7 +100,7 @@ export default function LoginScreen() {
             <TextInput
               value={email}
               onChangeText={setEmail}
-              placeholder="vous@exemple.org"
+              placeholder={t("vous@exemple.org")}
               placeholderTextColor={colors.ink[400]}
               keyboardType="email-address"
               autoCapitalize="none"

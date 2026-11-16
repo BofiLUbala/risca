@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Linking, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack } from 'expo-router';
 import { Button } from '../../src/components/ui';
 import { Logo } from '../../src/components/Logo';
+import { LanguageToggle } from '../../src/components/LanguageToggle';
 import { askPushPermission, pushStatus } from '../../src/lib/push';
 import { colors, radius, shadow, spacing, typography } from '../../src/theme';
 import { t } from '../../src/lib/i18n';
@@ -17,6 +18,13 @@ import { t } from '../../src/lib/i18n';
 export default function AuthLayout() {
   const [state, setState] = useState<'checking' | 'ask' | 'denied' | 'ready'>('checking');
   const [busy, setBusy] = useState(false);
+  const insets = useSafeAreaInsets();
+  // Choix de la langue avant même de se connecter : toujours en haut à droite des écrans d'accès.
+  const lang = (
+    <View style={[s.lang, { top: insets.top + spacing.sm }]}>
+      <LanguageToggle />
+    </View>
+  );
 
   useEffect(() => {
     void pushStatus().then((st) => setState(st === 'granted' || st === 'unavailable' ? 'ready' : st === 'denied' ? 'denied' : 'ask'));
@@ -29,11 +37,19 @@ export default function AuthLayout() {
     setState(st === 'granted' || st === 'unavailable' ? 'ready' : 'denied');
   }
 
-  if (state === 'ready') return <Stack id="auth" screenOptions={{ headerShown: false }} />;
+  if (state === 'ready') {
+    return (
+      <View style={{ flex: 1 }}>
+        <Stack id="auth" screenOptions={{ headerShown: false }} />
+        {lang}
+      </View>
+    );
+  }
   if (state === 'checking') return <View style={s.safe} />;
 
   return (
     <SafeAreaView style={s.safe}>
+      {lang}
       <View style={s.card}>
         <View style={s.logo}>
           <Logo size={36} />
@@ -78,6 +94,7 @@ const s = StyleSheet.create({
     ...shadow.lift,
   },
   logo: { alignSelf: 'center' },
+  lang: { position: 'absolute', right: spacing.lg, zIndex: 10 },
   title: { ...typography.title, fontSize: 22, color: colors.ink[950], textAlign: 'center' },
   text: { ...typography.small, color: colors.ink[600], textAlign: 'center', lineHeight: 20 },
   warn: { backgroundColor: colors.coralSoft, borderRadius: radius.lg, padding: spacing.md },
