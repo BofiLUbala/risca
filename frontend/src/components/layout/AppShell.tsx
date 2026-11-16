@@ -11,7 +11,8 @@ import { useAuth } from '@/lib/auth-context';
 import { closeSocket, getSocket } from '@/lib/socket';
 import { PushGate } from './PushGate';
 import { PageLoading } from '@/components/ui/Loading';
-import { LayoutPrefsProvider, useLayoutPrefs } from '@/lib/layout-prefs';
+import { LayoutPrefsProvider, SIDEBAR_WIDTH, useLayoutPrefs } from '@/lib/layout-prefs';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 /**
  * Coquille du tableau de bord : navigation des fonctionnalites a gauche,
@@ -28,7 +29,9 @@ export function AppShell(props: { title?: string; children: React.ReactNode }) {
 
 function AppShellInner({ title, children }: { title?: string; children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  const { side, collapsed, toggleCollapsed } = useLayoutPrefs();
+  const { side, collapsed, width, toggleCollapsed, setCollapsed, setWidth } = useLayoutPrefs();
+  // Largeur en cours de glissement (null hors glissement).
+  const [dragWidth, setDragWidth] = useState<number | null>(null);
   const right = side === 'right';
   const router = useRouter();
   const pathname = usePathname();
@@ -70,19 +73,129 @@ function AppShellInner({ title, children }: { title?: string; children: React.Re
   if (loading || denied) return <PageLoading />;
   if (!user) return null;
 
+  // Sous ce seuil, le menu se range en colonne d'icônes.
+  const snap = (SIDEBAR_WIDTH.rail + SIDEBAR_WIDTH.min) / 2;
+  const dragging = dragWidth !== null;
+  const shownWidth = dragging
+    ? Math.min(SIDEBAR_WIDTH.max, Math.max(SIDEBAR_WIDTH.rail, dragWidth))
+    : collapsed
+      ? SIDEBAR_WIDTH.rail
+      : width;
+  const railMode = dragging ? dragWidth < snap : collapsed;
+
+  const commitWidth = (w: number) => {
+    if (w < snap) setCollapsed(true);
+    else {
+      setCollapsed(false);
+      setWidth(w);
+    }
+  };
+
+  const startDrag = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    const startX = e.clientX;
+    const startW = shownWidth;
+    let live = startW;
+    const prevCursor = document.body.style.cursor;
+    const prevSelect = document.body.style.userSelect;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    const move = (ev: PointerEvent) => {
+      const dx = ev.clientX - startX;
+      live = startW + (right ? -dx : dx);
+      setDragWidth(live);
+    };
+    const up = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', up);
+      document.body.style.cursor = prevCursor;
+      document.body.style.userSelect = prevSelect;
+      setDragWidth(null);
+      if (Math.abs(live - startW) > 2) commitWidth(live);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
+  };
+
+  const onHandleKey = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    const grow = right ? 'ArrowLeft' : 'ArrowRight';
+    const shrink = right ? 'ArrowRight' : 'ArrowLeft';
+    if (e.key === grow || e.key === shrink) {
+      e.preventDefault();
+      const step = e.key === grow ? 24 : -24;
+      if (collapsed && step > 0) setCollapsed(false);
+      else commitWidth(width + step);
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleCollapsed();
+    }
+  };
+
+  // La flèche pointe vers où le menu va : vers le bord pour le réduire, vers le contenu pour l'agrandir.
+  const pointsLeft = right ? collapsed : !collapsed;
+  const EdgeIcon = pointsLeft ? ChevronLeft : ChevronRight;
+  const edgeLabel = collapsed ? 'Agrandir le menu' : 'Réduire le menu';
+
   return (
     <PushGate exempt={user.pushExempt}>
     <div className={clsx('flex min-h-screen bg-surface', right && 'flex-row-reverse')}>
       <aside
         className={clsx(
-          // Largeur animée : le contenu (flex-1) récupère la place libérée.
-          'hidden shrink-0 transition-[width] duration-base ease-standard motion-reduce:transition-none lg:block',
-          collapsed ? 'w-[72px]' : 'w-[264px]',
+          // Largeur animée (sauf pendant le glissement) : le contenu (flex-1) récupère la place libérée.
+          'relative z-[35] hidden shrink-0 lg:block',
+          !dragging && 'transition-[width] duration-base ease-standard motion-reduce:transition-none',
           right ? 'border-l border-ink-100' : 'border-r border-ink-100',
         )}
+        style={{ width: shownWidth }}
       >
         <div className="sticky top-0 h-screen">
-          <Sidebar collapsed={collapsed} onToggleCollapse={toggleCollapsed} />
+          <Sidebar collapsed={railMode} onToggleCollapse={toggleCollapsed} />
+
+          {/* Bord tirable : glisser pour élargir ou rétrécir, jusqu'à la colonne d'icônes. */}
+          <div
+            role="separator"
+            aria-orientation="vertical"
+            aria-label="Redimensionner le menu (flèches gauche et droite, Entrée pour réduire ou agrandir)"
+            aria-valuemin={SIDEBAR_WIDTH.rail}
+            aria-valuemax={SIDEBAR_WIDTH.max}
+            aria-valuenow={Math.round(shownWidth)}
+            tabIndex={0}
+            title="Glisser pour changer la largeur du menu"
+            onPointerDown={startDrag}
+            onKeyDown={onHandleKey}
+            onDoubleClick={toggleCollapsed}
+            className={clsx(
+              'group absolute inset-y-0 z-10 flex w-3 cursor-col-resize justify-center outline-none',
+              right ? '-left-1.5' : '-right-1.5',
+            )}
+          >
+            <span
+              className={clsx(
+                'h-full w-[3px] rounded-full transition-colors duration-base motion-reduce:transition-none',
+                dragging ? 'bg-[#e7b92c]' : 'bg-transparent group-hover:bg-[#e7b92c]/70 group-focus-visible:bg-[#e7b92c]',
+              )}
+            />
+          </div>
+
+          {/* Bouton toujours visible, en haut sur le bord du menu. */}
+          <button
+            type="button"
+            onClick={toggleCollapsed}
+            aria-label={edgeLabel}
+            title={edgeLabel}
+            className={clsx(
+              // Doré (couleur de la barre active) : bien visible sur fond clair comme sombre.
+              'absolute top-[48px] z-20 grid h-8 w-8 place-items-center rounded-full bg-[#e7b92c] text-[#172430] shadow-md ring-2 ring-surface',
+              'transition-transform duration-base hover:scale-110 motion-reduce:transition-none motion-reduce:hover:scale-100',
+              'focus-visible:outline-none focus-visible:ring-[#172430]',
+              right ? '-left-4' : '-right-4',
+            )}
+          >
+            <EdgeIcon className="h-[18px] w-[18px]" strokeWidth={2.5} />
+          </button>
         </div>
       </aside>
 

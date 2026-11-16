@@ -29,20 +29,51 @@ const DEFAULTS: Prefs = { color: 'navy', side: 'left' };
 /** Menu réduit à une colonne d'icônes (grand écran uniquement). Clé à part : réglage indépendant. */
 const COLLAPSED_KEY = 'risac.sidebar.collapsed.v1';
 
+/** Largeur du menu ouvert, réglable en tirant son bord. */
+const WIDTH_KEY = 'risac.sidebar.width.v1';
+export const SIDEBAR_WIDTH = { min: 200, max: 400, default: 264, rail: 72 } as const;
+
+export function clampSidebarWidth(w: number): number {
+  return Math.round(Math.min(SIDEBAR_WIDTH.max, Math.max(SIDEBAR_WIDTH.min, w)));
+}
+
 interface Ctx extends Prefs {
   collapsed: boolean;
+  width: number;
   setColor: (c: SidebarColor) => void;
   setSide: (s: SidebarSide) => void;
   toggleCollapsed: () => void;
+  setCollapsed: (c: boolean) => void;
+  setWidth: (w: number) => void;
 }
 
 const LayoutPrefsContext = createContext<Ctx>({
   ...DEFAULTS,
   collapsed: false,
+  width: SIDEBAR_WIDTH.default,
   setColor: () => {},
   setSide: () => {},
   toggleCollapsed: () => {},
+  setCollapsed: () => {},
+  setWidth: () => {},
 });
+
+function readWidth(): number {
+  try {
+    const n = Number(window.localStorage.getItem(WIDTH_KEY));
+    return n ? clampSidebarWidth(n) : SIDEBAR_WIDTH.default;
+  } catch {
+    return SIDEBAR_WIDTH.default;
+  }
+}
+
+function store(key: string, value: string) {
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    /* stockage indisponible : le choix reste valable pour la session */
+  }
+}
 
 function readCollapsed(): boolean {
   try {
@@ -68,24 +99,32 @@ function read(): Prefs {
 
 export function LayoutPrefsProvider({ children }: { children: ReactNode }) {
   const [prefs, setPrefs] = useState<Prefs>(DEFAULTS);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsedState] = useState(false);
+  const [width, setWidthState] = useState<number>(SIDEBAR_WIDTH.default);
 
   // Lecture après le premier rendu pour rester identique au rendu serveur.
   useEffect(() => {
     setPrefs(read());
-    setCollapsed(readCollapsed());
+    setCollapsedState(readCollapsed());
+    setWidthState(readWidth());
+  }, []);
+
+  const setCollapsed = useCallback((next: boolean) => {
+    setCollapsedState(next);
+    store(COLLAPSED_KEY, next ? '1' : '0');
   }, []);
 
   const toggleCollapsed = useCallback(() => {
-    setCollapsed((prev) => {
-      const next = !prev;
-      try {
-        window.localStorage.setItem(COLLAPSED_KEY, next ? '1' : '0');
-      } catch {
-        /* stockage indisponible : le choix reste valable pour la session */
-      }
-      return next;
+    setCollapsedState((prev) => {
+      store(COLLAPSED_KEY, prev ? '0' : '1');
+      return !prev;
     });
+  }, []);
+
+  const setWidth = useCallback((w: number) => {
+    const next = clampSidebarWidth(w);
+    setWidthState(next);
+    store(WIDTH_KEY, String(next));
   }, []);
 
   const update = useCallback((patch: Partial<Prefs>) => {
@@ -104,11 +143,14 @@ export function LayoutPrefsProvider({ children }: { children: ReactNode }) {
     () => ({
       ...prefs,
       collapsed,
+      width,
       setColor: (color) => update({ color }),
       setSide: (side) => update({ side }),
       toggleCollapsed,
+      setCollapsed,
+      setWidth,
     }),
-    [prefs, update, collapsed, toggleCollapsed],
+    [prefs, update, collapsed, width, toggleCollapsed, setCollapsed, setWidth],
   );
 
   return <LayoutPrefsContext.Provider value={value}>{children}</LayoutPrefsContext.Provider>;
