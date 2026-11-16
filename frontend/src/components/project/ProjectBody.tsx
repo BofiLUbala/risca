@@ -7,6 +7,7 @@ import { mediaUrl } from '@/lib/api';
 import { Field } from '@/components/child/Tabs';
 import { date, money, num, percent } from '@/lib/format';
 import { t } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 export function ProjectBody({
   project,
@@ -28,7 +29,7 @@ export function ProjectBody({
         <section className="card card-pad lg:col-span-2">
           <h2 className="mb-3 card-title">{t("Description")}</h2>
           <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink-700">
-            {project.description}
+            <Tr text={project.description} />
           </p>
 
           {project.photos?.length ? (
@@ -77,8 +78,8 @@ export function ProjectBody({
           <ol className="space-y-3">
             {project.milestones.map((m: any) => (
               <li key={m.id} className="border-l-2 border-risac-200 pl-4">
-                <p className="text-sm font-medium text-ink-800">{m.title}</p>
-                {m.description ? <p className="text-sm text-ink-600">{m.description}</p> : null}
+                <p className="text-sm font-medium text-ink-800"><Tr text={m.title} /></p>
+                {m.description ? <p className="text-sm text-ink-600"><Tr text={m.description} /></p> : null}
                 <p className="mt-0.5 text-xs text-ink-400">
                   {m.completedAt ? t("terminee le {v0}", { v0: date(m.completedAt) }) : t("en cours")}
                 </p>

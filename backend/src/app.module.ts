@@ -27,6 +27,7 @@ import { ModerationModule } from './modules/moderation/moderation.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { UploadsModule } from './modules/uploads/uploads.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { TranslateModule } from './modules/translate/translate.module';
 import { HealthController } from './health.controller';
 
 @Module({
@@ -61,6 +62,7 @@ import { HealthController } from './health.controller';
     NotificationsModule,
     UploadsModule,
     DashboardModule,
+    TranslateModule,
   ],
   controllers: [HealthController],
   providers: [

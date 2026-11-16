@@ -10,6 +10,7 @@ import { PageLoading } from '@/components/ui/Loading';
 import { date, money, percent } from '@/lib/format';
 import { SupportSidebar } from '@/components/donate/SupportSidebar';
 import { t, geoName } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 export default function PublicChildPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -78,14 +79,14 @@ export default function PublicChildPage({ params }: { params: Promise<{ id: stri
           {(child.lifeProject || child.desiredJob || child.talents) && (
             <section className="card card-pad">
               <h2 className="card-title">{t("Son projet de vie")}</h2>
-              {child.lifeProject && <p className="mt-2 text-ink-700">{child.lifeProject}</p>}
+              {child.lifeProject && <p className="mt-2 text-ink-700"><Tr text={child.lifeProject} /></p>}
               <div className="mt-3 flex flex-wrap gap-2">
                 {child.desiredJob && (
                   <span className="chip bg-risac-50 text-risac-700">
                     {t("Metier souhaite :")}{' '}{child.desiredJob}
                   </span>
                 )}
-                {child.talents && <span className="chip bg-ink-100 text-ink-600">{child.talents}</span>}
+                {child.talents && <span className="chip bg-ink-100 text-ink-600"><Tr text={child.talents} /></span>}
               </div>
             </section>
           )}
@@ -100,7 +101,7 @@ export default function PublicChildPage({ params }: { params: Promise<{ id: stri
                     href={`/projets-ouverts/${p.id}`}
                     className="block rounded-xl bg-ink-50 p-4 hover:bg-risac-50"
                   >
-                    <p className="text-sm font-medium text-ink-900">{p.title}</p>
+                    <p className="text-sm font-medium text-ink-900"><Tr text={p.title} /></p>
                     <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface">
                       <div
                         className="h-full rounded-full bg-gradient-to-r from-risac-400 to-risac-600"
@@ -122,8 +123,8 @@ export default function PublicChildPage({ params }: { params: Promise<{ id: stri
               <ol className="mt-3 space-y-3">
                 {child.timeline.map((e: any) => (
                   <li key={e.id} className="border-l-2 border-risac-200 pl-4">
-                    <p className="text-sm font-medium text-ink-800">{e.title}</p>
-                    {e.description && <p className="text-sm text-ink-600">{e.description}</p>}
+                    <p className="text-sm font-medium text-ink-800"><Tr text={e.title} /></p>
+                    {e.description && <p className="text-sm text-ink-600"><Tr text={e.description} /></p>}
                     <p className="mt-0.5 text-xs text-ink-400">{date(e.occurredAt)}</p>
                   </li>
                 ))}

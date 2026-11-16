@@ -10,6 +10,7 @@ import { PageLoading } from '@/components/ui/Loading';
 import { Field } from '@/components/child/Tabs';
 import { date, dateTime, money } from '@/lib/format';
 import { t, localized } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 const STEPS = localized([
   { key: 'REQUESTED', label: '1. Demande du chef d’orphelinat' },
@@ -40,7 +41,7 @@ export default function DisbursementDetailPage({ params }: { params: Promise<{ i
       <header className="card card-pad">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="page-title">{d.reason}</h1>
+            <h1 className="page-title"><Tr text={d.reason} /></h1>
             <p className="mt-1 text-sm text-ink-500">
               {d.reference} - {d.orphanage.name}
             </p>
@@ -88,7 +89,7 @@ export default function DisbursementDetailPage({ params }: { params: Promise<{ i
           <Field label={t("Moyen de paiement")} value={d.payoutMethod} />
           <Field label={t("Référence du paiement")} value={d.payoutRef} />
           <Field label={t("Projet")} value={d.project?.title} />
-          {d.rejectionReason ? <Field label={t("Motif du refus")} value={d.rejectionReason} /> : null}
+          {d.rejectionReason ? <Field label={t("Motif du refus")} value={<Tr text={d.rejectionReason} />} /> : null}
         </dl>
       </section>
 

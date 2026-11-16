@@ -435,7 +435,7 @@ export class ProjectsService {
         endDate: true,
         publishedAt: true,
         child: { select: { id: true, publicId: true, firstName: true, publicPhotoUrl: true } },
-        orphanage: { select: { id: true, name: true, province: { select: { nameFr: true } } } },
+        orphanage: { select: { id: true, name: true, province: { select: { nameFr: true, nameEn: true } } } },
         _count: { select: { donations: true } },
       },
     });
@@ -446,7 +446,7 @@ export class ProjectsService {
       where: { id },
       include: {
         child: { select: { id: true, publicId: true, firstName: true, publicPhotoUrl: true, publicStory: true } },
-        orphanage: { select: { id: true, name: true, labelStatus: true, province: { select: { nameFr: true } } } },
+        orphanage: { select: { id: true, name: true, labelStatus: true, province: { select: { nameFr: true, nameEn: true } } } },
         createdBy: { select: { id: true, firstName: true, lastName: true, role: true } },
         milestones: { orderBy: { createdAt: 'asc' } },
         _count: { select: { donations: true } },

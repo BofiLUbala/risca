@@ -175,7 +175,7 @@ export class TransitionsService {
   private async buildSnapshot(userId: string, fromRole: Role) {
     const me = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { firstName: true, lastName: true, avatarUrl: true, province: { select: { nameFr: true } }, country: { select: { nameFr: true } } },
+      select: { firstName: true, lastName: true, avatarUrl: true, province: { select: { nameFr: true, nameEn: true } }, country: { select: { nameFr: true, nameEn: true } } },
     });
     const [posts, assignments, links, children, proposals, visits, timeline, orphHistory, requests, decisions, audit] = await Promise.all([
       this.prisma.post.findMany({ where: { authorId: userId }, orderBy: { createdAt: 'desc' }, take: 50, select: { id: true, content: true, photos: true, createdAt: true } }),

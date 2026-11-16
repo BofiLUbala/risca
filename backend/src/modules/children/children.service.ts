@@ -143,7 +143,7 @@ export class ChildrenService implements OnModuleInit {
         skip: Number(params.skip ?? 0),
         include: {
           orphanage: {
-            select: { id: true, name: true, slug: true, province: { select: { nameFr: true } } },
+            select: { id: true, name: true, slug: true, province: { select: { nameFr: true, nameEn: true } } },
           },
           assignments: {
             where: { active: true },
@@ -201,8 +201,8 @@ export class ChildrenService implements OnModuleInit {
           select: {
             id: true,
             name: true,
-            province: { select: { nameFr: true } },
-            country: { select: { nameFr: true, iso2: true } },
+            province: { select: { nameFr: true, nameEn: true } },
+            country: { select: { nameFr: true, nameEn: true, iso2: true } },
           },
         },
         schoolRecords: {
@@ -268,8 +268,8 @@ export class ChildrenService implements OnModuleInit {
         orphanage: {
           select: {
             name: true,
-            province: { select: { nameFr: true } },
-            country: { select: { nameFr: true, iso2: true } },
+            province: { select: { nameFr: true, nameEn: true } },
+            country: { select: { nameFr: true, nameEn: true, iso2: true } },
           },
         },
         sponsorships: { where: { status: 'ACTIVE' }, select: { id: true } },
@@ -304,8 +304,8 @@ export class ChildrenService implements OnModuleInit {
             name: true,
             slug: true,
             labelStatus: true,
-            country: { select: { id: true, iso2: true, nameFr: true } },
-            province: { select: { id: true, nameFr: true, riskZone: true } },
+            country: { select: { id: true, iso2: true, nameFr: true, nameEn: true } },
+            province: { select: { id: true, nameFr: true, nameEn: true, riskZone: true } },
           },
         },
         assignments: {

@@ -76,8 +76,8 @@ export class OrphanagesService implements OnModuleInit {
       where,
       orderBy: { name: 'asc' },
       include: {
-        country: { select: { id: true, iso2: true, nameFr: true } },
-        province: { select: { id: true, code: true, nameFr: true, riskZone: true } },
+        country: { select: { id: true, iso2: true, nameFr: true, nameEn: true } },
+        province: { select: { id: true, code: true, nameFr: true, nameEn: true, riskZone: true } },
         director: { select: { id: true, firstName: true, lastName: true, email: true } },
         proposedBy: { select: { id: true, firstName: true, lastName: true, role: true } },
         _count: { select: { children: true, projects: true } },
@@ -107,8 +107,8 @@ export class OrphanagesService implements OnModuleInit {
         totalPlaces: true,
         occupiedPlaces: true,
         urgentNeeds: true,
-        country: { select: { iso2: true, nameFr: true } },
-        province: { select: { nameFr: true } },
+        country: { select: { iso2: true, nameFr: true, nameEn: true } },
+        province: { select: { nameFr: true, nameEn: true } },
         _count: { select: { children: true } },
       },
     });

@@ -12,6 +12,7 @@ import { PageLoading } from '@/components/ui/Loading';
 import { DonatePanel } from '@/components/donate/DonatePanel';
 import { date, money, num, percent } from '@/lib/format';
 import { t, geoName } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 export default function PublicProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -39,19 +40,19 @@ export default function PublicProjectPage({ params }: { params: Promise<{ id: st
 
           <div>
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl font-semibold tracking-tight text-ink-950">{p.title}</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-ink-950"><Tr text={p.title} /></h1>
               <Badge status={p.status} />
             </div>
             <p className="mt-2 text-sm text-ink-500">
               {p.child ? p.child.firstName : (p.orphanage?.name ?? '')}
               {p.orphanage?.province ? ` - ${geoName(p.orphanage.province)}` : ''}
-              {p.category ? ` - ${p.category}` : ''}
+              {p.category ? ` - ${t(p.category)}` : ''}
             </p>
           </div>
 
           <section className="card card-pad">
             <h2 className="card-title">{t("Le projet")}</h2>
-            <p className="mt-2 whitespace-pre-wrap leading-relaxed text-ink-700">{p.description}</p>
+            <p className="mt-2 whitespace-pre-wrap leading-relaxed text-ink-700"><Tr text={p.description} /></p>
           </section>
 
           {p.milestones?.length ? (
@@ -60,8 +61,8 @@ export default function PublicProjectPage({ params }: { params: Promise<{ id: st
               <ol className="mt-3 space-y-3">
                 {p.milestones.map((m: any) => (
                   <li key={m.id} className="border-l-2 border-risac-200 pl-4">
-                    <p className="text-sm font-medium text-ink-800">{m.title}</p>
-                    {m.description ? <p className="text-sm text-ink-600">{m.description}</p> : null}
+                    <p className="text-sm font-medium text-ink-800"><Tr text={m.title} /></p>
+                    {m.description ? <p className="text-sm text-ink-600"><Tr text={m.description} /></p> : null}
                     <p className="mt-0.5 text-xs text-ink-400">
                       {m.completedAt ? date(m.completedAt) : t("en cours")}
                     </p>

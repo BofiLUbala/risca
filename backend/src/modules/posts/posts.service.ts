@@ -194,7 +194,7 @@ export class PostsService {
         include: {
           author: { select: { id: true, firstName: true, lastName: true, role: true, avatarUrl: true } },
           child: { select: { id: true, publicId: true, firstName: true, publicPhotoUrl: true } },
-          orphanage: { select: { id: true, name: true, province: { select: { nameFr: true } } } },
+          orphanage: { select: { id: true, name: true, province: { select: { nameFr: true, nameEn: true } } } },
           project: {
             select: {
               id: true,

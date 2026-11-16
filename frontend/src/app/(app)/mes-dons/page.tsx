@@ -12,6 +12,7 @@ import { Empty } from '@/components/ui/Empty';
 import { SkeletonList } from '@/components/ui/Loading';
 import { date, money, num } from '@/lib/format';
 import { t } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 
 export default function MyDonationsPage() {
@@ -148,7 +149,7 @@ export default function MyDonationsPage() {
               <article key={p.id} className="card card-pad">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-ink-900">{p.summary}</p>
+                    <p className="text-sm font-medium text-ink-900"><Tr text={p.summary} /></p>
                     <p className="mt-1 text-xs text-ink-400">
                       {p.orphanage} &middot; {date(p.paidAt)} &middot; {money(p.amount, p.currency)}
                     </p>

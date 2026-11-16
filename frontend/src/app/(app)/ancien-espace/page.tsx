@@ -9,6 +9,7 @@ import { PageLoading } from '@/components/ui/Loading';
 import { ROLE_LABEL, type Role } from '@/lib/roles';
 import { dateTime } from '@/lib/format';
 import { t } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 function Section({ title, children, count }: { title: string; children: React.ReactNode; count?: number }) {
   return (
@@ -104,7 +105,7 @@ export default function AncienEspacePage() {
           </Section>
 
           <Section title={t("Publications")} count={s.posts.length}>
-            <Rows rows={s.posts} render={(r) => (<><span className="min-w-0 flex-1 truncate">{r.content}</span><span className="text-xs text-ink-500">{dateTime(r.at)}</span></>)} />
+            <Rows rows={s.posts} render={(r) => (<><span className="min-w-0 flex-1 truncate"><Tr text={r.content} /></span><span className="text-xs text-ink-500">{dateTime(r.at)}</span></>)} />
           </Section>
 
           <Section title={t("Historique : dossiers d’enfants saisis")} count={s.history.childrenRecorded.length}>
@@ -120,7 +121,7 @@ export default function AncienEspacePage() {
           </Section>
 
           <Section title={t("Historique : événements des dossiers")} count={s.history.childTimeline.length}>
-            <Rows rows={s.history.childTimeline} render={(r) => (<><span>{r.title} · {r.childPublicId ?? '—'}</span><span className="text-xs text-ink-500">{dateTime(r.at)}</span></>)} />
+            <Rows rows={s.history.childTimeline} render={(r) => (<><span><Tr text={r.title} /> · {r.childPublicId ?? '—'}</span><span className="text-xs text-ink-500">{dateTime(r.at)}</span></>)} />
           </Section>
 
           <Section title={t("Historique : actions récentes")} count={s.history.recentActions.length}>

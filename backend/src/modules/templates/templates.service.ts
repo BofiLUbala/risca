@@ -24,7 +24,7 @@ export class TemplatesService {
   async list() {
     return this.prisma.dossierTemplate.findMany({
       include: {
-        country: { select: { id: true, iso2: true, nameFr: true } },
+        country: { select: { id: true, iso2: true, nameFr: true, nameEn: true } },
         _count: { select: { sections: true } },
       },
       orderBy: { createdAt: 'asc' },
@@ -35,7 +35,7 @@ export class TemplatesService {
     const template = await this.prisma.dossierTemplate.findUnique({
       where: { countryId },
       include: {
-        country: { select: { id: true, iso2: true, nameFr: true } },
+        country: { select: { id: true, iso2: true, nameFr: true, nameEn: true } },
         sections: { orderBy: { order: 'asc' }, include: { fields: { orderBy: { order: 'asc' } } } },
       },
     });

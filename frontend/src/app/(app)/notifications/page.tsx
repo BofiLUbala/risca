@@ -9,6 +9,7 @@ import { BroadcastForm } from '@/components/notifications/BroadcastForm';
 import { SkeletonList } from '@/components/ui/Loading';
 import { relative } from '@/lib/format';
 import { t } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 export default function NotificationsPage() {
   const { data, isLoading, mutate } = useSWR<any[]>('/notifications', fetcher);
@@ -48,8 +49,8 @@ export default function NotificationsPage() {
                   className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${n.read ? 'bg-ink-200' : 'bg-risac-500'}`}
                 />
                 <span className="min-w-0 flex-1">
-                  <span className="block text-sm font-medium text-ink-900">{n.title}</span>
-                  {n.body && <span className="mt-0.5 block text-sm text-ink-600">{n.body}</span>}
+                  <span className="block text-sm font-medium text-ink-900"><Tr text={n.title} /></span>
+                  {n.body && <span className="mt-0.5 block text-sm text-ink-600"><Tr text={n.body} /></span>}
                   <span className="mt-1 block text-xs text-ink-400">
                     {relative(n.createdAt)} &middot; {n.kind}
                   </span>

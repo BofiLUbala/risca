@@ -97,7 +97,7 @@ export class DashboardService {
       where: { countryId: { not: null } },
     });
     const countries = await this.prisma.country.findMany({
-      select: { id: true, iso2: true, nameFr: true },
+      select: { id: true, iso2: true, nameFr: true, nameEn: true },
     });
 
     return {
@@ -258,7 +258,7 @@ export class DashboardService {
     });
     const provinces = await this.prisma.province.findMany({
       where: { countryId },
-      select: { id: true, nameFr: true, riskZone: true },
+      select: { id: true, nameFr: true, nameEn: true, riskZone: true },
     });
 
     const fonarev = await this.prisma.child.groupBy({
@@ -607,7 +607,7 @@ export class DashboardService {
             targetAmount: true,
             collectedAmount: true,
             currency: true,
-            orphanage: { select: { name: true, province: { select: { nameFr: true } } } },
+            orphanage: { select: { name: true, province: { select: { nameFr: true, nameEn: true } } } },
           },
         },
       },

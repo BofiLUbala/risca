@@ -18,6 +18,7 @@ import { TransferChild } from '@/components/child/TransferChild';
 import { VersionHistory } from '@/components/child/VersionHistory';
 import { date, money } from '@/lib/format';
 import { t, geoName } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 
 export default function ChildDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -195,8 +196,8 @@ function IdentiteTab({ child }: { child: any }) {
         <dl>
           <Field label={t("Histoire")} value={child.publicStory} />
           <Field label={t("Besoins")} value={child.publicNeeds} />
-          <Field label={t("Projet de vie")} value={child.lifeProject} />
-          <Field label={t("Talents")} value={child.talents} />
+          <Field label={t("Projet de vie")} value={<Tr text={child.lifeProject} />} />
+          <Field label={t("Talents")} value={<Tr text={child.talents} />} />
           <Field label={t("Métier souhaité")} value={child.desiredJob} />
         </dl>
       </section>
@@ -239,10 +240,10 @@ function HealthTab({ child }: { child: any }) {
           <dl>
             <Field label={t("Groupe sanguin")} value={h.bloodType} />
             <Field label={t("Vaccins")} value={h.vaccines} />
-            <Field label={t("Maladies")} value={h.illnesses} />
-            <Field label={t("Handicap")} value={h.disability} />
-            <Field label={t("Traitements")} value={h.treatments} />
-            <Field label={t("Consultation")} value={h.consultation} />
+            <Field label={t("Maladies")} value={<Tr text={h.illnesses} />} />
+            <Field label={t("Handicap")} value={<Tr text={h.disability} />} />
+            <Field label={t("Traitements")} value={<Tr text={h.treatments} />} />
+            <Field label={t("Consultation")} value={<Tr text={h.consultation} />} />
           </dl>
         </section>
       ))}
@@ -267,10 +268,10 @@ function SchoolTab({ child }: { child: any }) {
             </span>
           </div>
           <dl className="mt-2">
-            <Field label={t("Resultats")} value={s.results} />
+            <Field label={t("Resultats")} value={<Tr text={s.results} />} />
             <Field label={t("Moyenne")} value={s.average} />
             <Field label={t("Frais scolaires")} value={s.fees ? money(s.fees) : undefined} />
-            <Field label={t("Résumé public")} value={s.publicSummary} />
+            <Field label={t("Résumé public")} value={<Tr text={s.publicSummary} />} />
           </dl>
         </section>
       ))}
@@ -303,9 +304,9 @@ function PsychoTab({ child }: { child: any }) {
             <span className="text-xs text-ink-400">{date(s.sessionAt)}</span>
           </div>
           <dl className="mt-2">
-            <Field label={t("Evaluation")} value={s.evaluation} />
-            <Field label={t("Notes")} value={s.notes} />
-            <Field label={t("Evolution")} value={s.evolution} />
+            <Field label={t("Evaluation")} value={<Tr text={s.evaluation} />} />
+            <Field label={t("Notes")} value={<Tr text={s.notes} />} />
+            <Field label={t("Evolution")} value={<Tr text={s.evolution} />} />
           </dl>
         </section>
       ))}
@@ -354,7 +355,7 @@ function FinanceTab({ child }: { child: any }) {
                 href={`/projets/${p.id}`}
                 className="flex items-center justify-between gap-3 rounded-xl bg-ink-50 px-4 py-3 hover:bg-risac-50"
               >
-                <span className="min-w-0 truncate text-sm font-medium text-ink-800">{p.title}</span>
+                <span className="min-w-0 truncate text-sm font-medium text-ink-800"><Tr text={p.title} /></span>
                 <span className="flex shrink-0 items-center gap-3">
                   <span className="text-xs text-ink-500">
                     {money(p.collectedAmount, p.currency)} / {money(p.targetAmount, p.currency)}

@@ -8,6 +8,7 @@ import { fetcher } from '@/lib/api';
 import { SkeletonList } from '@/components/ui/Loading';
 import { date } from '@/lib/format';
 import { t } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 
 function age(birthDate?: string | null): string {
@@ -72,7 +73,7 @@ export function FollowUpAlerts() {
                     <span className="chip bg-amber-50 text-amber-800">
                       {a.kind === 'VISIT_OVERDUE' ? t("Visite") : t("Bulletin")}
                     </span>
-                    <span className="meta w-full sm:w-auto sm:flex-1">{a.message}</span>
+                    <span className="meta w-full sm:w-auto sm:flex-1"><Tr text={a.message} /></span>
                     <span className="meta">{a.orphanage}</span>
                   </li>
                 ))}

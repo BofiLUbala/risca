@@ -11,6 +11,7 @@ import { PageLoading } from '@/components/ui/Loading';
 import { Tabs } from '@/components/child/Tabs';
 import { OrphanageTabs } from '@/components/orphanage/OrphanageTabs';
 import { t, intlLocale, geoName } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 
 export default function OrphanageDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -79,7 +80,7 @@ export default function OrphanageDetailPage({ params }: { params: Promise<{ id: 
               ) : null}
             </p>
             {o.description ? (
-              <p className="mt-3 max-w-2xl text-sm text-ink-600">{o.description}</p>
+              <p className="mt-3 max-w-2xl text-sm text-ink-600"><Tr text={o.description} /></p>
             ) : null}
           </div>
 

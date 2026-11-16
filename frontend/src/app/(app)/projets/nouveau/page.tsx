@@ -193,7 +193,7 @@ export default function NewProjectPage() {
               <option value="">{t("Choisir")}</option>
               {categories.map((c) => (
                 <option key={c} value={c}>
-                  {c}
+                  {t(c)}
                 </option>
               ))}
             </select>

@@ -7,6 +7,7 @@ import { ChevronDown } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { money, num, percent, relative } from '@/lib/format';
 import { t } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 const COLLAPSE_KEY = 'risac.dash.collapsed.v1';
 export const COLLAPSE_EVENT = 'risac:dash-collapse';
@@ -136,7 +137,7 @@ export function AlertRow({
       )}
     >
       <p className="text-sm font-medium text-ink-800">{title}</p>
-      {detail && <p className="mt-0.5 text-xs text-ink-500">{detail}</p>}
+      {detail && <p className="mt-0.5 text-xs text-ink-500"><Tr text={detail} /></p>}
     </Wrapper>
   );
 }

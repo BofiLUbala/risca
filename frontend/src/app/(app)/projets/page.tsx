@@ -11,6 +11,7 @@ import { Empty } from '@/components/ui/Empty';
 import { SkeletonList } from '@/components/ui/Loading';
 import { money, percent } from '@/lib/format';
 import { t, localized } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 
 const STATUSES = localized([
@@ -64,13 +65,13 @@ export default function ProjectsPage() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="font-semibold text-ink-900">{p.title}</h2>
+                    <h2 className="font-semibold text-ink-900"><Tr text={p.title} /></h2>
                     <Badge status={p.status} />
                   </div>
                   <p className="mt-1 text-xs text-ink-400">
                     {p.child ? `${p.child.firstName} (${p.child.publicId})` : (p.orphanage?.name ?? '')}
-                    {p.category ? ` - ${p.category}` : ''}
-                    {` - ${p._count.donations} bailleur(s)`}
+                    {p.category ? ` - ${t(p.category)}` : ''}
+                    {t(" - {n} bailleur(s)", { n: p._count.donations })}
                   </p>
                 </div>
                 <p className="shrink-0 text-sm font-semibold tabular-nums text-ink-900">
@@ -78,7 +79,7 @@ export default function ProjectsPage() {
                 </p>
               </div>
 
-              <p className="mt-3 line-clamp-2 text-sm text-ink-600">{p.description}</p>
+              <p className="mt-3 line-clamp-2 text-sm text-ink-600"><Tr text={p.description} /></p>
 
               <div className="mt-3 h-2 overflow-hidden rounded-full bg-ink-100">
                 <div

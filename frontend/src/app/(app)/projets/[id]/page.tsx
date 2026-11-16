@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/Badge';
 import { PageLoading } from '@/components/ui/Loading';
 import { ProjectBody } from '@/components/project/ProjectBody';
 import { t } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 
 export default function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -79,14 +80,14 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-3">
-              <h1 className="page-title">{project.title}</h1>
+              <h1 className="page-title"><Tr text={project.title} /></h1>
               <Badge status={project.status} />
             </div>
             <p className="mt-1 text-sm text-ink-500">
               {project.child
                 ? `${project.child.firstName} (${project.child.publicId})`
                 : (project.orphanage?.name ?? '')}
-              {project.category ? ` - ${project.category}` : ''}
+              {project.category ? ` - ${t(project.category)}` : ''}
             </p>
           </div>
 
@@ -140,7 +141,7 @@ export default function ProjectDetailPage({ params }: { params: Promise<{ id: st
 
         {project.frozenReason ? (
           <p className="mt-4 rounded-xl bg-rose-50 px-4 py-2.5 text-sm text-rose-700">
-            {t("Projet gele :")}{' '}{project.frozenReason}
+            {t("Projet gele :")}{' '}<Tr text={project.frozenReason} />
           </p>
         ) : null}
 

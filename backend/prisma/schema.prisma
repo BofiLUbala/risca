@@ -1455,3 +1455,15 @@ model SystemSetting {
   value     Json
   updatedAt DateTime @updatedAt
 }
+
+/// Traductions du contenu saisi (publications, descriptions, messages...) : un texte n'est traduit qu'une fois par langue.
+model TranslationCache {
+  id         String   @id @default(cuid())
+  /// sha256(langue cible | texte d'origine)
+  key        String   @unique
+  source     String?
+  target     String
+  translated String
+  provider   String
+  createdAt  DateTime @default(now())
+}

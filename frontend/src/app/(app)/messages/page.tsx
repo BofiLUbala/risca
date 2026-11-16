@@ -15,6 +15,7 @@ import { relative } from '@/lib/format';
 import { ChannelMembers } from '@/components/messages/ChannelMembers';
 import { NewChannel } from '@/components/messages/NewChannel';
 import { t, localized } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 const CHANNEL_LABEL: Record<string, string> = localized({
   GENERAL: 'Général',
@@ -339,7 +340,7 @@ export default function MessagesPage() {
                 <ul className="mt-1 space-y-1">
                   {pinned.map((m) => (
                     <li key={m.id} className="truncate text-xs text-risac-800">
-                      {m.author?.firstName} : {m.content}
+                      {m.author?.firstName} : <Tr text={m.content} />
                     </li>
                   ))}
                 </ul>
@@ -358,7 +359,7 @@ export default function MessagesPage() {
                     <p className="meta">
                       {m.author?.firstName} {m.author?.lastName} &middot; {relative(m.createdAt)}
                     </p>
-                    <p className="mt-0.5 text-sm text-ink-800">{m.content}</p>
+                    <p className="mt-0.5 text-sm text-ink-800"><Tr text={m.content} /></p>
                   </div>
                 ))}
               </div>
@@ -391,10 +392,10 @@ export default function MessagesPage() {
                             m.hidden && 'line-through opacity-50',
                           )}
                         >
-                          {m.content}
+                          <Tr text={m.content} />
                         </div>
                         {m.hidden && m.hiddenReason && (
-                          <p className="mt-0.5 text-xs text-rose-700">{t("Masqué :")}{' '}{m.hiddenReason}</p>
+                          <p className="mt-0.5 text-xs text-rose-700">{t("Masqué :")}{' '}<Tr text={m.hiddenReason} /></p>
                         )}
                       </div>
 

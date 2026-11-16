@@ -11,6 +11,7 @@ import { Empty } from '@/components/ui/Empty';
 import { SkeletonList, Spinner } from '@/components/ui/Loading';
 import { date, money } from '@/lib/format';
 import { t } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 export default function DisbursementsPage() {
   const { user } = useAuth();
@@ -144,7 +145,7 @@ export default function DisbursementsPage() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-medium text-ink-900">{d.reason}</p>
+                    <p className="font-medium text-ink-900"><Tr text={d.reason} /></p>
                     <Badge status={d.status} />
                   </div>
                   <p className="mt-1 text-xs text-ink-400">

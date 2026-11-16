@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/Badge';
 import { AlertRow, CountRow, SectionTitle } from '../widgets';
 import { date, money, num } from '@/lib/format';
 import { t } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 
 export function DirectorBoard({ data }: { data: any }) {
@@ -92,7 +93,7 @@ export function DirectorBoard({ data }: { data: any }) {
               >
                 <Badge status={d.status} />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium text-ink-800">{d.reason}</span>
+                  <span className="block truncate text-sm font-medium text-ink-800"><Tr text={d.reason} /></span>
                   <span className="mt-0.5 block text-xs text-ink-400">
                     {money(d.amount, d.currency)}
                     {d.receipts.length > 0 ? ` - ${d.receipts.length} justificatif(s)` : ''}

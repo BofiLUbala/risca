@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/Badge';
 import { CountRow, SectionTitle } from '../widgets';
 import { num, relative } from '@/lib/format';
 import { t as tx } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 
 export function ModeratorBoard({ data }: { data: any }) {
@@ -44,7 +45,7 @@ export function ModeratorBoard({ data }: { data: any }) {
                   {r.severity === 'SERIOUS' ? tx("Grave") : tx("Normal")}
                 </Badge>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-ink-800">{r.reason}</p>
+                  <p className="truncate text-sm font-medium text-ink-800"><Tr text={r.reason} /></p>
                   <p className="mt-0.5 text-xs text-ink-400">
                     {r.targetType} &middot; {r.reporter.firstName} {r.reporter.lastName} &middot;{' '}
                     {relative(r.createdAt)}

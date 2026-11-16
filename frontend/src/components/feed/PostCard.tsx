@@ -11,6 +11,7 @@ import { SafeImage } from '@/components/ui/SafeImage';
 import { relative, money, percent } from '@/lib/format';
 import { ROLE_LABEL } from '@/lib/roles';
 import { t, localized } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 const TYPE_LABEL: Record<string, string> = localized({
   NEWS: 'Nouvelle',
@@ -156,14 +157,14 @@ export function PostCard({ post, onChange }: { post: any; onChange?: () => void 
       {photo && <SafeImage src={photo} className="aspect-[4/3] w-full object-cover" />}
 
       <div className="px-4 py-3 sm:px-5">
-        <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink-800">{post.content}</p>
+        <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink-800"><Tr text={post.content} /></p>
 
         {post.project && (
           <Link
             href={`/projets-ouverts/${post.project.id}`}
             className="mt-4 block rounded-xl border border-risac-200 bg-risac-50/60 p-4 transition-colors hover:bg-risac-50"
           >
-            <p className="text-sm font-semibold text-risac-800">{post.project.title}</p>
+            <p className="text-sm font-semibold text-risac-800"><Tr text={post.project.title} /></p>
             <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface">
               <div
                 className="h-full rounded-full bg-gradient-to-r from-risac-400 to-risac-600"
@@ -245,7 +246,7 @@ export function PostCard({ post, onChange }: { post: any; onChange?: () => void 
                   <p className="text-xs font-medium text-ink-800">
                     {c.author?.firstName} {c.author?.lastName}
                   </p>
-                  <p className="mt-0.5 text-sm text-ink-700">{c.content}</p>
+                  <p className="mt-0.5 text-sm text-ink-700"><Tr text={c.content} /></p>
                 </div>
                 {canModerate && (
                   <button

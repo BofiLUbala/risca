@@ -7,6 +7,7 @@ import { date, money, num } from '@/lib/format';
 import { AmbassadorLinks } from './AmbassadorLinks';
 import { HistoryForm } from './HistoryForm';
 import { t, localized } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 
 /** Nature de l'evenement d'historique, en francais. */
@@ -166,8 +167,8 @@ export function OrphanageTabs({
         <ol className="space-y-3">
           {o.historyEntries.map((h: any) => (
             <li key={h.id} className="border-l-2 border-risac-200 pl-4">
-              <p className="text-sm font-medium text-ink-800">{h.title}</p>
-              {h.description ? <p className="text-sm text-ink-600">{h.description}</p> : null}
+              <p className="text-sm font-medium text-ink-800"><Tr text={h.title} /></p>
+              {h.description ? <p className="text-sm text-ink-600"><Tr text={h.description} /></p> : null}
               <p className="mt-0.5 text-xs text-ink-400">
                 {HISTORY_KIND[h.kind] ?? h.kind} &middot; {date(h.occurredAt)}
               </p>

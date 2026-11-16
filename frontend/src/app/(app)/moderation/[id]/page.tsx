@@ -13,6 +13,7 @@ import { Field } from '@/components/child/Tabs';
 import { dateTime } from '@/lib/format';
 import { ROLE_LABEL } from '@/lib/roles';
 import { t } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 export default function ReportDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -93,7 +94,7 @@ export default function ReportDetailPage({ params }: { params: Promise<{ id: str
       <header className="card card-pad">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="page-title">{r.reason}</h1>
+            <h1 className="page-title"><Tr text={r.reason} /></h1>
             <p className="mt-1 text-sm text-ink-500">
               {r.targetType} - {dateTime(r.createdAt)}
             </p>
@@ -125,7 +126,7 @@ export default function ReportDetailPage({ params }: { params: Promise<{ id: str
             label={t("Traite par")}
             value={r.handler ? `${r.handler.firstName} ${r.handler.lastName}` : null}
           />
-          <Field label={t("Resolution")} value={r.resolution} />
+          <Field label={t("Resolution")} value={<Tr text={r.resolution} />} />
         </dl>
       </section>
 

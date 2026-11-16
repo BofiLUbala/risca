@@ -805,7 +805,7 @@ export class PaymentsService {
             firstName: true,
             publicPhotoUrl: true,
             publicStory: true,
-            orphanage: { select: { name: true, province: { select: { nameFr: true } } } },
+            orphanage: { select: { name: true, province: { select: { nameFr: true, nameEn: true } } } },
           },
         },
         donations: { orderBy: { createdAt: 'desc' }, take: 6 },

@@ -11,6 +11,7 @@ import { Empty } from '@/components/ui/Empty';
 import { SkeletonList } from '@/components/ui/Loading';
 import { dateTime, num } from '@/lib/format';
 import { t, geoName } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 /** Mêmes rôles que `POST /orphanages` côté API (orphanages.controller.ts). */
 const CAN_CREATE: Role[] = ['SUPER_ADMIN', 'NATIONAL_MANAGER', 'REGIONAL_MANAGER', 'FIELD_AGENT'];
@@ -64,7 +65,7 @@ export default function OrphanagesPage() {
               </p>
 
               {o.description && (
-                <p className="mt-3 line-clamp-2 text-sm text-ink-600">{o.description}</p>
+                <p className="mt-3 line-clamp-2 text-sm text-ink-600"><Tr text={o.description} /></p>
               )}
 
               {o.proposedBy && (

@@ -9,6 +9,7 @@ import { SectionTitle } from '../widgets';
 import { money, num, relative } from '@/lib/format';
 import { mediaUrl } from '@/lib/api';
 import { t } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 
 export function DonorBoard({ data }: { data: any }) {
@@ -101,7 +102,7 @@ export function DonorBoard({ data }: { data: any }) {
                     <span className="block text-sm font-medium text-ink-800">
                       {p.child?.firstName}
                     </span>
-                    <span className="mt-0.5 line-clamp-2 block text-sm text-ink-600">{p.content}</span>
+                    <span className="mt-0.5 line-clamp-2 block text-sm text-ink-600"><Tr text={p.content} /></span>
                     <span className="mt-1 block text-xs text-ink-400">{relative(p.createdAt)}</span>
                   </span>
                 </Link>

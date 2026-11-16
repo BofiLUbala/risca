@@ -11,6 +11,7 @@ import { dateTime } from '@/lib/format';
 import { SkeletonList } from '@/components/ui/Loading';
 import { Empty } from '@/components/ui/Empty';
 import { t, localized } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 const TYPE_META: Record<string, { label: string; icon: any; tone: string }> = localized({
   ADMISSION: { label: 'Admission', icon: Home, tone: 'bg-risac-100 text-risac-700' },
@@ -53,11 +54,11 @@ export function Timeline({ childId }: { childId: string }) {
             </span>
             <div className="card card-pad">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <p className="font-medium text-ink-900">{e.title}</p>
+                <p className="font-medium text-ink-900"><Tr text={e.title} /></p>
                 <span className="text-xs text-ink-400">{dateTime(e.occurredAt)}</span>
               </div>
               {e.description && (
-                <p className="mt-1.5 text-sm leading-relaxed text-ink-600">{e.description}</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-ink-600"><Tr text={e.description} /></p>
               )}
               <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-ink-400">
                 <span className="chip bg-ink-100 text-ink-600">{meta.label}</span>

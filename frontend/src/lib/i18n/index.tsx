@@ -75,9 +75,28 @@ interface Ctx {
 }
 const I18nContext = createContext<Ctx>({ locale: 'fr', setLocale: () => {} });
 
+/** Dernier titre d'onglet français (Next le réécrit à chaque page), pour pouvoir y revenir. */
+let lastFrTitle: string | null = null;
+
+/** Met le titre de l'onglet dans la langue choisie. */
+function syncTitle() {
+  const cur = document.title;
+  if (current === 'en') {
+    const tr = t(cur);
+    if (tr !== cur) {
+      lastFrTitle = cur;
+      document.title = tr;
+    }
+  } else if (lastFrTitle && cur === EN[lastFrTitle]) {
+    document.title = lastFrTitle;
+  }
+}
+
 function applyLocale(l: Locale) {
   current = l;
-  if (typeof document !== 'undefined') document.documentElement.lang = l;
+  if (typeof document === 'undefined') return;
+  document.documentElement.lang = l;
+  syncTitle();
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
@@ -94,6 +113,10 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       applyLocale('en');
       setState('en');
     }
+    // Next réécrit <title> à chaque changement de page : on le retraduit aussitôt.
+    const obs = new MutationObserver(syncTitle);
+    obs.observe(document.head, { childList: true, subtree: true, characterData: true });
+    return () => obs.disconnect();
   }, []);
 
   const setLocale = useCallback((l: Locale) => {

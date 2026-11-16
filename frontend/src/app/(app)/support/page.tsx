@@ -10,6 +10,7 @@ import { Empty } from '@/components/ui/Empty';
 import { SkeletonList } from '@/components/ui/Loading';
 import { dateTime } from '@/lib/format';
 import { t as tx, localized } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 const CATEGORIES = localized([
   { value: 'ACTIVATION', label: 'Activation du compte' },
@@ -127,7 +128,7 @@ export default function SupportPage() {
               >
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-medium text-ink-900">{t.subject}</p>
+                    <p className="font-medium text-ink-900"><Tr text={t.subject} /></p>
                     <Badge status={t.status} />
                     <span className="chip bg-ink-100 text-ink-600">{t.category}</span>
                   </div>
@@ -140,11 +141,11 @@ export default function SupportPage() {
 
               {activeId === t.id && (
                 <div className="mt-4 space-y-3 border-t border-ink-100 pt-4">
-                  <p className="rounded-xl bg-ink-50 px-4 py-3 text-sm text-ink-700">{t.body}</p>
+                  <p className="rounded-xl bg-ink-50 px-4 py-3 text-sm text-ink-700"><Tr text={t.body} /></p>
 
                   {(t.responses ?? []).map((r: any, i: number) => (
                     <p key={i} className="rounded-xl bg-risac-50 px-4 py-3 text-sm text-risac-800">
-                      {r.message}
+                      <Tr text={r.message} />
                       <span className="mt-1 block text-xs text-risac-600">{dateTime(r.at)}</span>
                     </p>
                   ))}

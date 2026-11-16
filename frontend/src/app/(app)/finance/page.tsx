@@ -14,6 +14,7 @@ import { useAuth } from '@/lib/auth-context';
 import { ManualTransferForm } from '@/components/finance/ManualTransferForm';
 import { DonationActions } from '@/components/finance/DonationActions';
 import { t } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 
 export default function FinancePage() {
@@ -219,7 +220,7 @@ function EntryTable({ entries }: { entries: any[] }) {
             <tr key={e.id}>
               <td className="py-1.5 text-ink-500">{date(e.createdAt)}</td>
               <td className="py-1.5 text-ink-600">{e.kind}</td>
-              <td className="py-1.5 text-ink-600">{e.description}</td>
+              <td className="py-1.5 text-ink-600"><Tr text={e.description} /></td>
               <td
                 className={`py-1.5 text-right tabular-nums ${
                   e.amount < 0 ? 'text-rose-600' : 'text-emerald-600'

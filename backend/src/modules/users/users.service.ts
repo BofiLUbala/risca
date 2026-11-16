@@ -79,8 +79,8 @@ export class UsersService {
         createdAt: true,
         invitedById: true,
         invitationExpiresAt: true,
-        country: { select: { id: true, iso2: true, nameFr: true } },
-        province: { select: { id: true, code: true, nameFr: true } },
+        country: { select: { id: true, iso2: true, nameFr: true, nameEn: true } },
+        province: { select: { id: true, code: true, nameFr: true, nameEn: true } },
         orphanage: { select: { id: true, name: true } },
         manager: { select: { id: true, firstName: true, lastName: true, role: true } },
         _count: { select: { assignments: true, posts: true } },
@@ -112,7 +112,7 @@ export class UsersService {
     const groups = await this.prisma.user.groupBy({ by: ['countryId'], where, _count: { _all: true } });
     const ids = groups.map((g) => g.countryId).filter((id): id is string => !!id);
     const countries = ids.length
-      ? await this.prisma.country.findMany({ where: { id: { in: ids } }, select: { id: true, iso2: true, nameFr: true } })
+      ? await this.prisma.country.findMany({ where: { id: { in: ids } }, select: { id: true, iso2: true, nameFr: true, nameEn: true } })
       : [];
     const byId = new Map(countries.map((c) => [c.id, c]));
     return {
@@ -422,7 +422,7 @@ export class UsersService {
         organizationBio: true,
         organizationLogo: true,
         website: true,
-        country: { select: { nameFr: true, iso2: true } },
+        country: { select: { nameFr: true, nameEn: true, iso2: true } },
       },
       orderBy: { organizationName: 'asc' },
     });
@@ -438,7 +438,7 @@ export class UsersService {
         firstName: true,
         lastName: true,
         email: true,
-        province: { select: { nameFr: true } },
+        province: { select: { nameFr: true, nameEn: true } },
         _count: { select: { assignments: true } },
       },
       orderBy: { lastName: 'asc' },

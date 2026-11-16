@@ -9,6 +9,7 @@ import { Empty } from '@/components/ui/Empty';
 import { SkeletonList } from '@/components/ui/Loading';
 import { num } from '@/lib/format';
 import { t, geoName } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 export default function PublicOrphanagesPage() {
   const { data, isLoading } = useSWR<any[]>('/orphanages/public', fetcher);
@@ -47,7 +48,7 @@ export default function PublicOrphanagesPage() {
                     {geoName(o.province)} &middot; {geoName(o.country)}
                   </p>
                   {o.description && (
-                    <p className="mt-3 line-clamp-3 text-sm text-ink-600">{o.description}</p>
+                    <p className="mt-3 line-clamp-3 text-sm text-ink-600"><Tr text={o.description} /></p>
                   )}
                   <div className="mt-4 flex items-center gap-3 border-t border-ink-100 pt-3 text-xs text-ink-500">
                     <span className="flex items-center gap-1.5">

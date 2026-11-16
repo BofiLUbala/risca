@@ -1,5 +1,6 @@
 'use client';
 import { t } from '@/lib/i18n';
+import { translateText } from '@/lib/i18n/dynamic';
 
 
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
@@ -52,7 +53,11 @@ async function request<T>(path: string, init: RequestInit = {}, retry = true): P
   const text = await res.text();
   const data = text ? JSON.parse(text) : null;
 
-  if (!res.ok) throw new ApiError(res.status, data);
+  if (!res.ok) {
+    // Les messages du serveur sont rédigés en français : on les affiche dans la langue choisie.
+    if (data && typeof data.message === 'string') data.message = await translateText(data.message);
+    throw new ApiError(res.status, data);
+  }
   return data as T;
 }
 

@@ -6,6 +6,7 @@ import { mediaUrl } from '@/lib/api';
 import { SafeImage } from '@/components/ui/SafeImage';
 import { Badge } from '@/components/ui/Badge';
 import { t, geoName } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 export interface PublicProject {
   id: string;
@@ -53,12 +54,12 @@ export function ProjectCard({
       <div className="card-pad flex flex-1 flex-col">
         {project.category && (
           <p className="text-xs font-semibold text-risac-700">
-            {project.category}
+            {t(project.category)}
           </p>
         )}
-        <Heading className="mt-1 line-clamp-2 text-base font-semibold text-ink-900">{project.title}</Heading>
+        <Heading className="mt-1 line-clamp-2 text-base font-semibold text-ink-900"><Tr text={project.title} /></Heading>
         <p className="mt-2 line-clamp-2 flex-1 text-sm leading-relaxed text-ink-600">
-          {project.description}
+          <Tr text={project.description} />
         </p>
 
         <div className="mt-4">

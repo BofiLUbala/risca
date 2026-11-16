@@ -11,6 +11,7 @@ import { SkeletonList } from '@/components/ui/Loading';
 import { dateTime } from '@/lib/format';
 import { ROLE_LABEL, type Role } from '@/lib/roles';
 import { t, localized } from '@/lib/i18n';
+import { Tr } from '@/lib/i18n/dynamic';
 
 type Person = { id: string; firstName: string; lastName: string; email: string; role: Role; adminRank: number | null };
 type Letter = {
@@ -150,7 +151,7 @@ export default function LettresPage() {
                     onClick={() => setOpenId(l.id)}
                     className={clsx('w-full px-4 py-3.5 text-left transition-colors hover:bg-risac-50/50', openId === l.id && 'bg-risac-50')}
                   >
-                    <p className="truncate text-sm font-medium text-ink-900">{l.subject}</p>
+                    <p className="truncate text-sm font-medium text-ink-900"><Tr text={l.subject} /></p>
                     <p className="mt-0.5 truncate text-xs text-ink-500">
                       {isRegional ? name(l.candidate) : `${name(l.author)} → ${name(l.candidate)}`} · {dateTime(l.createdAt)}
                     </p>
@@ -222,7 +223,7 @@ function LetterView({
     <article className="space-y-4">
       <header>
         <span className={clsx('inline-block rounded-full px-2 py-0.5 text-[11px] font-medium', STATUS[letter.status].tone)}>{STATUS[letter.status].label}</span>
-        <h2 className="mt-2 text-base font-semibold text-ink-900">{letter.subject}</h2>
+        <h2 className="mt-2 text-base font-semibold text-ink-900"><Tr text={letter.subject} /></h2>
         <p className="mt-1 text-xs text-ink-500">
           {t("De")}{' '}{name(letter.author)} · {dateTime(letter.createdAt)}
           {letter.assignee ? t(" · lecture : {v0}{v1}", { v0: name(letter.assignee), v1: rank(letter.assignee) }) : ''}
@@ -244,7 +245,7 @@ function LetterView({
         </div>
       </dl>
 
-      <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink-800">{letter.body}</p>
+      <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink-800"><Tr text={letter.body} /></p>
 
       {letter.decidedAt && (
         <p className="rounded-xl border border-ink-100 p-3.5 text-sm text-ink-700">
