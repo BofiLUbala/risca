@@ -379,4 +379,9 @@ export const EN: Record<string, string> = {
   "Vous avez été promu :": "You have been promoted:",
   "Vues": "Views",
   "Langue de l’interface": "Interface language",
+  "mise à jour {id} du {date}": "update {id} from {date}",
+  "version d’origine du build": "original version of the build",
+  "Version de l’application": "App version",
+  "RISAC {app}": "RISAC {app}",
+  "build {build}": "build {build}",
 };

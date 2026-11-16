@@ -9,6 +9,7 @@ import { Avatar, Badge, Button, Card, Row, SectionTitle } from '../../src/compon
 import { relative } from '../../src/lib/format';
 import { colors, spacing, typography } from '../../src/theme';
 import { t, geoName } from '../../src/lib/i18n';
+import { AppVersion } from '../../src/components/AppVersion';
 import { Tr } from '../../src/lib/i18n/dynamic';
 
 export default function ProfileScreen() {
@@ -98,6 +99,7 @@ export default function ProfileScreen() {
             })
           }
         />
+        <AppVersion />
       </ScrollView>
     </SafeAreaView>
   );
