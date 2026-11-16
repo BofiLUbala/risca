@@ -1,4 +1,5 @@
 import { Alert, Platform } from 'react-native';
+import { t } from './i18n';
 
 /**
  * Alert.alert ne fait rien sur react-native-web : sans ce relais, une confirmation (se
@@ -30,7 +31,7 @@ export function confirmAction(options: {
     return;
   }
   Alert.alert(options.title, options.message, [
-    { text: 'Annuler', style: 'cancel' },
+    { text: t("Annuler"), style: 'cancel' },
     { text: options.confirmLabel, style: options.destructive ? 'destructive' : 'default', onPress: options.onConfirm },
   ]);
 }

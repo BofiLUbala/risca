@@ -10,12 +10,13 @@ import { BackIcon } from '../src/components/icons';
 import { confirmAction, notify } from '../src/lib/dialog';
 import { date } from '../src/lib/format';
 import { colors, radius, spacing, typography } from '../src/theme';
+import { t as tx, localized } from '../src/lib/i18n';
 
-const STATE: Record<string, { text: string; bg: string; fg: string }> = {
+const STATE: Record<string, { text: string; bg: string; fg: string }> = localized({
   WAITING: { text: 'Accord à donner', bg: '#FEF3C7', fg: '#92400E' },
   GRANTED: { text: 'Accord donné', bg: '#E0F2FE', fg: '#075985' },
   CLONED: { text: 'Données clonées', bg: '#D1FAE5', fg: '#065F46' },
-};
+});
 
 /** Promotions de mon périmètre : donner l'accord de reprise et confier les responsabilités à un autre agent. */
 export default function ReprisesScreen() {
@@ -28,19 +29,19 @@ export default function ReprisesScreen() {
     setBusy(t.id);
     try {
       await api.post(`/transitions/${t.id}/grant`, {});
-      notify('Accord donné', `${t.user.firstName} peut cloner les données de son ancien espace.`);
+      notify(tx("Accord donné"), tx("{firstName} peut cloner les données de son ancien espace.", { firstName: t.user.firstName }));
       await mutate();
     } catch (e: any) {
-      notify('Action impossible', e?.message ?? 'Erreur');
+      notify(tx("Action impossible"), e?.message ?? tx("Erreur"));
     }
     setBusy(null);
   }
 
   function handover(t: any, to: any) {
     confirmAction({
-      title: 'Transférer',
-      message: `Confier les responsabilités de ${t.user.firstName} à ${to.firstName} ${to.lastName} ?`,
-      confirmLabel: 'Transférer',
+      title: tx("Transférer"),
+      message: tx("Confier les responsabilités de {firstName} à {firstName1} {lastName} ?", { firstName: t.user.firstName, firstName1: to.firstName, lastName: to.lastName }),
+      confirmLabel: tx("Transférer"),
       onConfirm: () =>
         void (async () => {
           setBusy(t.id);
@@ -49,7 +50,7 @@ export default function ReprisesScreen() {
             setOpenId(null);
             await mutate();
           } catch (e: any) {
-            notify('Transfert impossible', e?.message ?? 'Erreur');
+            notify(tx("Transfert impossible"), e?.message ?? tx("Erreur"));
           }
           setBusy(null);
         })(),
@@ -58,16 +59,16 @@ export default function ReprisesScreen() {
 
   return (
     <SafeAreaView style={s.safe} edges={['top']}>
-      <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Retour" style={s.back} hitSlop={8}>
+      <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel={tx("Retour")} style={s.back} hitSlop={8}>
         <BackIcon color={colors.ink[700]} />
-        <Text style={s.backText}>Retour</Text>
+        <Text style={s.backText}>{tx("Retour")}</Text>
       </Pressable>
-      <ScreenHeader title="Reprises après promotion" subtitle="Donnez votre accord, puis confiez les responsabilités à un autre agent." />
+      <ScreenHeader title={tx("Reprises après promotion")} subtitle={tx("Donnez votre accord, puis confiez les responsabilités à un autre agent.")} />
       <FlatList
         data={data ?? []}
         keyExtractor={(t) => t.id}
         contentContainerStyle={s.list}
-        ListEmptyComponent={isLoading ? <Loading /> : <Empty title="Aucune promotion à traiter" description="Les promotions de votre périmètre apparaîtront ici." />}
+        ListEmptyComponent={isLoading ? <Loading /> : <Empty title={tx("Aucune promotion à traiter")} description={tx("Les promotions de votre périmètre apparaîtront ici.")} />}
         refreshControl={<RefreshControl refreshing={isValidating && !isLoading} onRefresh={() => { void mutate(); }} />}
         renderItem={({ item }) => {
           const st = STATE[item.state] ?? STATE.WAITING;
@@ -80,17 +81,17 @@ export default function ReprisesScreen() {
                 <Badge text={st.text} tone={{ bg: st.bg, fg: st.fg }} />
               </View>
               <Text style={s.meta}>
-                {ROLE_LABEL[item.fromRole as Role]} → {ROLE_LABEL[item.toRole as Role]} · promu le {date(item.promotedAt)}
+                {ROLE_LABEL[item.fromRole as Role]} → {ROLE_LABEL[item.toRole as Role]}{' '}{tx("· promu le")}{' '}{date(item.promotedAt)}
               </Text>
-              {item.state === 'WAITING' ? <Button title="Donner l’accord de reprise" onPress={() => grant(item)} loading={busy === item.id} /> : null}
+              {item.state === 'WAITING' ? <Button title={tx("Donner l’accord de reprise")} onPress={() => grant(item)} loading={busy === item.id} /> : null}
               {item.handedOverAt ? (
                 <Text style={s.meta}>
-                  Responsabilités confiées à {item.handedOverTo?.firstName} {item.handedOverTo?.lastName} le {date(item.handedOverAt)}.
+                  {tx("Responsabilités confiées à")}{' '}{item.handedOverTo?.firstName} {item.handedOverTo?.lastName}{' '}{tx("le")}{' '}{date(item.handedOverAt)}.
                 </Text>
               ) : openId === item.id ? (
                 <Candidates item={item} onPick={(u) => handover(item, u)} onClose={() => setOpenId(null)} />
               ) : (
-                <Button title="Confier à un autre agent" variant="outline" onPress={() => setOpenId(item.id)} />
+                <Button title={tx("Confier à un autre agent")} variant="outline" onPress={() => setOpenId(item.id)} />
               )}
             </Card>
           );
@@ -105,8 +106,8 @@ function Candidates({ item, onPick, onClose }: { item: any; onPick: (u: any) => 
   const rows = (data ?? []).filter((u) => u.id !== item.user.id && u.status === 'ACTIVE' && u.province?.id === item.user.provinceId);
   return (
     <View style={{ gap: 6 }}>
-      <Text style={s.label}>Choisir l’agent qui reprend</Text>
-      {!rows.length ? <Text style={s.meta}>Aucun autre agent actif dans cette province.</Text> : null}
+      <Text style={s.label}>{tx("Choisir l’agent qui reprend")}</Text>
+      {!rows.length ? <Text style={s.meta}>{tx("Aucun autre agent actif dans cette province.")}</Text> : null}
       {rows.map((u) => (
         <Pressable key={u.id} onPress={() => onPick(u)} accessibilityRole="button" style={s.pick}>
           <Text style={s.pickText}>
@@ -114,7 +115,7 @@ function Candidates({ item, onPick, onClose }: { item: any; onPick: (u: any) => 
           </Text>
         </Pressable>
       ))}
-      <Button title="Annuler" variant="ghost" onPress={onClose} />
+      <Button title={tx("Annuler")} variant="ghost" onPress={onClose} />
     </View>
   );
 }

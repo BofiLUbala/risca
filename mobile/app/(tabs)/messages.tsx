@@ -11,8 +11,10 @@ import { Avatar, Empty, Loading, ScreenHeader } from '../../src/components/ui';
 import { BackIcon } from '../../src/components/icons';
 import { relative } from '../../src/lib/format';
 import { colors, radius, spacing, typography } from '../../src/theme';
+import { t, localized } from '../../src/lib/i18n';
+import { Tr } from '../../src/lib/i18n/dynamic';
 
-const CHANNEL_LABEL: Record<string, string> = {
+const CHANNEL_LABEL: Record<string, string> = localized({
   GENERAL: 'Général',
   AMBASSADOR_REGIONAL: 'Ambassadeurs de la région',
   AMBASSADOR_NATIONAL: 'Ambassadeurs du pays',
@@ -20,7 +22,7 @@ const CHANNEL_LABEL: Record<string, string> = {
   DONOR_AMBASSADOR: 'Parrainage',
   REGIONAL: 'Région',
   PARTNERS: 'Partenaires',
-};
+});
 
 export default function MessagesScreen() {
   const { user } = useAuth();
@@ -66,19 +68,19 @@ export default function MessagesScreen() {
       setDraft('');
     } catch (e: any) {
       const v = e?.payload?.violations?.[0];
-      setError(v ? v.message : (e?.payload?.message ?? e?.message ?? 'Envoi impossible'));
+      setError(v ? v.message : (e?.payload?.message ?? e?.message ?? t("Envoi impossible")));
     }
   }
 
   if (!activeId) {
     return (
       <SafeAreaView style={s.safe} edges={[]}>
-        <ScreenHeader title="Messagerie" subtitle="Vos canaux d’échange avec le réseau." />
+        <ScreenHeader title={t("Messagerie")} subtitle={t("Vos canaux d’échange avec le réseau.")} />
         <FlatList
           data={channels ?? []}
           keyExtractor={(c) => c.id}
           contentContainerStyle={s.list}
-          ListEmptyComponent={isLoading ? <Loading /> : <Empty title="Aucun canal" />}
+          ListEmptyComponent={isLoading ? <Loading /> : <Empty title={t("Aucun canal")} />}
           renderItem={({ item }) => (
             <Pressable onPress={() => setActiveId(item.id)} style={s.channel} accessibilityRole="button">
               <View style={s.channelIcon}>
@@ -143,7 +145,7 @@ export default function MessagesScreen() {
                     {item.author?.firstName} - {relative(item.createdAt)}
                   </Text>
                   <View style={[s.bubble, mine ? s.bubbleMine : s.bubbleOther]}>
-                    <Text style={[s.msgText, mine && { color: colors.white }]}>{item.content}</Text>
+                    <Text style={[s.msgText, mine && { color: colors.white }]}><Tr text={item.content} /></Text>
                   </View>
                 </View>
               </View>
@@ -157,7 +159,7 @@ export default function MessagesScreen() {
           <TextInput
             value={draft}
             onChangeText={setDraft}
-            placeholder={active?.canWrite === false ? 'Canal en lecture seule' : 'Votre message…'}
+            placeholder={active?.canWrite === false ? t("Canal en lecture seule") : t("Votre message…")}
             placeholderTextColor={colors.ink[400]}
             editable={active?.canWrite !== false}
             style={s.chatInput}
@@ -165,7 +167,7 @@ export default function MessagesScreen() {
             returnKeyType="send"
           />
           <Pressable onPress={send} style={s.sendBtn} accessibilityRole="button">
-            <Text style={s.sendText}>Envoyer</Text>
+            <Text style={s.sendText}>{t("Envoyer")}</Text>
           </Pressable>
         </View>
       </KeyboardAvoidingView>

@@ -10,6 +10,8 @@ import { colors, spacing } from '../theme';
 import { Avatar } from './ui';
 import { Logo } from './Logo';
 import { TabIcon } from './TabIcon';
+import { LanguageToggle } from './LanguageToggle';
+import { t, localized } from '../lib/i18n';
 
 type Item = { href: string; label: string; icon: string; web?: boolean };
 type Group = { title: string; items: Item[]; note?: string };
@@ -18,7 +20,7 @@ type Group = { title: string; items: Item[]; note?: string };
 const WEB_URL = (process.env.EXPO_PUBLIC_WEB_URL || 'https://risac-web.bofigauthier3.workers.dev').replace(/\/+$/, '');
 
 /** Pages du site par rôle (mêmes règles que frontend/src/lib/nav.ts), hors celles déjà présentes dans l'application. */
-const WEB_PAGES: { href: string; label: string; roles: Role[] }[] = [
+const WEB_PAGES: { href: string; label: string; roles: Role[] }[] = localized([
   { href: '/projets', label: 'Projets', roles: ['SUPER_ADMIN', 'ADMIN_FINANCE', 'ETHICS_AUDITOR', 'NATIONAL_MANAGER', 'REGIONAL_MANAGER', 'AMBASSADOR', 'ORPHANAGE_DIRECTOR', 'DONOR', 'PARTNER'] },
   { href: '/orphelinats', label: 'Orphelinats', roles: ['SUPER_ADMIN', 'ADMIN_FINANCE', 'ETHICS_AUDITOR'] },
   { href: '/finance', label: 'Flux financiers', roles: ['SUPER_ADMIN', 'ADMIN_FINANCE', 'ETHICS_AUDITOR'] },
@@ -34,7 +36,7 @@ const WEB_PAGES: { href: string; label: string; roles: Role[] }[] = [
   { href: '/utilisateurs', label: 'Utilisateurs', roles: ['SUPER_ADMIN', 'MODERATOR', 'NATIONAL_MANAGER', 'REGIONAL_MANAGER', 'ORPHANAGE_DIRECTOR'] },
   { href: '/modeles-dossier', label: 'Modèles de dossier', roles: ['SUPER_ADMIN', 'NATIONAL_MANAGER'] },
   { href: '/parametres', label: 'Paramètres', roles: ['SUPER_ADMIN'] },
-];
+]);
 
 const FIELD_ROLES: Role[] = ['AMBASSADOR', 'ORPHANAGE_DIRECTOR', 'ORPHANAGE_STAFF', 'FIELD_AGENT', 'REGIONAL_MANAGER', 'NATIONAL_MANAGER', 'SUPER_ADMIN'];
 const ORPHANAGE_ROLES: Role[] = ['NATIONAL_MANAGER', 'REGIONAL_MANAGER', 'FIELD_AGENT', 'AMBASSADOR', 'ORPHANAGE_DIRECTOR'];
@@ -44,24 +46,24 @@ export function menuGroups(role: Role | undefined, hasOldSpace: boolean): Group[
   const r = role ?? ('DONOR' as Role);
   const isDonor = r === 'DONOR' || r === 'PARTNER';
   const main: Item[] = [
-    { href: '/', label: 'Accueil', icon: 'home' },
-    { href: '/fil', label: 'Fil d’actualité', icon: 'feed' },
-    { href: '/enfants', label: isDonor ? 'Soutenir un enfant' : 'Enfants', icon: isDonor ? 'heart' : 'children' },
-    ...(FIELD_ROLES.includes(r) ? [{ href: '/validations', label: 'Validations', icon: 'validate' }] : []),
-    { href: '/messages', label: 'Messages', icon: 'messages' },
+    { href: '/', label: t("Accueil"), icon: 'home' },
+    { href: '/fil', label: t("Fil d’actualité"), icon: 'feed' },
+    { href: '/enfants', label: isDonor ? t("Soutenir un enfant") : t("Enfants"), icon: isDonor ? 'heart' : 'children' },
+    ...(FIELD_ROLES.includes(r) ? [{ href: '/validations', label: t("Validations"), icon: 'validate' }] : []),
+    { href: '/messages', label: t("Messages"), icon: 'messages' },
   ];
   const space: Item[] = [
-    ...(ORPHANAGE_ROLES.includes(r) ? [{ href: '/orphelinats', label: 'Orphelinats', icon: 'orphanage' }] : []),
-    ...(r === 'REGIONAL_MANAGER' ? [{ href: '/lettres', label: 'Lettres de promotion', icon: 'letter' }] : []),
-    ...(r === 'REGIONAL_MANAGER' || r === 'NATIONAL_MANAGER' ? [{ href: '/reprises', label: 'Reprises après promotion', icon: 'transfer' }] : []),
-    ...(hasOldSpace ? [{ href: '/ancien-espace', label: 'Mon ancien espace', icon: 'history' }] : []),
+    ...(ORPHANAGE_ROLES.includes(r) ? [{ href: '/orphelinats', label: t("Orphelinats"), icon: 'orphanage' }] : []),
+    ...(r === 'REGIONAL_MANAGER' ? [{ href: '/lettres', label: t("Lettres de promotion"), icon: 'letter' }] : []),
+    ...(r === 'REGIONAL_MANAGER' || r === 'NATIONAL_MANAGER' ? [{ href: '/reprises', label: t("Reprises après promotion"), icon: 'transfer' }] : []),
+    ...(hasOldSpace ? [{ href: '/ancien-espace', label: t("Mon ancien espace"), icon: 'history' }] : []),
   ];
   const web: Item[] = WEB_PAGES.filter((p) => p.roles.includes(r)).map((p) => ({ href: p.href, label: p.label, icon: 'globe', web: true }));
   return [
-    { title: 'Principal', items: main },
-    ...(space.length ? [{ title: 'Mon espace', items: space }] : []),
-    ...(web.length ? [{ title: 'Sur le site web', items: web, note: 'S’ouvre dans le navigateur' }] : []),
-    { title: 'Compte', items: [{ href: '/profil', label: 'Profil et notifications', icon: 'profile' }] },
+    { title: t("Principal"), items: main },
+    ...(space.length ? [{ title: t("Mon espace"), items: space }] : []),
+    ...(web.length ? [{ title: t("Sur le site web"), items: web, note: t("S’ouvre dans le navigateur") }] : []),
+    { title: t("Compte"), items: [{ href: '/profil', label: t("Profil et notifications"), icon: 'profile' }] },
   ];
 }
 
@@ -77,13 +79,15 @@ export function AppTopBar() {
         onPress={() => setOpen(true)}
         style={({ pressed }) => [s.menuBtn, pressed && { backgroundColor: colors.ink[100] }]}
         accessibilityRole="button"
-        accessibilityLabel="Ouvrir le menu"
+        accessibilityLabel={t("Ouvrir le menu")}
         hitSlop={8}
       >
         <TabIcon name="menu" color={colors.risac[800]} size={26} />
       </Pressable>
-      <Logo size={28} />
-      <View style={{ width: 44 }} />
+      <View style={[s.logo, { top: insets.top + 6 }]} pointerEvents="none">
+        <Logo size={28} />
+      </View>
+      <LanguageToggle />
       <MenuDrawer open={open} onClose={() => setOpen(false)} />
     </View>
   );
@@ -130,9 +134,9 @@ export function MenuDrawer({ open, onClose }: { open: boolean; onClose: () => vo
   function signOut() {
     onClose();
     confirmAction({
-      title: 'Se déconnecter',
-      message: 'Voulez-vous vous déconnecter de RISAC sur cet appareil ?',
-      confirmLabel: 'Se déconnecter',
+      title: t("Se déconnecter"),
+      message: t("Voulez-vous vous déconnecter de RISAC sur cet appareil ?"),
+      confirmLabel: t("Se déconnecter"),
       destructive: true,
       onConfirm: () => void logout(),
     });
@@ -140,7 +144,7 @@ export function MenuDrawer({ open, onClose }: { open: boolean; onClose: () => vo
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose} statusBarTranslucent>
-      <Pressable style={s.backdrop} onPress={onClose} accessibilityLabel="Fermer le menu" />
+      <Pressable style={s.backdrop} onPress={onClose} accessibilityLabel={t("Fermer le menu")} />
       <Animated.View
         style={[
           s.panel,
@@ -158,7 +162,7 @@ export function MenuDrawer({ open, onClose }: { open: boolean; onClose: () => vo
               {ROLE_LABEL[user.role]}
             </Text>
           </View>
-          <Pressable onPress={onClose} style={s.close} accessibilityRole="button" accessibilityLabel="Fermer le menu" hitSlop={8}>
+          <Pressable onPress={onClose} style={s.close} accessibilityRole="button" accessibilityLabel={t("Fermer le menu")} hitSlop={8}>
             <TabIcon name="close" color={colors.risac[100]} size={22} />
           </Pressable>
         </View>
@@ -174,7 +178,7 @@ export function MenuDrawer({ open, onClose }: { open: boolean; onClose: () => vo
                   <Pressable
                     key={(it.web ? 'web:' : '') + it.href}
                     onPress={() => go(it)}
-                    accessibilityHint={it.web ? 'Ouvre la page sur le site web RISAC' : undefined}
+                    accessibilityHint={it.web ? t("Ouvre la page sur le site web RISAC") : undefined}
                     style={({ pressed }) => [s.item, active && s.itemActive, pressed && !active && s.itemPressed]}
                     accessibilityRole="button"
                     accessibilityState={{ selected: active }}
@@ -190,7 +194,7 @@ export function MenuDrawer({ open, onClose }: { open: boolean; onClose: () => vo
 
         <Pressable onPress={signOut} style={({ pressed }) => [s.item, s.logout, pressed && s.itemPressed]} accessibilityRole="button">
           <TabIcon name="logout" color={colors.risac[100]} size={22} />
-          <Text style={s.itemText}>Se déconnecter</Text>
+          <Text style={s.itemText}>{t("Se déconnecter")}</Text>
         </Pressable>
       </Animated.View>
     </Modal>
@@ -208,6 +212,7 @@ const s = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.ink[200],
   },
+  logo: { position: 'absolute', left: 0, right: 0, bottom: 6, alignItems: 'center', justifyContent: 'center' },
   menuBtn: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   backdrop: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: 'rgba(11,39,64,0.45)' },
   panel: {

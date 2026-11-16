@@ -9,6 +9,7 @@ import { Composer } from '../../src/components/Composer';
 import { PostCard } from '../../src/components/PostCard';
 import { Empty, Loading, ScreenHeader } from '../../src/components/ui';
 import { colors, radius, spacing, typography } from '../../src/theme';
+import { t } from '../../src/lib/i18n';
 
 export default function FeedScreen() {
   const { user } = useAuth();
@@ -23,7 +24,7 @@ export default function FeedScreen() {
 
   return (
     <SafeAreaView style={s.safe} edges={[]}>
-      <ScreenHeader title="Communication" subtitle="Les nouvelles du réseau et des enfants." />
+      <ScreenHeader title={t("Communication")} subtitle={t("Les nouvelles du réseau et des enfants.")} />
       <View style={s.header}>
         {isDonor ? (
           <View style={s.toggle}>
@@ -31,13 +32,13 @@ export default function FeedScreen() {
               onPress={() => setScope('mine')}
               style={[s.toggleBtn, scope === 'mine' && s.toggleActive]}
             >
-              <Text style={[s.toggleText, scope === 'mine' && s.toggleTextActive]}>Mes enfants</Text>
+              <Text style={[s.toggleText, scope === 'mine' && s.toggleTextActive]}>{t("Mes enfants")}</Text>
             </Pressable>
             <Pressable
               onPress={() => setScope('all')}
               style={[s.toggleBtn, scope === 'all' && s.toggleActive]}
             >
-              <Text style={[s.toggleText, scope === 'all' && s.toggleTextActive]}>Réseau</Text>
+              <Text style={[s.toggleText, scope === 'all' && s.toggleTextActive]}>{t("Réseau")}</Text>
             </Pressable>
           </View>
         ) : null}
@@ -53,8 +54,8 @@ export default function FeedScreen() {
             <Loading />
           ) : (
             <Empty
-              title="Le fil est vide"
-              description="Les nouvelles des enfants et des structures apparaîtront ici."
+              title={t("Le fil est vide")}
+              description={t("Les nouvelles des enfants et des structures apparaîtront ici.")}
             />
           )
         }

@@ -5,6 +5,7 @@ import { View, type ColorValue } from 'react-native';
 import { TabIcon } from '../../src/components/TabIcon';
 import { AppTopBar } from '../../src/components/AppMenu';
 import { colors } from '../../src/theme';
+import { t } from '../../src/lib/i18n';
 
 /** Icône d'onglet avec un repère jaune au-dessus de l'onglet actif. */
 function ActiveIcon({ name, color, focused }: { name: string; color: ColorValue; focused: boolean }) {
@@ -51,35 +52,38 @@ export default function TabsLayout() {
           paddingTop: 8,
           paddingBottom: bottomPad,
         },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '600', marginTop: 2 },
+        // 10.5 et sans agrandissement système : « Validations » tient sur six onglets de 62 px.
+        tabBarLabelStyle: { fontSize: 10.5, fontWeight: '600', marginTop: 2 },
+        tabBarAllowFontScaling: false,
+        tabBarItemStyle: { paddingHorizontal: 0 },
         tabBarIconStyle: { marginTop: 2 },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Accueil',
+          title: t("Accueil"),
           tabBarIcon: ({ color, focused }) => <ActiveIcon name={"home"} color={color} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="fil"
         options={{
-          title: 'Fil',
+          title: t("Fil"),
           tabBarIcon: ({ color, focused }) => <ActiveIcon name={"feed"} color={color} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="enfants"
         options={{
-          title: isDonor ? 'Soutenir' : 'Enfants',
+          title: isDonor ? t("Soutenir") : t("Enfants"),
           tabBarIcon: ({ color, focused }) => <ActiveIcon name={isDonor ? 'heart' : 'children'} color={color} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="validations"
         options={{
-          title: 'Validations',
+          title: t("Validations"),
           href: isFieldRole ? undefined : null,
           tabBarIcon: ({ color, focused }) => <ActiveIcon name={"validate"} color={color} focused={focused} />,
         }}
@@ -87,14 +91,14 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="messages"
         options={{
-          title: 'Messages',
+          title: t("Messages"),
           tabBarIcon: ({ color, focused }) => <ActiveIcon name={"messages"} color={color} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="profil"
         options={{
-          title: 'Profil',
+          title: t("Profil"),
           tabBarIcon: ({ color, focused }) => <ActiveIcon name={"profile"} color={color} focused={focused} />,
         }}
       />

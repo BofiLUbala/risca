@@ -1,4 +1,5 @@
 import { Image, StyleSheet, View } from 'react-native';
+import { t } from '../lib/i18n';
 
 const FULL_LOGO = require('../../assets/risac-logo.png');
 const EMBLEM = require('../../assets/risac-emblem.png');
@@ -12,7 +13,7 @@ const FULL_RATIO = 574 / 369;
  * Le fichier a un fond blanc : à poser sur une surface claire.
  */
 export function Logo({ size = 40, showText = true }: { size?: number; showText?: boolean }) {
-  const label = 'RISAC, Réseau International des Structures d’Accueil du Congo';
+  const label = t("RISAC, Réseau International des Structures d’Accueil du Congo");
 
   if (!showText) {
     return (

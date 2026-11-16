@@ -9,6 +9,7 @@ import { Button, Card, ScreenHeader } from '../src/components/ui';
 import { BackIcon } from '../src/components/icons';
 import { notify } from '../src/lib/dialog';
 import { colors, radius, spacing, typography } from '../src/theme';
+import { t } from '../src/lib/i18n';
 
 /** Promotions possibles (miroir de backend/src/common/promotion-paths.ts). */
 const PATHS: Partial<Record<Role, Role[]>> = {
@@ -34,16 +35,16 @@ export default function LettreNouvelleScreen() {
 
   async function submit() {
     setError(null);
-    if (!candidateId || !requestedRole) return setError('Choisissez l’agent et le rôle demandé.');
-    if (!subject.trim()) return setError('Donnez un objet à la lettre.');
-    if (body.trim().length < 30) return setError('Expliquez le motif dans la lettre (30 caractères au moins).');
+    if (!candidateId || !requestedRole) return setError(t("Choisissez l’agent et le rôle demandé."));
+    if (!subject.trim()) return setError(t("Donnez un objet à la lettre."));
+    if (body.trim().length < 30) return setError(t("Expliquez le motif dans la lettre (30 caractères au moins)."));
     setBusy(true);
     try {
       await api.post('/promotions/letters', { candidateId, requestedRole, subject: subject.trim(), body: body.trim() });
-      notify('Lettre envoyée', 'Elle est arrivée chez le Super Admin n°1.');
+      notify(t("Lettre envoyée"), t("Elle est arrivée chez le Super Admin n°1."));
       router.replace('/lettres' as never);
     } catch (e: any) {
-      setError(e?.message ?? 'Envoi impossible');
+      setError(e?.message ?? t("Envoi impossible"));
       setBusy(false);
     }
   }
@@ -52,11 +53,11 @@ export default function LettreNouvelleScreen() {
     <SafeAreaView style={s.safe} edges={['top']}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled">
-          <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Retour" style={s.back} hitSlop={8}>
+          <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel={t("Retour")} style={s.back} hitSlop={8}>
             <BackIcon color={colors.ink[700]} />
-            <Text style={s.backText}>Retour</Text>
+            <Text style={s.backText}>{t("Retour")}</Text>
           </Pressable>
-          <ScreenHeader title="Lettre au Super Admin" subtitle="Elle part chez le Super Admin n°1, qui la tranche ou la transmet." />
+          <ScreenHeader title={t("Lettre au Super Admin")} subtitle={t("Elle part chez le Super Admin n°1, qui la tranche ou la transmet.")} />
 
           <Card style={{ gap: spacing.md }}>
             {error ? (
@@ -66,8 +67,8 @@ export default function LettreNouvelleScreen() {
             ) : null}
 
             <View style={s.field}>
-              <Text style={s.label}>Agent à promouvoir *</Text>
-              {!candidates.length ? <Text style={s.muted}>Aucun agent ni ambassadeur actif dans votre région.</Text> : null}
+              <Text style={s.label}>{t("Agent à promouvoir *")}</Text>
+              {!candidates.length ? <Text style={s.muted}>{t("Aucun agent ni ambassadeur actif dans votre région.")}</Text> : null}
               <View style={s.chips}>
                 {candidates.map((c) => (
                   <Pressable
@@ -90,7 +91,7 @@ export default function LettreNouvelleScreen() {
 
             {candidate ? (
               <View style={s.field}>
-                <Text style={s.label}>Rôle demandé *</Text>
+                <Text style={s.label}>{t("Rôle demandé *")}</Text>
                 <View style={s.chips}>
                   {roles.map((r) => (
                     <Pressable
@@ -108,24 +109,24 @@ export default function LettreNouvelleScreen() {
             ) : null}
 
             <View style={s.field}>
-              <Text style={s.label}>Objet *</Text>
-              <TextInput value={subject} onChangeText={setSubject} maxLength={120} accessibilityLabel="Objet" style={s.input} />
+              <Text style={s.label}>{t("Objet *")}</Text>
+              <TextInput value={subject} onChangeText={setSubject} maxLength={120} accessibilityLabel={t("Objet")} style={s.input} />
             </View>
             <View style={s.field}>
-              <Text style={s.label}>Votre lettre *</Text>
+              <Text style={s.label}>{t("Votre lettre *")}</Text>
               <TextInput
                 value={body}
                 onChangeText={setBody}
                 multiline
                 textAlignVertical="top"
-                accessibilityLabel="Votre lettre"
-                placeholder="Présentez le parcours de l’agent et expliquez pourquoi il mérite cette promotion."
+                accessibilityLabel={t("Votre lettre")}
+                placeholder={t("Présentez le parcours de l’agent et expliquez pourquoi il mérite cette promotion.")}
                 placeholderTextColor={colors.ink[400]}
                 style={[s.input, { minHeight: 150 }]}
               />
             </View>
 
-            <Button title="Envoyer la lettre" onPress={submit} loading={busy} />
+            <Button title={t("Envoyer la lettre")} onPress={submit} loading={busy} />
           </Card>
         </ScrollView>
       </KeyboardAvoidingView>

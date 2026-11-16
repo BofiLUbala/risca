@@ -6,15 +6,17 @@ import { CommentIcon, HeartIcon } from './icons';
 import { money, relative } from '../lib/format';
 import { ROLE_LABEL } from '../lib/auth';
 import { colors, radius, spacing, typography } from '../theme';
+import { t, localized } from '../lib/i18n';
+import { Tr } from '../lib/i18n/dynamic';
 
-const TYPE_LABEL: Record<string, string> = {
+const TYPE_LABEL: Record<string, string> = localized({
   NEWS: 'Nouvelle',
   URGENT_NEED: 'Besoin urgent',
   VIDEO_PROGRESS: 'Progrès',
   THANKS: 'Remerciement',
   SPONSORSHIP_CALL: 'Appel au parrainage',
   ORPHANAGE_NEWS: 'Structure',
-};
+});
 
 export function PostCard({ post, onSupport }: { post: any; onSupport?: (childId: string) => void }) {
   const [reacted, setReacted] = useState(false);
@@ -45,7 +47,7 @@ export function PostCard({ post, onSupport }: { post: any; onSupport?: (childId:
       setDraft('');
     } catch (e: any) {
       const v = e?.payload?.violations?.[0];
-      setError(v ? v.message : (e?.message ?? 'Commentaire refuse'));
+      setError(v ? v.message : (e?.message ?? t("Commentaire refuse")));
     }
   }
 
@@ -75,16 +77,16 @@ export function PostCard({ post, onSupport }: { post: any; onSupport?: (childId:
       {photo ? <Image source={{ uri: photo }} style={s.photo} resizeMode="cover" /> : null}
 
       <View style={s.body}>
-        <Text style={s.content}>{post.content}</Text>
+        <Text style={s.content}><Tr text={post.content} /></Text>
 
         {post.project ? (
           <View style={s.project}>
-            <Text style={s.projectTitle}>{post.project.title}</Text>
+            <Text style={s.projectTitle}><Tr text={post.project.title} /></Text>
             <View style={{ marginTop: 8 }}>
               <Progress value={post.project.collectedAmount} total={post.project.targetAmount} />
             </View>
             <Text style={s.projectMeta}>
-              {money(post.project.collectedAmount, post.project.currency)} sur{' '}
+              {money(post.project.collectedAmount, post.project.currency)}{' '}{t("sur")}{' '}
               {money(post.project.targetAmount, post.project.currency)}
             </Text>
           </View>
@@ -111,7 +113,7 @@ export function PostCard({ post, onSupport }: { post: any; onSupport?: (childId:
               style={s.support}
               accessibilityRole="button"
             >
-              <Text style={s.supportText}>Soutenir</Text>
+              <Text style={s.supportText}>{t("Soutenir")}</Text>
             </Pressable>
           ) : null}
         </View>
@@ -125,7 +127,7 @@ export function PostCard({ post, onSupport }: { post: any; onSupport?: (childId:
                   <Text style={s.commentAuthor}>
                     {c.author?.firstName} {c.author?.lastName}
                   </Text>
-                  <Text style={s.commentText}>{c.content}</Text>
+                  <Text style={s.commentText}><Tr text={c.content} /></Text>
                 </View>
               </View>
             ))}
@@ -136,14 +138,14 @@ export function PostCard({ post, onSupport }: { post: any; onSupport?: (childId:
               <TextInput
                 value={draft}
                 onChangeText={setDraft}
-                placeholder="Écrire un commentaire…"
+                placeholder={t("Écrire un commentaire…")}
                 placeholderTextColor={colors.ink[400]}
                 style={s.commentInput}
                 onSubmitEditing={send}
                 returnKeyType="send"
               />
               <Pressable onPress={send} style={s.sendBtn} accessibilityRole="button">
-                <Text style={s.sendText}>Envoyer</Text>
+                <Text style={s.sendText}>{t("Envoyer")}</Text>
               </Pressable>
             </View>
           </View>

@@ -8,6 +8,8 @@ import { ROLE_LABEL, useAuth } from '../../src/lib/auth';
 import { Avatar, Badge, Button, Card, Row, SectionTitle } from '../../src/components/ui';
 import { relative } from '../../src/lib/format';
 import { colors, spacing, typography } from '../../src/theme';
+import { t, geoName } from '../../src/lib/i18n';
+import { Tr } from '../../src/lib/i18n/dynamic';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
@@ -36,39 +38,39 @@ export default function ProfileScreen() {
           </View>
 
           <View style={{ marginTop: spacing.lg }}>
-            <Row label="Pays" value={user.country?.nameFr} />
-            <Row label="Province" value={user.province?.nameFr} />
-            {user.orphanage ? <Row label="Structure" value={user.orphanage.name} /> : null}
-            <Row label="Double authentification" value={user.twoFactorEnabled ? 'Activée' : 'Désactivée'} />
+            <Row label={t("Pays")} value={geoName(user.country)} />
+            <Row label={t("Province")} value={geoName(user.province)} />
+            {user.orphanage ? <Row label={t("Structure")} value={user.orphanage.name} /> : null}
+            <Row label={t("Double authentification")} value={user.twoFactorEnabled ? t("Activée") : t("Désactivée")} />
           </View>
         </Card>
 
         {['NATIONAL_MANAGER', 'REGIONAL_MANAGER', 'FIELD_AGENT', 'AMBASSADOR', 'ORPHANAGE_DIRECTOR'].includes(user.role) ? (
           <Card>
-            <SectionTitle>Mon espace</SectionTitle>
+            <SectionTitle>{t("Mon espace")}</SectionTitle>
             <View style={{ gap: spacing.sm }}>
-              <Button title="Orphelinats" variant="outline" onPress={() => router.push('/orphelinats' as never)} />
+              <Button title={t("Orphelinats")} variant="outline" onPress={() => router.push('/orphelinats' as never)} />
               {user.role === 'REGIONAL_MANAGER' ? (
-                <Button title="Lettres de promotion" variant="outline" onPress={() => router.push('/lettres' as never)} />
+                <Button title={t("Lettres de promotion")} variant="outline" onPress={() => router.push('/lettres' as never)} />
               ) : null}
               {user.role === 'REGIONAL_MANAGER' || user.role === 'NATIONAL_MANAGER' ? (
-                <Button title="Reprises après promotion" variant="outline" onPress={() => router.push('/reprises' as never)} />
+                <Button title={t("Reprises après promotion")} variant="outline" onPress={() => router.push('/reprises' as never)} />
               ) : null}
             </View>
           </Card>
         ) : null}
 
         <Card>
-          <SectionTitle>Notifications</SectionTitle>
+          <SectionTitle>{t("Notifications")}</SectionTitle>
           {!notifications?.length ? (
-            <Text style={s.muted}>Aucune notification.</Text>
+            <Text style={s.muted}>{t("Aucune notification.")}</Text>
           ) : (
             notifications.slice(0, 5).map((n) => (
               <View key={n.id} style={s.notif}>
                 <View style={[s.dot, { backgroundColor: n.read ? colors.ink[200] : colors.risac[500] }]} />
                 <View style={{ flex: 1 }}>
-                  <Text style={s.notifTitle}>{n.title}</Text>
-                  {n.body ? <Text style={s.notifBody}>{n.body}</Text> : null}
+                  <Text style={s.notifTitle}><Tr text={n.title} /></Text>
+                  {n.body ? <Text style={s.notifBody}><Tr text={n.body} /></Text> : null}
                   <Text style={s.notifMeta}>{relative(n.createdAt)}</Text>
                 </View>
               </View>
@@ -77,22 +79,20 @@ export default function ProfileScreen() {
         </Card>
 
         <Card>
-          <SectionTitle>Protection de l’enfant</SectionTitle>
+          <SectionTitle>{t("Protection de l’enfant")}</SectionTitle>
           <Text style={s.policy}>
-            Consentement photo obligatoire avant toute publication. Aucun contact direct entre un
-            bailleur et un enfant. La localisation precise est masquee en zone a risque. Le nom de
-            famille n’apparait jamais en public.
+            {t("Consentement photo obligatoire avant toute publication. Aucun contact direct entre un bailleur et un enfant. La localisation precise est masquee en zone a risque. Le nom de famille n’apparait jamais en public.")}
           </Text>
         </Card>
 
         <Button
-          title="Se déconnecter"
+          title={t("Se déconnecter")}
           variant="outline"
           onPress={() =>
             confirmAction({
-              title: 'Déconnexion',
-              message: 'Voulez-vous vous déconnecter ?',
-              confirmLabel: 'Se déconnecter',
+              title: t("Déconnexion"),
+              message: t("Voulez-vous vous déconnecter ?"),
+              confirmLabel: t("Se déconnecter"),
               destructive: true,
               onConfirm: () => logout(),
             })

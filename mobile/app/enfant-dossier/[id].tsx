@@ -8,13 +8,15 @@ import { Avatar, Badge, Card, Loading, Row, SectionTitle } from '../../src/compo
 import { BackIcon } from '../../src/components/icons';
 import { date, label, money } from '../../src/lib/format';
 import { colors, radius, spacing, typography } from '../../src/theme';
+import { t as tx, localized } from '../../src/lib/i18n';
+import { Tr } from '../../src/lib/i18n/dynamic';
 
-const TABS = [
+const TABS = localized([
   { key: 'identite', label: 'Identité' },
   { key: 'historique', label: 'Historique' },
   { key: 'sante', label: 'Santé' },
   { key: 'finance', label: 'Financement' },
-];
+]);
 
 export default function ChildDossierScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -61,10 +63,10 @@ export default function ChildDossierScreen() {
           </View>
 
           <View style={s.tags}>
-            {child.warOrphan ? <Badge text="Orphelin de guerre" status="PENDING" /> : null}
-            {child.displaced ? <Badge text="Déplacé" status="NEEDS_CORRECTION" /> : null}
+            {child.warOrphan ? <Badge text={tx("Orphelin de guerre")} status="PENDING" /> : null}
+            {child.displaced ? <Badge text={tx("Déplacé")} status="NEEDS_CORRECTION" /> : null}
             {child.assignments?.[0] ? (
-              <Badge text={`Amb. ${child.assignments[0].ambassador.firstName}`} />
+              <Badge text={tx("Amb. {firstName}", { firstName: child.assignments[0].ambassador.firstName })} />
             ) : null}
           </View>
         </Card>
@@ -84,16 +86,16 @@ export default function ChildDossierScreen() {
         {tab === 'identite' ? (
           <>
             <Card>
-              <SectionTitle>Identité</SectionTitle>
-              <Row label="Sexe" value={child.sex === 'M' ? 'Masculin' : 'Féminin'} />
-              <Row label="Date de naissance" value={date(child.birthDate)} />
-              <Row label="Langues" value={child.languages?.join(', ')} />
-              <Row label="Admission" value={date(child.admittedAt)} />
+              <SectionTitle>{tx("Identité")}</SectionTitle>
+              <Row label={tx("Sexe")} value={child.sex === 'M' ? tx("Masculin") : tx("Féminin")} />
+              <Row label={tx("Date de naissance")} value={date(child.birthDate)} />
+              <Row label={tx("Langues")} value={child.languages?.join(', ')} />
+              <Row label={tx("Admission")} value={date(child.admittedAt)} />
             </Card>
 
             <Card>
-              <SectionTitle>Profil public</SectionTitle>
-              <Text style={s.body}>{child.publicStory ?? 'Aucune histoire publiée.'}</Text>
+              <SectionTitle>{tx("Profil public")}</SectionTitle>
+              <Text style={s.body}>{child.publicStory ?? tx("Aucune histoire publiée.")}</Text>
               {child.publicNeeds ? (
                 <View style={s.need}>
                   <Text style={s.needText}>{child.publicNeeds}</Text>
@@ -102,12 +104,12 @@ export default function ChildDossierScreen() {
             </Card>
 
             <Card>
-              <SectionTitle>Réparation et post-majorité</SectionTitle>
-              <Row label="Statut FONAREV" value={child.fonarevStatus} />
-              <Row label="Dossier FONAREV" value={child.fonarevFileNumber} />
+              <SectionTitle>{tx("Réparation et post-majorité")}</SectionTitle>
+              <Row label={tx("Statut FONAREV")} value={child.fonarevStatus} />
+              <Row label={tx("Dossier FONAREV")} value={child.fonarevFileNumber} />
               <Row
-                label="Post-majorité"
-                value={child.postMajorityPrepared ? 'Preparation engagee' : 'Non engagée'}
+                label={tx("Post-majorité")}
+                value={child.postMajorityPrepared ? tx("Preparation engagee") : tx("Non engagée")}
               />
             </Card>
           </>
@@ -115,14 +117,14 @@ export default function ChildDossierScreen() {
 
         {tab === 'historique' ? (
           <Card>
-            <SectionTitle>Historique non effaçable</SectionTitle>
+            <SectionTitle>{tx("Historique non effaçable")}</SectionTitle>
             {!timeline?.length ? (
-              <Text style={s.muted}>Aucun événement.</Text>
+              <Text style={s.muted}>{tx("Aucun événement.")}</Text>
             ) : (
               timeline.map((e) => (
                 <View key={e.id} style={s.event}>
-                  <Text style={s.eventTitle}>{e.title}</Text>
-                  {e.description ? <Text style={s.eventText}>{e.description}</Text> : null}
+                  <Text style={s.eventTitle}><Tr text={e.title} /></Text>
+                  {e.description ? <Text style={s.eventText}><Tr text={e.description} /></Text> : null}
                   <Text style={s.eventMeta}>
                     {label(e.type)} - {date(e.occurredAt)}
                     {e.author ? ` - ${e.author.firstName}` : ''}
@@ -135,18 +137,18 @@ export default function ChildDossierScreen() {
 
         {tab === 'sante' ? (
           <Card>
-            <SectionTitle>Volet santé</SectionTitle>
+            <SectionTitle>{tx("Volet santé")}</SectionTitle>
             {!child.healthRecords ? (
-              <Text style={s.muted}>Confidentiel : non accessible pour votre rôle.</Text>
+              <Text style={s.muted}>{tx("Confidentiel : non accessible pour votre rôle.")}</Text>
             ) : !child.healthRecords.length ? (
-              <Text style={s.muted}>Aucune fiche enregistrée.</Text>
+              <Text style={s.muted}>{tx("Aucune fiche enregistrée.")}</Text>
             ) : (
               child.healthRecords.map((h: any) => (
                 <View key={h.id} style={{ marginBottom: spacing.md }}>
                   <Text style={s.eventMeta}>{date(h.recordedAt)}</Text>
-                  <Row label="Groupe sanguin" value={h.bloodType} />
-                  <Row label="Traitements" value={h.treatments} />
-                  <Row label="Consultation" value={h.consultation} />
+                  <Row label={tx("Groupe sanguin")} value={h.bloodType} />
+                  <Row label={tx("Traitements")} value={h.treatments} />
+                  <Row label={tx("Consultation")} value={h.consultation} />
                 </View>
               ))
             )}
@@ -156,15 +158,15 @@ export default function ChildDossierScreen() {
         {tab === 'finance' ? (
           <>
             <Card>
-              <SectionTitle>Solde affecté</SectionTitle>
+              <SectionTitle>{tx("Solde affecté")}</SectionTitle>
               <Text style={s.balance}>
                 {money(child.ledgerAccounts?.[0]?.balance ?? 0, child.ledgerAccounts?.[0]?.currency)}
               </Text>
             </Card>
             <Card>
-              <SectionTitle>Parrainages</SectionTitle>
+              <SectionTitle>{tx("Parrainages")}</SectionTitle>
               {!child.sponsorships?.length ? (
-                <Text style={s.muted}>Aucun parrain.</Text>
+                <Text style={s.muted}>{tx("Aucun parrain.")}</Text>
               ) : (
                 child.sponsorships.map((sp: any) => (
                   <Row

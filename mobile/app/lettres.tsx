@@ -10,14 +10,16 @@ import { BackIcon } from '../src/components/icons';
 import { confirmAction, notify } from '../src/lib/dialog';
 import { date } from '../src/lib/format';
 import { colors, radius, spacing, typography } from '../src/theme';
+import { t, localized } from '../src/lib/i18n';
+import { Tr } from '../src/lib/i18n/dynamic';
 
-const STATUS: Record<string, { text: string; bg: string; fg: string }> = {
+const STATUS: Record<string, { text: string; bg: string; fg: string }> = localized({
   SUBMITTED: { text: 'Chez le Super Admin n°1', bg: '#FEF3C7', fg: '#92400E' },
   FORWARDED: { text: 'Transmise, en lecture', bg: '#E0F2FE', fg: '#075985' },
   APPROVED: { text: 'Validée', bg: '#D1FAE5', fg: '#065F46' },
   REJECTED: { text: 'Refusée', bg: '#FEE2E2', fg: '#991B1B' },
   EXECUTED: { text: 'Promotion faite', bg: colors.ink[100], fg: colors.ink[700] },
-};
+});
 
 const who = (p?: { firstName: string; lastName: string } | null) => (p ? `${p.firstName} ${p.lastName}` : '—');
 
@@ -34,9 +36,9 @@ export default function LettresScreen() {
 
   function promote(l: any) {
     confirmAction({
-      title: 'Promouvoir',
-      message: `${who(l.candidate)} deviendra ${ROLE_LABEL[l.requestedRole as Role]}. Continuer ?`,
-      confirmLabel: 'Promouvoir',
+      title: t("Promouvoir"),
+      message: t("{v0} deviendra {v1}. Continuer ?", { v0: who(l.candidate), v1: ROLE_LABEL[l.requestedRole as Role] }),
+      confirmLabel: t("Promouvoir"),
       onConfirm: () => void doPromote(l),
     });
   }
@@ -45,10 +47,10 @@ export default function LettresScreen() {
     setBusy(l.id);
     try {
       await api.post(`/promotions/letters/${l.id}/execute`, {});
-      notify('Promotion faite', `${who(l.candidate)} est maintenant ${ROLE_LABEL[l.requestedRole as Role]}.`);
+      notify(t("Promotion faite"), t("{v0} est maintenant {v1}.", { v0: who(l.candidate), v1: ROLE_LABEL[l.requestedRole as Role] }));
       await mutate();
     } catch (e: any) {
-      notify('Promotion impossible', e?.message ?? 'Erreur');
+      notify(t("Promotion impossible"), e?.message ?? t("Erreur"));
     }
     setBusy(null);
   }
@@ -56,24 +58,24 @@ export default function LettresScreen() {
   if (user && user.role !== 'REGIONAL_MANAGER') {
     return (
       <SafeAreaView style={s.safe} edges={['top']}>
-        <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Retour" style={s.back} hitSlop={8}>
+        <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel={t("Retour")} style={s.back} hitSlop={8}>
           <BackIcon color={colors.ink[700]} />
-          <Text style={s.backText}>Retour</Text>
+          <Text style={s.backText}>{t("Retour")}</Text>
         </Pressable>
-        <Empty title="Réservé au chef régional" description="Les lettres de promotion sont écrites par les chefs régionaux." />
+        <Empty title={t("Réservé au chef régional")} description={t("Les lettres de promotion sont écrites par les chefs régionaux.")} />
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={s.safe} edges={['top']}>
-      <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Retour" style={s.back} hitSlop={8}>
+      <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel={t("Retour")} style={s.back} hitSlop={8}>
         <BackIcon color={colors.ink[700]} />
-        <Text style={s.backText}>Retour</Text>
+        <Text style={s.backText}>{t("Retour")}</Text>
       </Pressable>
-      <ScreenHeader title="Lettres de promotion" subtitle="Écrivez au Super Admin, puis promouvez quand la lettre est validée." />
+      <ScreenHeader title={t("Lettres de promotion")} subtitle={t("Écrivez au Super Admin, puis promouvez quand la lettre est validée.")} />
       <View style={s.action}>
-        <Button title="Écrire une lettre" onPress={() => router.push('/lettre-nouvelle' as never)} />
+        <Button title={t("Écrire une lettre")} onPress={() => router.push('/lettre-nouvelle' as never)} />
       </View>
 
       <FlatList
@@ -83,7 +85,7 @@ export default function LettresScreen() {
         ListHeaderComponent={
           approved.length ? (
             <View style={s.space}>
-              <SectionTitle>Espace de promotion</SectionTitle>
+              <SectionTitle>{t("Espace de promotion")}</SectionTitle>
               {approved.map((l) => (
                 <View key={l.id} style={s.promoRow}>
                   <View style={{ flex: 1 }}>
@@ -92,20 +94,20 @@ export default function LettresScreen() {
                       {ROLE_LABEL[l.candidate.role as Role]} → {ROLE_LABEL[l.requestedRole as Role]}
                     </Text>
                   </View>
-                  <Button title="Promouvoir" onPress={() => promote(l)} loading={busy === l.id} />
+                  <Button title={t("Promouvoir")} onPress={() => promote(l)} loading={busy === l.id} />
                 </View>
               ))}
             </View>
           ) : null
         }
-        ListEmptyComponent={isLoading ? <Loading /> : <Empty title="Aucune lettre" description="Écrivez votre première lettre de promotion." />}
+        ListEmptyComponent={isLoading ? <Loading /> : <Empty title={t("Aucune lettre")} description={t("Écrivez votre première lettre de promotion.")} />}
         refreshControl={<RefreshControl refreshing={isValidating && !isLoading} onRefresh={() => { void mutate(); }} />}
         renderItem={({ item }) => {
           const st = STATUS[item.status] ?? STATUS.SUBMITTED;
           return (
             <Card>
               <View style={s.top}>
-                <Text style={s.name}>{item.subject}</Text>
+                <Text style={s.name}><Tr text={item.subject} /></Text>
                 <Badge text={st.text} tone={{ bg: st.bg, fg: st.fg }} />
               </View>
               <Text style={s.meta}>
@@ -114,8 +116,8 @@ export default function LettresScreen() {
                   ? `promu : ${ROLE_LABEL[item.requestedRole as Role]}`
                   : `${ROLE_LABEL[item.candidate.role as Role]} → ${ROLE_LABEL[item.requestedRole as Role]}`}
               </Text>
-              <Text style={s.meta}>Écrite le {date(item.createdAt)}</Text>
-              {item.decisionNote ? <Text style={s.note}>« {item.decisionNote} »</Text> : null}
+              <Text style={s.meta}>{t("Écrite le")}{' '}{date(item.createdAt)}</Text>
+              {item.decisionNote ? <Text style={s.note}>« <Tr text={item.decisionNote} /> »</Text> : null}
             </Card>
           );
         }}

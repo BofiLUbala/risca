@@ -7,15 +7,16 @@ import { api, fetcher } from '../../src/lib/api';
 import { Badge, Button, Card, Empty, Loading, ScreenHeader } from '../../src/components/ui';
 import { relative } from '../../src/lib/format';
 import { colors, radius, spacing, typography } from '../../src/theme';
+import { t, localized } from '../../src/lib/i18n';
 
-const KIND_LABEL: Record<string, string> = {
+const KIND_LABEL: Record<string, string> = localized({
   CHILD_DOSSIER: 'Nouveau dossier enfant',
   CHILD_UPDATE: 'Mise à jour de dossier',
   PROJECT: 'Projet',
   ORPHANAGE_CREATION: 'Nouvel orphelinat',
   ORPHANAGE_UPDATE: 'Fiche orphelinat',
   LABEL_APPLICATION: 'Labellisation',
-};
+});
 
 export default function ValidationsScreen() {
   const { data, isLoading, mutate, isValidating } = useSWR<any[]>('/approvals/queue', fetcher);
@@ -25,7 +26,7 @@ export default function ValidationsScreen() {
 
   async function act(id: string, action: 'approve' | 'request-changes' | 'reject') {
     if (action !== 'approve' && comment.trim().length < 3) {
-      notify('Motif requis', 'Un motif est obligatoire pour cette décision.');
+      notify(t("Motif requis"), t("Un motif est obligatoire pour cette décision."));
       return;
     }
     setBusy(action);
@@ -35,7 +36,7 @@ export default function ValidationsScreen() {
       setOpenId(null);
       mutate();
     } catch (e: any) {
-      notify('Action impossible', e?.message ?? 'Erreur');
+      notify(t("Action impossible"), e?.message ?? t("Erreur"));
     }
     setBusy(null);
   }
@@ -43,8 +44,8 @@ export default function ValidationsScreen() {
   return (
     <SafeAreaView style={s.safe} edges={[]}>
       <ScreenHeader
-        title="Ma file de validation"
-        subtitle={data ? `${data.length} élément(s) attendent votre décision` : 'Chargement…'}
+        title={t("Ma file de validation")}
+        subtitle={data ? t("{length} élément(s) attendent votre décision", { length: data.length }) : t("Chargement…")}
       />
 
       <FlatList
@@ -55,7 +56,7 @@ export default function ValidationsScreen() {
           isLoading ? (
             <Loading />
           ) : (
-            <Empty title="Rien à valider" description="Votre file est vide pour le moment." />
+            <Empty title={t("Rien à valider")} description={t("Votre file est vide pour le moment.")} />
           )
         }
         refreshControl={
@@ -68,7 +69,7 @@ export default function ValidationsScreen() {
                 <Text style={s.kind}>{KIND_LABEL[item.kind] ?? item.kind}</Text>
                 <Text style={s.label}>{item.entityLabel ?? item.kind}</Text>
                 <Text style={s.meta}>
-                  {relative(item.createdAt)} - étape {item.currentStepOrder}
+                  {relative(item.createdAt)}{' '}{t("- étape")}{' '}{item.currentStepOrder}
                   {item.escalated ? ' - remontee' : ''}
                 </Text>
               </View>
@@ -80,30 +81,30 @@ export default function ValidationsScreen() {
                 <TextInput
                   value={comment}
                   onChangeText={setComment}
-                  placeholder="Commentaire (obligatoire pour un refus)"
+                  placeholder={t("Commentaire (obligatoire pour un refus)")}
                   placeholderTextColor={colors.ink[400]}
                   multiline
                   style={s.input}
                 />
                 <View style={s.actions}>
                   <Button
-                    title="Valider"
+                    title={t("Valider")}
                     onPress={() => act(item.id, 'approve')}
                     loading={busy === 'approve'}
                     style={{ flex: 1 }}
                   />
                   <Button
-                    title="Corrections"
+                    title={t("Corrections")}
                     variant="outline"
                     onPress={() => act(item.id, 'request-changes')}
                     style={{ flex: 1 }}
                   />
                 </View>
-                <Button title="Refuser" variant="danger" onPress={() => act(item.id, 'reject')} />
+                <Button title={t("Refuser")} variant="danger" onPress={() => act(item.id, 'reject')} />
               </View>
             ) : (
               <Button
-                title="Décider"
+                title={t("Décider")}
                 variant="soft"
                 onPress={() => setOpenId(item.id)}
                 style={{ marginTop: spacing.md }}

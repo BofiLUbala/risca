@@ -8,9 +8,10 @@ import { Card, Empty, Loading, ScreenHeader, SectionTitle } from '../src/compone
 import { BackIcon } from '../src/components/icons';
 import { date } from '../src/lib/format';
 import { colors, spacing, typography } from '../src/theme';
+import { t } from '../src/lib/i18n';
 
 function Rows({ rows, render }: { rows: any[]; render: (r: any) => string }) {
-  if (!rows.length) return <Text style={s.muted}>Rien à afficher.</Text>;
+  if (!rows.length) return <Text style={s.muted}>{t("Rien à afficher.")}</Text>;
   return (
     <View style={{ gap: 6 }}>
       {rows.slice(0, 30).map((r, i) => (
@@ -18,7 +19,7 @@ function Rows({ rows, render }: { rows: any[]; render: (r: any) => string }) {
           {render(r)}
         </Text>
       ))}
-      {rows.length > 30 ? <Text style={s.muted}>… et {rows.length - 30} autre(s)</Text> : null}
+      {rows.length > 30 ? <Text style={s.muted}>{t("… et")}{' '}{rows.length - 30}{' '}{t("autre(s)")}</Text> : null}
     </View>
   );
 }
@@ -32,53 +33,53 @@ export default function AncienEspaceScreen() {
 
   return (
     <SafeAreaView style={s.safe} edges={['top']}>
-      <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Retour" style={s.back} hitSlop={8}>
+      <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel={t("Retour")} style={s.back} hitSlop={8}>
         <BackIcon color={colors.ink[700]} />
-        <Text style={s.backText}>Retour</Text>
+        <Text style={s.backText}>{t("Retour")}</Text>
       </Pressable>
       {isLoading || loadingArchive ? (
         <Loading />
       ) : !snap ? (
-        <Empty title="Pas encore de données clonées" description="Clonez vos données depuis l’Accueil, une fois l’accord de votre responsable donné." />
+        <Empty title={t("Pas encore de données clonées")} description={t("Clonez vos données depuis l’Accueil, une fois l’accord de votre responsable donné.")} />
       ) : (
         <ScrollView contentContainerStyle={s.scroll}>
-          <ScreenHeader title="Mon ancien espace" subtitle={`Copie en lecture seule de votre espace ${ROLE_LABEL[snap.fromRole as Role]}, faite le ${date(snap.takenAt)}.`} />
+          <ScreenHeader title={t("Mon ancien espace")} subtitle={t("Copie en lecture seule de votre espace {v0}, faite le {v1}.", { v0: ROLE_LABEL[snap.fromRole as Role], v1: date(snap.takenAt) })} />
           <Card style={{ gap: spacing.sm }}>
-            <SectionTitle>Mes tâches en cours</SectionTitle>
-            <Text style={s.row}>Demandes en attente : {snap.tasks.open.requestsPending}</Text>
-            <Text style={s.row}>Dossiers d’enfants en cours : {snap.tasks.open.childRecordsInProgress}</Text>
-            <Text style={s.row}>Orphelinats proposés en attente : {snap.tasks.open.orphanageProposalsPending}</Text>
+            <SectionTitle>{t("Mes tâches en cours")}</SectionTitle>
+            <Text style={s.row}>{t("Demandes en attente :")}{' '}{snap.tasks.open.requestsPending}</Text>
+            <Text style={s.row}>{t("Dossiers d’enfants en cours :")}{' '}{snap.tasks.open.childRecordsInProgress}</Text>
+            <Text style={s.row}>{t("Orphelinats proposés en attente :")}{' '}{snap.tasks.open.orphanageProposalsPending}</Text>
           </Card>
           <Card style={{ gap: spacing.sm }}>
-            <SectionTitle>Responsabilités : enfants suivis ({snap.responsibilities.childAssignments.length})</SectionTitle>
-            <Rows rows={snap.responsibilities.childAssignments} render={(r) => `${r.childPublicId} · ${r.orphanage ?? '—'} · depuis ${date(r.since)}`} />
+            <SectionTitle>{t("Responsabilités : enfants suivis (")}{snap.responsibilities.childAssignments.length})</SectionTitle>
+            <Rows rows={snap.responsibilities.childAssignments} render={(r) => t("{childPublicId} · {v1} · depuis {v2}", { childPublicId: r.childPublicId, v1: r.orphanage ?? '—', v2: date(r.since) })} />
           </Card>
           <Card style={{ gap: spacing.sm }}>
-            <SectionTitle>Responsabilités : orphelinats ({snap.responsibilities.orphanages.length})</SectionTitle>
-            <Rows rows={snap.responsibilities.orphanages} render={(r) => `${r.name} · depuis ${date(r.since)}`} />
+            <SectionTitle>{t("Responsabilités : orphelinats (")}{snap.responsibilities.orphanages.length})</SectionTitle>
+            <Rows rows={snap.responsibilities.orphanages} render={(r) => t("{name} · depuis {v1}", { name: r.name, v1: date(r.since) })} />
           </Card>
           <Card style={{ gap: spacing.sm }}>
-            <SectionTitle>Mes demandes ({snap.tasks.requests.length})</SectionTitle>
+            <SectionTitle>{t("Mes demandes (")}{snap.tasks.requests.length})</SectionTitle>
             <Rows rows={snap.tasks.requests} render={(r) => `${r.label} · ${r.status} · ${date(r.at)}`} />
           </Card>
           <Card style={{ gap: spacing.sm }}>
-            <SectionTitle>Publications ({snap.posts.length}) · photos ({snap.photos.length})</SectionTitle>
+            <SectionTitle>{t("Publications (")}{snap.posts.length}{t(") · photos (")}{snap.photos.length})</SectionTitle>
             <Rows rows={snap.posts} render={(r) => `${date(r.at)} · ${r.content}`} />
           </Card>
           <Card style={{ gap: spacing.sm }}>
-            <SectionTitle>Historique : dossiers saisis ({snap.history.childrenRecorded.length})</SectionTitle>
+            <SectionTitle>{t("Historique : dossiers saisis (")}{snap.history.childrenRecorded.length})</SectionTitle>
             <Rows rows={snap.history.childrenRecorded} render={(r) => `${r.publicId} · ${r.orphanage ?? '—'} · ${r.status} · ${date(r.at)}`} />
           </Card>
           <Card style={{ gap: spacing.sm }}>
-            <SectionTitle>Historique : orphelinats proposés ({snap.history.orphanagesProposed.length})</SectionTitle>
+            <SectionTitle>{t("Historique : orphelinats proposés (")}{snap.history.orphanagesProposed.length})</SectionTitle>
             <Rows rows={snap.history.orphanagesProposed} render={(r) => `${r.name} · ${r.status} · ${date(r.at)}`} />
           </Card>
           <Card style={{ gap: spacing.sm }}>
-            <SectionTitle>Historique : visites ({snap.history.visits.length})</SectionTitle>
-            <Rows rows={snap.history.visits} render={(r) => `${date(r.at)} · ${r.childPublicId ?? 'Visite'}`} />
+            <SectionTitle>{t("Historique : visites (")}{snap.history.visits.length})</SectionTitle>
+            <Rows rows={snap.history.visits} render={(r) => `${date(r.at)} · ${r.childPublicId ?? t("Visite")}`} />
           </Card>
           <Card style={{ gap: spacing.sm }}>
-            <SectionTitle>Historique : actions récentes ({snap.history.recentActions.length})</SectionTitle>
+            <SectionTitle>{t("Historique : actions récentes (")}{snap.history.recentActions.length})</SectionTitle>
             <Rows rows={snap.history.recentActions} render={(r) => `${date(r.at)} · ${r.action}`} />
           </Card>
         </ScrollView>

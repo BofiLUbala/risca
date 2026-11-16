@@ -9,6 +9,7 @@ import { Button, Card, ScreenHeader } from '../src/components/ui';
 import { BackIcon } from '../src/components/icons';
 import { notify } from '../src/lib/dialog';
 import { colors, radius, spacing, typography } from '../src/theme';
+import { t, geoName } from '../src/lib/i18n';
 
 /**
  * Enregistrer un orphelinat. Le pays et la région sont ceux de l'auteur : un agent de terrain ou un chef régional
@@ -31,8 +32,8 @@ export default function NouvelOrphelinatScreen() {
 
   async function submit() {
     setError(null);
-    if (form.name.trim().length < 3) return setError('Donnez le nom de la structure (3 lettres au moins).');
-    if (!countryId || !province) return setError(isNational ? 'Choisissez la province.' : 'Votre région n’est pas renseignée sur votre profil.');
+    if (form.name.trim().length < 3) return setError(t("Donnez le nom de la structure (3 lettres au moins)."));
+    if (!countryId || !province) return setError(isNational ? t("Choisissez la province.") : t("Votre région n’est pas renseignée sur votre profil."));
     setBusy(true);
     try {
       await api.post('/orphanages', {
@@ -45,10 +46,10 @@ export default function NouvelOrphelinatScreen() {
         totalPlaces: form.totalPlaces ? Number(form.totalPlaces) : undefined,
         occupiedPlaces: form.occupiedPlaces ? Number(form.occupiedPlaces) : undefined,
       });
-      notify('Orphelinat enregistré', 'Il part en vérification : le chef régional, puis le Super Admin.');
+      notify(t("Orphelinat enregistré"), t("Il part en vérification : le chef régional, puis le Super Admin."));
       router.replace('/orphelinats' as never);
     } catch (e: any) {
-      setError(e?.message ?? 'Enregistrement impossible');
+      setError(e?.message ?? t("Enregistrement impossible"));
       setBusy(false);
     }
   }
@@ -71,11 +72,11 @@ export default function NouvelOrphelinatScreen() {
     <SafeAreaView style={s.safe} edges={['top']}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled">
-          <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Retour" style={s.back} hitSlop={8}>
+          <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel={t("Retour")} style={s.back} hitSlop={8}>
             <BackIcon color={colors.ink[700]} />
-            <Text style={s.backText}>Retour</Text>
+            <Text style={s.backText}>{t("Retour")}</Text>
           </Pressable>
-          <ScreenHeader title="Enregistrer un orphelinat" subtitle="La structure est vérifiée par le chef régional puis validée par le Super Admin." />
+          <ScreenHeader title={t("Enregistrer un orphelinat")} subtitle={t("La structure est vérifiée par le chef régional puis validée par le Super Admin.")} />
 
           <Card style={{ gap: spacing.md }}>
             {error ? (
@@ -84,16 +85,16 @@ export default function NouvelOrphelinatScreen() {
               </View>
             ) : null}
 
-            {field('name', 'Nom de la structure *')}
+            {field('name', t("Nom de la structure *"))}
 
             <View style={s.field}>
-              <Text style={s.label}>Pays</Text>
-              <Text style={s.fixed}>{user?.country?.nameFr ?? '—'}</Text>
+              <Text style={s.label}>{t("Pays")}</Text>
+              <Text style={s.fixed}>{geoName(user?.country) ?? '—'}</Text>
             </View>
 
             {isNational ? (
               <View style={s.field}>
-                <Text style={s.label}>Province *</Text>
+                <Text style={s.label}>{t("Province *")}</Text>
                 <View style={s.chips}>
                   {(provinces ?? []).map((p) => (
                     <Pressable
@@ -103,25 +104,25 @@ export default function NouvelOrphelinatScreen() {
                       accessibilityState={{ selected: provinceId === p.id }}
                       style={[s.chip, provinceId === p.id && s.chipOn]}
                     >
-                      <Text style={[s.chipText, provinceId === p.id && s.chipTextOn]}>{p.nameFr}</Text>
+                      <Text style={[s.chipText, provinceId === p.id && s.chipTextOn]}>{geoName(p)}</Text>
                     </Pressable>
                   ))}
                 </View>
               </View>
             ) : (
               <View style={s.field}>
-                <Text style={s.label}>Région</Text>
-                <Text style={s.fixed}>{user?.province?.nameFr ?? '—'}</Text>
+                <Text style={s.label}>{t("Région")}</Text>
+                <Text style={s.fixed}>{geoName(user?.province) ?? '—'}</Text>
               </View>
             )}
 
-            {field('city', 'Ville')}
-            {field('commune', 'Commune')}
-            {field('address', 'Adresse')}
-            {field('totalPlaces', 'Places au total', { keyboardType: 'number-pad' })}
-            {field('occupiedPlaces', 'Places occupées', { keyboardType: 'number-pad' })}
+            {field('city', t("Ville"))}
+            {field('commune', t("Commune"))}
+            {field('address', t("Adresse"))}
+            {field('totalPlaces', t("Places au total"), { keyboardType: 'number-pad' })}
+            {field('occupiedPlaces', t("Places occupées"), { keyboardType: 'number-pad' })}
 
-            <Button title="Enregistrer" onPress={submit} loading={busy} />
+            <Button title={t("Enregistrer")} onPress={submit} loading={busy} />
           </Card>
         </ScrollView>
       </KeyboardAvoidingView>

@@ -8,14 +8,15 @@ import { Avatar, Button } from './ui';
 import { CameraIcon, CloseIcon } from './icons';
 import { composerStyles as s } from './composer-styles';
 import { colors } from '../theme';
+import { t as tx, localized } from '../lib/i18n';
 
-const TYPES = [
+const TYPES = localized([
   { value: 'NEWS', label: 'Nouvelle' },
   { value: 'URGENT_NEED', label: 'Besoin urgent' },
   { value: 'VIDEO_PROGRESS', label: 'Progrès' },
   { value: 'THANKS', label: 'Remerciement' },
   { value: 'SPONSORSHIP_CALL', label: 'Appel au parrainage' },
-];
+]);
 
 const PUBLISHERS = [
   'AMBASSADOR',
@@ -63,7 +64,7 @@ export function Composer({ onPublished }: { onPublished: () => void }) {
   async function pickPhoto() {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
-      setError('Autorisation refusée pour accéder aux photos.');
+      setError(tx("Autorisation refusée pour accéder aux photos."));
       return;
     }
     const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], quality: 0.8 });
@@ -72,7 +73,7 @@ export function Composer({ onPublished }: { onPublished: () => void }) {
       const up = await uploadImage(res.assets[0].uri, res.assets[0].fileName ?? 'photo.jpg');
       setPhotos((p) => [...p, up.url]);
     } catch (e: any) {
-      setError(e?.message ?? 'Téléversement impossible');
+      setError(e?.message ?? tx("Téléversement impossible"));
     }
   }
 
@@ -90,7 +91,7 @@ export function Composer({ onPublished }: { onPublished: () => void }) {
     } catch (e: any) {
       const v = e?.payload?.violations;
       if (v?.length) setViolations(v);
-      setError(e?.payload?.message ?? e?.message ?? 'Publication impossible');
+      setError(e?.payload?.message ?? e?.message ?? tx("Publication impossible"));
     }
     setBusy(false);
   }
@@ -101,9 +102,9 @@ export function Composer({ onPublished }: { onPublished: () => void }) {
     <>
       <Pressable onPress={() => setOpen(true)} style={s.trigger} accessibilityRole="button">
         <Avatar uri={user.avatarUrl} firstName={user.firstName} lastName={user.lastName} size={34} />
-        <Text style={s.triggerText}>Partager une nouvelle…</Text>
+        <Text style={s.triggerText}>{tx("Partager une nouvelle…")}</Text>
         <View style={s.triggerBtn}>
-          <Text style={s.triggerBtnText}>Publier</Text>
+          <Text style={s.triggerBtnText}>{tx("Publier")}</Text>
         </View>
       </Pressable>
 
@@ -113,7 +114,7 @@ export function Composer({ onPublished }: { onPublished: () => void }) {
             <Pressable onPress={() => setOpen(false)} accessibilityRole="button" hitSlop={10}>
               <CloseIcon color={colors.ink[600]} />
             </Pressable>
-            <Text style={s.modalTitle}>Nouvelle publication</Text>
+            <Text style={s.modalTitle}>{tx("Nouvelle publication")}</Text>
             <View style={{ width: 20 }} />
           </View>
 
@@ -133,7 +134,7 @@ export function Composer({ onPublished }: { onPublished: () => void }) {
             {children.length > 0 ? (
               <View style={s.chipRow}>
                 <Pressable onPress={() => setChildId('')} style={[s.chip, childId === '' && s.chipActive]}>
-                  <Text style={[s.chipText, childId === '' && s.chipTextActive]}>Générale</Text>
+                  <Text style={[s.chipText, childId === '' && s.chipTextActive]}>{tx("Générale")}</Text>
                 </Pressable>
                 {children.map((c: any) => (
                   <Pressable
@@ -150,7 +151,7 @@ export function Composer({ onPublished }: { onPublished: () => void }) {
             <TextInput
               value={content}
               onChangeText={check}
-              placeholder="Racontez la nouvelle. Le nom de famille, l’adresse exacte et les données médicales sont bloquées automatiquement."
+              placeholder={tx("Racontez la nouvelle. Le nom de famille, l’adresse exacte et les données médicales sont bloquées automatiquement.")}
               placeholderTextColor={colors.ink[400]}
               multiline
               style={s.textarea}
@@ -158,7 +159,7 @@ export function Composer({ onPublished }: { onPublished: () => void }) {
 
             {violations.length > 0 ? (
               <View style={s.warn} accessibilityRole="alert">
-                <Text style={s.warnTitle}>Vérification automatique</Text>
+                <Text style={s.warnTitle}>{tx("Vérification automatique")}</Text>
                 {violations.map((v, i) => (
                   <Text key={i} style={s.warnText}>
                     {v.message}
@@ -189,14 +190,14 @@ export function Composer({ onPublished }: { onPublished: () => void }) {
 
             <View style={s.modalActions}>
               <Button
-                title="Photo"
+                title={tx("Photo")}
                 variant="outline"
                 onPress={pickPhoto}
                 icon={<CameraIcon color={colors.ink[700]} />}
                 style={{ flex: 1 }}
               />
               <Button
-                title="Publier"
+                title={tx("Publier")}
                 onPress={publish}
                 loading={busy}
                 disabled={!content.trim() || violations.length > 0}
@@ -206,7 +207,7 @@ export function Composer({ onPublished }: { onPublished: () => void }) {
 
             {photos.length > 0 ? (
               <Text style={s.hint}>
-                Le consentement photo de l’enfant doit etre signe, sinon la publication sera refusee.
+                {tx("Le consentement photo de l’enfant doit etre signe, sinon la publication sera refusee.")}
               </Text>
             ) : null}
           </ScrollView>

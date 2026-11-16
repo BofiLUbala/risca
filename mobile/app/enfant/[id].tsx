@@ -10,6 +10,8 @@ import { BackIcon } from '../../src/components/icons';
 import { publicChildStyles as s } from '../../src/components/public-child-styles';
 import { date, money } from '../../src/lib/format';
 import { colors, spacing } from '../../src/theme';
+import { t, geoName } from '../../src/lib/i18n';
+import { Tr } from '../../src/lib/i18n/dynamic';
 
 const PRESETS = [10, 25, 50, 100];
 
@@ -66,7 +68,7 @@ export default function PublicChildScreen() {
       }
       if (url) await WebBrowser.openBrowserAsync(url);
     } catch (e: any) {
-      setError(e?.message ?? 'Paiement impossible');
+      setError(e?.message ?? t("Paiement impossible"));
     }
     setBusy(false);
   }
@@ -92,35 +94,35 @@ export default function PublicChildScreen() {
         <View>
           <Text style={s.name}>
             {child.firstName}
-            {child.age != null ? `, ${child.age} ans` : ''}
+            {child.age != null ? t(", {age} ans", { age: child.age }) : ''}
           </Text>
           <Text style={s.region}>
-            {child.region} - {child.orphanage.country.nameFr}
+            {child.region} - {geoName(child.orphanage.country)}
           </Text>
           <View style={s.tags}>
-            {child.warOrphan ? <Badge text="Orphelin de guerre" status="PENDING" /> : null}
-            {!child.hasSponsor ? <Badge text="Sans parrain" status="NEEDS_CORRECTION" /> : null}
+            {child.warOrphan ? <Badge text={t("Orphelin de guerre")} status="PENDING" /> : null}
+            {!child.hasSponsor ? <Badge text={t("Sans parrain")} status="NEEDS_CORRECTION" /> : null}
           </View>
         </View>
 
         {child.publicStory ? (
           <Card>
-            <SectionTitle>Son histoire</SectionTitle>
+            <SectionTitle>{t("Son histoire")}</SectionTitle>
             <Text style={s.body}>{child.publicStory}</Text>
           </Card>
         ) : null}
 
         {child.projects?.length > 0 ? (
           <Card>
-            <SectionTitle>Projets en cours</SectionTitle>
+            <SectionTitle>{t("Projets en cours")}</SectionTitle>
             {child.projects.map((p: any) => (
               <View key={p.id} style={{ marginBottom: spacing.md }}>
-                <Text style={s.projectTitle}>{p.title}</Text>
+                <Text style={s.projectTitle}><Tr text={p.title} /></Text>
                 <View style={{ marginTop: 8 }}>
                   <Progress value={p.collectedAmount} total={p.targetAmount} />
                 </View>
                 <Text style={s.projectMeta}>
-                  {money(p.collectedAmount, p.currency)} sur {money(p.targetAmount, p.currency)}
+                  {money(p.collectedAmount, p.currency)}{' '}{t("sur")}{' '}{money(p.targetAmount, p.currency)}
                 </Text>
               </View>
             ))}
@@ -129,11 +131,11 @@ export default function PublicChildScreen() {
 
         {child.timeline?.length > 0 ? (
           <Card>
-            <SectionTitle>Ses nouvelles</SectionTitle>
+            <SectionTitle>{t("Ses nouvelles")}</SectionTitle>
             {child.timeline.map((e: any) => (
               <View key={e.id} style={s.event}>
-                <Text style={s.eventTitle}>{e.title}</Text>
-                {e.description ? <Text style={s.eventText}>{e.description}</Text> : null}
+                <Text style={s.eventTitle}><Tr text={e.title} /></Text>
+                {e.description ? <Text style={s.eventText}><Tr text={e.description} /></Text> : null}
                 <Text style={s.eventMeta}>{date(e.occurredAt)}</Text>
               </View>
             ))}
@@ -171,7 +173,7 @@ function SupportCard({
 }) {
   return (
     <Card>
-      <SectionTitle>Soutenir {child.firstName}</SectionTitle>
+      <SectionTitle>{t("Soutenir")}{' '}{child.firstName}</SectionTitle>
 
       {child.publicNeeds ? (
         <View style={s.need}>
@@ -181,13 +183,13 @@ function SupportCard({
 
       <View style={s.modeRow}>
         <Pressable onPress={() => setMode('ONE_OFF')} style={[s.modeBtn, mode === 'ONE_OFF' && s.modeActive]}>
-          <Text style={[s.modeText, mode === 'ONE_OFF' && s.modeTextActive]}>Financer</Text>
+          <Text style={[s.modeText, mode === 'ONE_OFF' && s.modeTextActive]}>{t("Financer")}</Text>
         </Pressable>
         <Pressable
           onPress={() => setMode('SPONSORSHIP')}
           style={[s.modeBtn, mode === 'SPONSORSHIP' && s.modeActive]}
         >
-          <Text style={[s.modeText, mode === 'SPONSORSHIP' && s.modeTextActive]}>Parrainer</Text>
+          <Text style={[s.modeText, mode === 'SPONSORSHIP' && s.modeTextActive]}>{t("Parrainer")}</Text>
         </Pressable>
       </View>
 
@@ -205,27 +207,26 @@ function SupportCard({
 
       {feeQuote ? (
         <View style={s.fees}>
-          <Text style={s.feesTitle}>Transparence des frais</Text>
+          <Text style={s.feesTitle}>{t("Transparence des frais")}</Text>
           <Text style={s.feesLine}>
-            Versement {money(feeQuote.amount)} - frais {money(feeQuote.feeAmount)} (
+            {t("Versement")}{' '}{money(feeQuote.amount)}{' '}{t("- frais")}{' '}{money(feeQuote.feeAmount)} (
             {feeQuote.feePercent} %)
           </Text>
-          <Text style={s.feesStrong}>Montant affecte {money(feeQuote.netAmount)}</Text>
+          <Text style={s.feesStrong}>{t("Montant affecte")}{' '}{money(feeQuote.netAmount)}</Text>
         </View>
       ) : null}
 
       {error ? <Text style={s.error}>{error}</Text> : null}
 
       <Button
-        title={mode === 'SPONSORSHIP' ? `Parrainer ${money(amount)} / mois` : `Donner ${money(amount)}`}
+        title={mode === 'SPONSORSHIP' ? t("Parrainer {v0} / mois", { v0: money(amount) }) : t("Donner {v0}", { v0: money(amount) })}
         onPress={onPay}
         loading={busy}
         style={{ marginTop: spacing.md }}
       />
 
       <Text style={s.hint}>
-        Le paiement s’ouvre sur une page web sécurisée. Vous ecrivez à l’ambassadeur de l’enfant,
-        jamais à l’enfant lui-même.
+        {t("Le paiement s’ouvre sur une page web sécurisée. Vous ecrivez à l’ambassadeur de l’enfant, jamais à l’enfant lui-même.")}
       </Text>
     </Card>
   );

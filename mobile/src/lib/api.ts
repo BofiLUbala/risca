@@ -1,6 +1,8 @@
 import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
+import { translateText } from './i18n/dynamic';
+import { t } from './i18n';
 
 const extra = (Constants.expoConfig?.extra ?? {}) as { apiUrl?: string; apiOrigin?: string };
 
@@ -87,7 +89,7 @@ export class ApiError extends Error {
   status: number;
   payload: any;
   constructor(status: number, payload: any) {
-    super(payload?.message ?? `Erreur ${status}`);
+    super(payload?.message ?? t("Erreur {status}", { status }));
     this.status = status;
     this.payload = payload;
   }
@@ -129,7 +131,11 @@ async function request<T>(path: string, init: RequestInit = {}, retry = true): P
 
   const text = await res.text();
   const data = text ? JSON.parse(text) : null;
-  if (!res.ok) throw new ApiError(res.status, data);
+  if (!res.ok) {
+    // Les messages du serveur sont rédigés en français : affichés dans la langue choisie.
+    if (data && typeof data.message === 'string') data.message = await translateText(data.message);
+    throw new ApiError(res.status, data);
+  }
   return data as T;
 }
 

@@ -10,6 +10,7 @@ import { Logo } from '../../src/components/Logo';
 import { CheckIcon, EyeIcon } from '../../src/components/icons';
 import { getRememberedAdminKey, getRememberedEmail, setRememberedAdminKey, setRememberedEmail } from '../../src/lib/remember';
 import { colors, radius, shadow, spacing, typography } from '../../src/theme';
+import { t } from '../../src/lib/i18n';
 
 export default function LoginScreen() {
   const { login } = useAuth();
@@ -52,7 +53,7 @@ export default function LoginScreen() {
       const res = await login(email.trim(), password, needsTotp ? totp : undefined, adminKey.trim() || undefined);
       if (res.adminKeyRequired) {
         setNeedsKey(true);
-        setError(adminKey ? 'Clé administrateur incorrecte.' : 'Compte Super Admin : saisissez votre clé administrateur.');
+        setError(adminKey ? t("Clé administrateur incorrecte.") : t("Compte Super Admin : saisissez votre clé administrateur."));
         setBusy(false);
         return;
       }
@@ -65,7 +66,7 @@ export default function LoginScreen() {
       await setRememberedAdminKey(needsKey && rememberKey ? adminKey.trim() : null);
       router.replace('/(tabs)');
     } catch (e: any) {
-      setError(e?.message ?? 'Connexion impossible');
+      setError(e?.message ?? t("Connexion impossible"));
       setBusy(false);
     }
   }
@@ -83,9 +84,9 @@ export default function LoginScreen() {
             <Logo size={36} />
           </View>
 
-          <Text style={s.title} accessibilityRole="header">Se connecter</Text>
+          <Text style={s.title} accessibilityRole="header">{t("Se connecter")}</Text>
           <Text style={s.subtitle}>
-            Accédez à votre espace selon votre rôle dans le réseau.
+            {t("Accédez à votre espace selon votre rôle dans le réseau.")}
           </Text>
 
           {error ? (
@@ -95,7 +96,7 @@ export default function LoginScreen() {
           ) : null}
 
           <View style={s.field}>
-            <Text style={s.label}>Adresse e-mail</Text>
+            <Text style={s.label}>{t("Adresse e-mail")}</Text>
             <TextInput
               value={email}
               onChangeText={setEmail}
@@ -106,13 +107,13 @@ export default function LoginScreen() {
               autoCorrect={false}
               autoComplete="email"
               textContentType="emailAddress"
-              accessibilityLabel="Adresse e-mail"
+              accessibilityLabel={t("Adresse e-mail")}
               style={s.input}
             />
           </View>
 
           <View style={s.field}>
-            <Text style={s.label}>Mot de passe</Text>
+            <Text style={s.label}>{t("Mot de passe")}</Text>
             <View style={s.passwordWrap}>
               <TextInput
                 value={password}
@@ -122,13 +123,13 @@ export default function LoginScreen() {
                 autoCorrect={false}
                 autoComplete="current-password"
                 textContentType="password"
-                accessibilityLabel="Mot de passe"
+                accessibilityLabel={t("Mot de passe")}
                 style={[s.input, s.passwordInput]}
               />
               <Pressable
                 onPress={() => setShowPassword((v) => !v)}
                 accessibilityRole="button"
-                accessibilityLabel={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                accessibilityLabel={showPassword ? t("Masquer le mot de passe") : t("Afficher le mot de passe")}
                 hitSlop={8}
                 style={s.eye}
               >
@@ -141,16 +142,16 @@ export default function LoginScreen() {
             onPress={() => setRemember((v) => !v)}
             accessibilityRole="checkbox"
             accessibilityState={{ checked: remember }}
-            accessibilityLabel="Se souvenir de moi"
+            accessibilityLabel={t("Se souvenir de moi")}
             style={s.remember}
           >
             <View style={[s.box, remember && s.boxOn]}>{remember ? <CheckIcon color={colors.white} /> : null}</View>
-            <Text style={s.rememberText}>Se souvenir de moi</Text>
+            <Text style={s.rememberText}>{t("Se souvenir de moi")}</Text>
           </Pressable>
 
           {needsKey ? (
             <View style={s.field}>
-              <Text style={s.label}>Clé administrateur</Text>
+              <Text style={s.label}>{t("Clé administrateur")}</Text>
               <View style={s.passwordWrap}>
                 <TextInput
                   value={adminKey}
@@ -158,13 +159,13 @@ export default function LoginScreen() {
                   secureTextEntry={!showKey}
                   autoCapitalize="none"
                   autoCorrect={false}
-                  accessibilityLabel="Clé administrateur"
+                  accessibilityLabel={t("Clé administrateur")}
                   style={[s.input, s.passwordInput]}
                 />
                 <Pressable
                   onPress={() => setShowKey((v) => !v)}
                   accessibilityRole="button"
-                  accessibilityLabel={showKey ? 'Masquer la clé' : 'Afficher la clé'}
+                  accessibilityLabel={showKey ? t("Masquer la clé") : t("Afficher la clé")}
                   hitSlop={8}
                   style={s.eye}
                 >
@@ -175,21 +176,21 @@ export default function LoginScreen() {
                 onPress={() => setRememberKey((v) => !v)}
                 accessibilityRole="checkbox"
                 accessibilityState={{ checked: rememberKey }}
-                accessibilityLabel="Mémoriser ma clé sur cet appareil"
+                accessibilityLabel={t("Mémoriser ma clé sur cet appareil")}
                 style={s.remember}
               >
                 <View style={[s.box, rememberKey && s.boxOn]}>{rememberKey ? <CheckIcon color={colors.white} /> : null}</View>
-                <Text style={s.rememberText}>Mémoriser ma clé sur cet appareil</Text>
+                <Text style={s.rememberText}>{t("Mémoriser ma clé sur cet appareil")}</Text>
               </Pressable>
               <Text style={s.hint}>
-                Clé perdue ? Super Admin n°2 ou n°3 : écrivez au Super Admin n°1, il réinitialise vos identifiants. Super Admin n°1 : récupération depuis le site web, page /admin.
+                {t("Clé perdue ? Super Admin n°2 ou n°3 : écrivez au Super Admin n°1, il réinitialise vos identifiants. Super Admin n°1 : récupération depuis le site web, page /admin.")}
               </Text>
             </View>
           ) : null}
 
           {needsTotp ? (
             <View style={s.field}>
-              <Text style={s.label}>Code de double authentification</Text>
+              <Text style={s.label}>{t("Code de double authentification")}</Text>
               <TextInput
                 value={totp}
                 onChangeText={(v) => setTotp(v.replace(/\D/g, ''))}
@@ -198,7 +199,7 @@ export default function LoginScreen() {
                 keyboardType="number-pad"
                 autoComplete="one-time-code"
                 textContentType="oneTimeCode"
-                accessibilityLabel="Code de double authentification"
+                accessibilityLabel={t("Code de double authentification")}
                 maxLength={6}
                 style={[s.input, s.otp]}
               />
@@ -206,7 +207,7 @@ export default function LoginScreen() {
           ) : null}
 
           <Button
-            title={needsTotp ? 'Valider le code' : 'Se connecter'}
+            title={needsTotp ? t("Valider le code") : t("Se connecter")}
             onPress={submit}
             loading={busy}
             style={{ marginTop: spacing.xs }}
@@ -214,11 +215,10 @@ export default function LoginScreen() {
 
           <View style={s.divider} />
           <Text style={s.hint}>
-            Les comptes du réseau sont créés par invitation. Les bailleurs s’inscrivent depuis le site
-            web.
+            {t("Les comptes du réseau sont créés par invitation. Les bailleurs s’inscrivent depuis le site web.")}
           </Text>
           </View>
-          <Text style={s.footnote}>Réseau International des Structures d’Accueil du Congo</Text>
+          <Text style={s.footnote}>{t("Réseau International des Structures d’Accueil du Congo")}</Text>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

@@ -3,13 +3,15 @@ import { registerPush, unregisterPush } from './push';
 import { api, clearTokens, getToken, setTokens } from './api';
 import { closeSocket } from './socket';
 import { deviceHeaders } from './device';
+import { localized } from './i18n';
+
 
 export type Role =
   | 'SUPER_ADMIN' | 'ADMIN_FINANCE' | 'MODERATOR' | 'ETHICS_AUDITOR'
   | 'NATIONAL_MANAGER' | 'REGIONAL_MANAGER' | 'AMBASSADOR' | 'FIELD_AGENT'
   | 'ORPHANAGE_DIRECTOR' | 'ORPHANAGE_STAFF' | 'DONOR' | 'PARTNER';
 
-export const ROLE_LABEL: Record<Role, string> = {
+export const ROLE_LABEL: Record<Role, string> = localized({
   SUPER_ADMIN: 'Super Admin',
   ADMIN_FINANCE: 'Admin Finance',
   MODERATOR: 'Modérateur',
@@ -22,7 +24,7 @@ export const ROLE_LABEL: Record<Role, string> = {
   ORPHANAGE_STAFF: "Personnel de l'orphelinat",
   DONOR: 'Bailleur de fonds',
   PARTNER: 'Partenaire',
-};
+});
 
 export interface Me {
   id: string;

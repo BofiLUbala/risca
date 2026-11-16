@@ -6,6 +6,7 @@ import { Button } from '../../src/components/ui';
 import { Logo } from '../../src/components/Logo';
 import { askPushPermission, pushStatus } from '../../src/lib/push';
 import { colors, radius, shadow, spacing, typography } from '../../src/theme';
+import { t } from '../../src/lib/i18n';
 
 /**
  * Première étape avant toute connexion ou création de compte : autoriser les notifications.
@@ -37,23 +38,22 @@ export default function AuthLayout() {
         <View style={s.logo}>
           <Logo size={36} />
         </View>
-        <Text style={s.title} accessibilityRole="header">Activez les notifications</Text>
+        <Text style={s.title} accessibilityRole="header">{t("Activez les notifications")}</Text>
         <Text style={s.text}>
-          Première étape : autorisez les notifications. RISAC vous prévient dès qu’il y a du nouveau, même application fermée :
-          publication, message, tâche à traiter, validation.
+          {t("Première étape : autorisez les notifications. RISAC vous prévient dès qu’il y a du nouveau, même application fermée : publication, message, tâche à traiter, validation.")}
         </Text>
         {state === 'ask' ? (
-          <Button title="Activer les notifications" onPress={enable} loading={busy} />
+          <Button title={t("Activer les notifications")} onPress={enable} loading={busy} />
         ) : (
           <>
             <View style={s.warn}>
               <Text style={s.warnText}>
-                Les notifications sont bloquées. Ouvrez les réglages du téléphone, rubrique Notifications de RISAC, puis autorisez-les.
+                {t("Les notifications sont bloquées. Ouvrez les réglages du téléphone, rubrique Notifications de RISAC, puis autorisez-les.")}
               </Text>
             </View>
-            <Button title="Ouvrir les réglages" onPress={() => void Linking.openSettings()} />
-            <Button title="J’ai autorisé" variant="outline" onPress={enable} loading={busy} />
-            <Button title="Continuer sans" variant="ghost" onPress={() => setState('ready')} />
+            <Button title={t("Ouvrir les réglages")} onPress={() => void Linking.openSettings()} />
+            <Button title={t("J’ai autorisé")} variant="outline" onPress={enable} loading={busy} />
+            <Button title={t("Continuer sans")} variant="ghost" onPress={() => setState('ready')} />
           </>
         )}
       </View>

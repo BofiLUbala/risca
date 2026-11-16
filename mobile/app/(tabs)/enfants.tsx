@@ -6,6 +6,7 @@ import { fetcher, mediaUrl } from '../../src/lib/api';
 import { useAuth } from '../../src/lib/auth';
 import { Avatar, Badge, Empty, Loading, ScreenHeader } from '../../src/components/ui';
 import { colors, radius, spacing, typography } from '../../src/theme';
+import { t } from '../../src/lib/i18n';
 
 export default function ChildrenScreen() {
   const { user } = useAuth();
@@ -26,14 +27,14 @@ function PublicChildren() {
 
   return (
     <SafeAreaView style={s.safe} edges={[]}>
-      <ScreenHeader title="Enfants à soutenir" subtitle="Choisissez un enfant à parrainer ou à aider." />
+      <ScreenHeader title={t("Enfants à soutenir")} subtitle={t("Choisissez un enfant à parrainer ou à aider.")} />
       <FlatList
         data={data ?? []}
         keyExtractor={(c) => c.id}
         numColumns={2}
         columnWrapperStyle={{ gap: spacing.md }}
         contentContainerStyle={s.grid}
-        ListEmptyComponent={isLoading ? <Loading /> : <Empty title="Aucun profil public" />}
+        ListEmptyComponent={isLoading ? <Loading /> : <Empty title={t("Aucun profil public")} />}
         refreshControl={
           <RefreshControl refreshing={isValidating && !isLoading} onRefresh={() => { void mutate(); }} />
         }
@@ -53,14 +54,14 @@ function PublicChildren() {
                 )}
                 {!item.hasSponsor ? (
                   <View style={s.tileBadge}>
-                    <Text style={s.tileBadgeText}>Sans parrain</Text>
+                    <Text style={s.tileBadgeText}>{t("Sans parrain")}</Text>
                   </View>
                 ) : null}
               </View>
               <View style={s.tileBody}>
                 <Text style={s.tileName} numberOfLines={1}>
                   {item.firstName}
-                  {item.age != null ? `, ${item.age} ans` : ''}
+                  {item.age != null ? t(", {age} ans", { age: item.age }) : ''}
                 </Text>
                 <Text style={s.tileMeta} numberOfLines={1}>
                   {item.region}
@@ -87,15 +88,15 @@ function ScopedChildren() {
   return (
     <SafeAreaView style={s.safe} edges={[]}>
       <ScreenHeader
-        title="Enfants"
-        subtitle={data ? `${data.total} dossier(s) dans votre périmètre` : 'Chargement…'}
+        title={t("Enfants")}
+        subtitle={data ? t("{total} dossier(s) dans votre périmètre", { total: data.total }) : t("Chargement…")}
       />
 
       <FlatList
         data={data?.items ?? []}
         keyExtractor={(c: any) => c.id}
         contentContainerStyle={s.list}
-        ListEmptyComponent={isLoading ? <Loading /> : <Empty title="Aucun dossier" />}
+        ListEmptyComponent={isLoading ? <Loading /> : <Empty title={t("Aucun dossier")} />}
         refreshControl={
           <RefreshControl refreshing={isValidating && !isLoading} onRefresh={() => { void mutate(); }} />
         }

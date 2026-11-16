@@ -8,6 +8,7 @@ import { Badge, Button, Card, Empty, Loading, ScreenHeader } from '../src/compon
 import { BackIcon } from '../src/components/icons';
 import { date } from '../src/lib/format';
 import { colors, spacing, typography } from '../src/theme';
+import { t, geoName } from '../src/lib/i18n';
 
 /** Mêmes rôles que `POST /orphanages` côté API. */
 const CAN_CREATE = ['NATIONAL_MANAGER', 'REGIONAL_MANAGER', 'FIELD_AGENT'];
@@ -24,15 +25,15 @@ export default function OrphelinatsScreen() {
 
   return (
     <SafeAreaView style={s.safe} edges={['top']}>
-      <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Retour" style={s.back} hitSlop={8}>
+      <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel={t("Retour")} style={s.back} hitSlop={8}>
         <BackIcon color={colors.ink[700]} />
-        <Text style={s.backText}>Retour</Text>
+        <Text style={s.backText}>{t("Retour")}</Text>
       </Pressable>
-      <ScreenHeader title="Orphelinats" subtitle={data ? `${data.length} structure(s) dans votre périmètre` : 'Chargement…'} />
+      <ScreenHeader title={t("Orphelinats")} subtitle={data ? t("{length} structure(s) dans votre périmètre", { length: data.length }) : t("Chargement…")} />
 
       {canCreate ? (
         <View style={s.action}>
-          <Button title={user?.role === 'FIELD_AGENT' ? 'Proposer un orphelinat' : 'Enregistrer un orphelinat'} onPress={() => router.push('/orphelinat-nouveau' as never)} />
+          <Button title={user?.role === 'FIELD_AGENT' ? t("Proposer un orphelinat") : t("Enregistrer un orphelinat")} onPress={() => router.push('/orphelinat-nouveau' as never)} />
         </View>
       ) : null}
 
@@ -40,7 +41,7 @@ export default function OrphelinatsScreen() {
         data={data ?? []}
         keyExtractor={(o) => o.id}
         contentContainerStyle={s.list}
-        ListEmptyComponent={isLoading ? <Loading /> : <Empty title="Aucune structure" description="Aucun orphelinat dans votre périmètre." />}
+        ListEmptyComponent={isLoading ? <Loading /> : <Empty title={t("Aucune structure")} description={t("Aucun orphelinat dans votre périmètre.")} />}
         refreshControl={<RefreshControl refreshing={isValidating && !isLoading} onRefresh={() => { void mutate(); }} />}
         renderItem={({ item }) => (
           <Card>
@@ -50,15 +51,15 @@ export default function OrphelinatsScreen() {
             </View>
             <Text style={s.meta}>
               {item.city ? `${item.city}, ` : ''}
-              {item.province?.nameFr}
+              {geoName(item.province)}
             </Text>
             <Text style={s.meta}>
-              {item._count?.children ?? 0} enfants · {item.occupiedPlaces ?? 0} / {item.totalPlaces ?? 0} places
+              {item._count?.children ?? 0}{' '}{t("enfants ·")}{' '}{item.occupiedPlaces ?? 0} / {item.totalPlaces ?? 0}{' '}{t("places")}
             </Text>
             {item.proposedBy ? (
               <Text style={s.proposed}>
-                Enregistré par {item.proposedBy.firstName} {item.proposedBy.lastName}
-                {item.createdAt ? ` le ${date(item.createdAt)}` : ''}
+                {t("Enregistré par")}{' '}{item.proposedBy.firstName} {item.proposedBy.lastName}
+                {item.createdAt ? t(" le {date}", { date: date(item.createdAt) }) : ''}
               </Text>
             ) : null}
           </Card>

@@ -7,6 +7,7 @@ import { ROLE_LABEL, type Role } from '../lib/auth';
 import { Button, Card } from './ui';
 import { date } from '../lib/format';
 import { colors, spacing, typography } from '../theme';
+import { t } from '../lib/i18n';
 
 type Mine = {
   id: string;
@@ -39,7 +40,7 @@ export function TransitionBanner() {
       await api.post(`/transitions/${data.id}/clone`, {});
       await mutate();
     } catch (e: any) {
-      setError(e?.message ?? 'Clonage impossible');
+      setError(e?.message ?? t("Clonage impossible"));
     }
     setBusy(false);
   }
@@ -48,33 +49,32 @@ export function TransitionBanner() {
 
   return (
     <Card style={s.card}>
-      <Text style={s.title}>Votre ancien espace</Text>
+      <Text style={s.title}>{t("Votre ancien espace")}</Text>
       <Text style={s.text}>
-        Vous avez été promu : {ROLE_LABEL[data.fromRole]} → {ROLE_LABEL[data.toRole]} le {date(data.promotedAt)}. Vos données de l’ancien rôle (publications et
-        photos, responsabilités, tâches, historique) restent récupérables.
+        {t("Vous avez été promu :")}{' '}{ROLE_LABEL[data.fromRole]} → {ROLE_LABEL[data.toRole]}{' '}{t("le")}{' '}{date(data.promotedAt)}{t(". Vos données de l’ancien rôle (publications et photos, responsabilités, tâches, historique) restent récupérables.")}
       </Text>
 
       {data.state === 'WAITING' ? (
-        <Text style={s.wait}>En attente de l’accord de votre chef régional ou national : dès qu’il l’aura donné, vous pourrez cloner vos données ici.</Text>
+        <Text style={s.wait}>{t("En attente de l’accord de votre chef régional ou national : dès qu’il l’aura donné, vous pourrez cloner vos données ici.")}</Text>
       ) : null}
 
       {data.state === 'GRANTED' ? (
         <View style={{ gap: spacing.sm }}>
-          <Text style={s.ok}>Accord donné par {who(data.grantedBy)}.</Text>
-          <Button title="Cloner mes données" onPress={clone} loading={busy} />
+          <Text style={s.ok}>{t("Accord donné par")}{' '}{who(data.grantedBy)}.</Text>
+          <Button title={t("Cloner mes données")} onPress={clone} loading={busy} />
           {error ? <Text style={s.err}>{error}</Text> : null}
         </View>
       ) : null}
 
       {data.state === 'CLONED' ? (
         <View style={{ gap: spacing.sm }}>
-          <Text style={s.ok}>Données clonées le {date(data.clonedAt)}.</Text>
-          <Button title="Voir mon ancien espace" variant="outline" onPress={() => router.push('/ancien-espace' as never)} />
+          <Text style={s.ok}>{t("Données clonées le")}{' '}{date(data.clonedAt)}.</Text>
+          <Button title={t("Voir mon ancien espace")} variant="outline" onPress={() => router.push('/ancien-espace' as never)} />
         </View>
       ) : null}
 
       {data.handedOverAt ? (
-        <Text style={s.meta}>Vos responsabilités en cours ont été confiées à {who(data.handedOverTo)} le {date(data.handedOverAt)}.</Text>
+        <Text style={s.meta}>{t("Vos responsabilités en cours ont été confiées à")}{' '}{who(data.handedOverTo)}{' '}{t("le")}{' '}{date(data.handedOverAt)}.</Text>
       ) : null}
     </Card>
   );

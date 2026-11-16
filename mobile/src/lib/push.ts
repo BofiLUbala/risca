@@ -1,6 +1,8 @@
 import { Platform } from 'react-native';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { api } from './api';
+import { t } from './i18n';
+
 
 /**
  * Expo Go ne gere plus les notifications distantes depuis le SDK 53, et le
@@ -57,11 +59,11 @@ let currentToken: string | null = null;
 async function ensureAndroidChannels(N: ModuleNotifications) {
   if (Platform.OS !== 'android') return;
   const channels: Array<[string, string, number]> = [
-    ['general', 'Général', N.AndroidImportance.DEFAULT],
-    ['validations', 'Validations', N.AndroidImportance.HIGH],
-    ['argent', 'Dons et décaissements', N.AndroidImportance.HIGH],
-    ['securite', 'Sécurité du compte', N.AndroidImportance.HIGH],
-    ['moderation', 'Modération', N.AndroidImportance.DEFAULT],
+    ['general', t("Général"), N.AndroidImportance.DEFAULT],
+    ['validations', t("Validations"), N.AndroidImportance.HIGH],
+    ['argent', t("Dons et décaissements"), N.AndroidImportance.HIGH],
+    ['securite', t("Sécurité du compte"), N.AndroidImportance.HIGH],
+    ['moderation', t("Modération"), N.AndroidImportance.DEFAULT],
   ];
   for (const [id, name, importance] of channels) {
     await N.setNotificationChannelAsync(id, { name, importance });

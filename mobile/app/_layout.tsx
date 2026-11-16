@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from '../src/lib/auth';
 import { lastRouteFor, saveLastRoute } from '../src/lib/remember';
 import { colors } from '../src/theme';
 import { useAutoUpdates } from '../src/lib/updates';
+import { I18nProvider } from '../src/lib/i18n';
 
 /** Onglets accessibles directement ; tout autre écran (fiche enfant…) s'ouvre par-dessus l'accueil. */
 const TAB_PATHS = ['/', '/fil', '/enfants', '/validations', '/messages', '/profil'];
@@ -72,8 +73,10 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <AuthProvider>
-          <StatusBar style="dark" />
-          <Gate />
+          <I18nProvider>
+            <StatusBar style="dark" />
+            <Gate />
+          </I18nProvider>
         </AuthProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
