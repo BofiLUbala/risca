@@ -1,8 +1,8 @@
 # Automatisation des deploiements RISAC
 
 Une fois la configuration decrite ici en place, un `git push` sur `main` suffit :
-l'API est reconstruite et redeployee, et l'application Android part sur la piste
-production du Play Store. Aucune intervention manuelle par la suite.
+l'API est reconstruite et redeployee, et l'application Android part sur le canal
+alpha du Play Store. Aucune intervention manuelle par la suite.
 
 ```
 git push origin main
@@ -11,7 +11,7 @@ git push origin main
       │
       └─ GitHub Actions
            ├─ backend-ci.yml    ──► compilation + image Docker     (garde-fou)
-           └─ mobile-alpha.yml  ──► EAS build ──► Play Store prod   (si mobile/ a change)
+           └─ mobile-alpha.yml  ──► EAS build ──► Play Store alpha  (si mobile/ a change)
 ```
 
 Le front Next.js suit le meme principe cote Vercel, qui redeploie seul a chaque
