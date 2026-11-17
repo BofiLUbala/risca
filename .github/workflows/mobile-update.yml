@@ -1,7 +1,7 @@
 # Mise à jour automatique de l'application mobile (EAS Update), à chaque push sur `main` touchant `mobile/`.
 #
 # Les téléphones qui ont déjà l'application la reçoivent à l'ouverture suivante, sans passer par le Play Store
-# (voir mobile/src/lib/updates.ts). Le workflow « Mobile — publication alpha » continue de publier une version
+# (voir mobile/src/lib/updates.ts). Le workflow « Mobile — publication Play Store » continue de publier une version
 # Play Store : elle reste nécessaire quand une modification touche la partie native (nouveau module), ce que la
 # version d'exécution (runtimeVersion « fingerprint ») détecte d'elle-même — une mise à jour ne s'installe que
 # sur une application compatible.

@@ -1,4 +1,4 @@
-# Construit l'Android App Bundle et le publie sur le canal alpha du Play Store.
+# Construit l'Android App Bundle et le publie sur la piste production du Play Store (visible par tous, apres relecture de Google).
 #
 # Declenche a chaque push sur `main` touchant `mobile/`, et manuellement depuis
 # l'onglet Actions. EAS incremente le `versionCode` tout seul
@@ -11,7 +11,7 @@
 #     active en plus l'envoi sur le Play Store
 #   - une premiere compilation faite a la main (`eas build`) pour creer la cle de
 #     signature, puis une premiere version publiee a la main dans le Play Console
-name: Mobile — publication alpha
+name: Mobile — publication Play Store
 
 on:
   push:
@@ -52,7 +52,7 @@ jobs:
           [ "$submit" = true ] || echo "Secret GOOGLE_PLAY_SERVICE_ACCOUNT absent : pas d'envoi sur le Play Store."
 
   alpha:
-    name: Build Android et envoi sur le canal alpha
+    name: Build Android et envoi sur la piste production
     # Le build ne demande que EXPO_TOKEN ; l'envoi sur le Play Store demande en
     # plus GOOGLE_PLAY_SERVICE_ACCOUNT. Sans EXPO_TOKEN, le job est volontairement
     # ignore plutot que mis en echec : inutile de polluer l'historique des
@@ -117,7 +117,7 @@ jobs:
           path: mobile/app.aab
           retention-days: 14
 
-      - name: Publier sur le canal alpha
+      - name: Publier sur la piste production
         if: ${{ needs.verifier.outputs.submit == 'true' }}
         run: eas submit --platform android --profile production --non-interactive --path app.aab
 
@@ -138,12 +138,12 @@ jobs:
             echo "## Version construite, mais NON publiee sur le Play Store"
             echo ""
             echo "Le secret \`GOOGLE_PLAY_SERVICE_ACCOUNT\` est absent : l'App Bundle a ete construit sur EAS"
-            echo "mais n'a pas ete envoye sur le canal alpha. Les telephones des testeurs ne recevront rien."
+            echo "mais n'a pas ete envoye sur la piste production. Les telephones ne recevront rien."
             echo ""
             echo "- Envoi manuel : telecharger le .aab depuis EAS (lien dans l'etape « Construire l'App Bundle »),"
-            echo "  puis Play Console > Tests > Test ferme (alpha) > Creer une version."
+            echo "  puis Play Console > Production > Creer une version."
             echo "- Envoi automatique : ajouter le JSON du compte de service Google Play dans le secret"
             echo "  \`GOOGLE_PLAY_SERVICE_ACCOUNT\` (voir docs/CI-CD.md)."
           } >> "$GITHUB_STEP_SUMMARY"
-          echo "::error title=Play Store non publie::Secret GOOGLE_PLAY_SERVICE_ACCOUNT absent : le bundle est construit sur EAS mais n'a pas ete envoye sur le canal alpha."
+          echo "::error title=Play Store non publie::Secret GOOGLE_PLAY_SERVICE_ACCOUNT absent : le bundle est construit sur EAS mais n'a pas ete envoye sur la piste production."
           exit 1
